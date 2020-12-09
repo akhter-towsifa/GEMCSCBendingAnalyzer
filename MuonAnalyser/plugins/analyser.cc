@@ -140,6 +140,7 @@ struct MuonData
   int hasME11ARecHit;  
 
   unsigned long long  evtNum;
+  unsigned long long  lumiBlock;
 
   int nCSCSeg;
   int nDTSeg;
@@ -231,6 +232,7 @@ void MuonData::init()
   hasME11ARecHit = 0; 
 
   evtNum = 0;
+  lumiBlock = 0;
 
   nCSCSeg = 0;
   nDTSeg = 0;
@@ -326,6 +328,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("hasME11ARecHit", &hasME11ARecHit);
 
   t->Branch("evtNum", &evtNum);
+  t->Branch("lumiBlock", &lumiBlock);
 
   t->Branch("nCSCSeg", &nCSCSeg); 
   t->Branch("nDTSeg", &nDTSeg); 
@@ -435,6 +438,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     }
     
     data_.evtNum = iEvent.eventAuxiliary().event();
+    data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock();
 /*
     if (not mu->innerTrack()) continue;
     const reco::Track* innerTrack = mu->track().get();
@@ -644,6 +648,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
         
       data_.has_rechit_GE11 = false;
+      data_.RdPhi_CSC_GE11 = 999999;
       int rechit_counter = 0;
       int rechit_matches = 0;
       for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++){
@@ -709,7 +714,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
           if ( (hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM){
             GEMDetId gemid((hit)->geographicalId());
             const auto& etaPart = GEMGeometry_->etaPartition(gemid);
-            if (gemid.layer() == ch->id().layer() and gemid.region() == ch->id().region()){
+            if (gemid.layer() == ch->id().layer() and gemid.region() == ch->id().region() and gemid.station() == 1){
               if (pow(pow(data_.prop_CSC_x_GE11 - etaPart->toGlobal((hit)->localPosition()).x(), 2) + pow(data_.prop_CSC_y_GE11 - etaPart->toGlobal((hit)->localPosition()).x(), 2), 0.5) < data_.distance_global){
                 data_.distance_global = pow(pow(data_.prop_CSC_x_GE11 - etaPart->toGlobal((hit)->localPosition()).x(), 2) + pow(data_.prop_CSC_y_GE11 - etaPart->toGlobal((hit)->localPosition()).x(), 2), 0.5);
                 data_.distance_chamber = gemid.chamber() - data_.prop_chamber_GE11;
@@ -726,8 +731,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
       std::cout << "Num of rechits = " << rechit_counter << std::endl;
       std::cout << "Num of matches = " << rechit_matches << std::endl;
-      num_props++;
       cout << "Filling!" << endl;
+      num_props++;
       tree_data_->Fill();
     }
     //cout << "Filling!" << endl;
