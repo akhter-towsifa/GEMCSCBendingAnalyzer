@@ -55,6 +55,8 @@
 
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 
+#include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
+
 
 using namespace std;
 using namespace edm;
@@ -153,6 +155,10 @@ struct MuonData
   float distance_chamber;
   float distance_eta;
   float distance_phi;
+
+  float simDy;
+  int nRecHitsTot;
+  int nRecHits5;
 };
 
 void MuonData::init()
@@ -245,6 +251,10 @@ void MuonData::init()
   distance_chamber = 999;
   distance_eta = 999;
   distance_phi = 999;
+
+  simDy = 999;
+  nRecHits5 = 0;
+  nRecHitsTot = 0;
 }
 
 TTree* MuonData::book(TTree *t){
@@ -342,6 +352,9 @@ TTree* MuonData::book(TTree *t){
   t->Branch("distance_eta", &distance_eta);
   t->Branch("distance_phi", &distance_phi);
 
+  t->Branch("simDy", &simDy);
+  t->Branch("nRecHits5", &nRecHits5);
+  t->Branch("nRecHitsTot", &nRecHitsTot);
   return t;
 }
 
@@ -356,6 +369,7 @@ private:
   virtual void endJob() ;
 
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
+  edm::EDGetTokenT<vector<PSimHit> > gemSimHits_;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
 
   edm::Service<TFileService> fs;
@@ -379,6 +393,7 @@ analyser::analyser(const edm::ParameterSet& iConfig)
 
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
+  gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
 
   tree_data_ = data_.book(tree_data_);
 }
@@ -386,20 +401,24 @@ analyser::analyser(const edm::ParameterSet& iConfig)
 
 void
 analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-
   iSetup.get<MuonGeometryRecord>().get(GEMGeometry_);
 
   iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",ttrackBuilder_);
 
   theService_->update(iSetup);
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
-
+  
+ 
+  bool isMC = false;
+  if (! iEvent.eventAuxiliary().isRealData()) isMC = true;
   edm::Handle<GEMRecHitCollection> gemRecHits;
   iEvent.getByToken(gemRecHits_, gemRecHits);
-
+  edm::Handle<vector<PSimHit> > gemSimHits;
+  if (isMC) {
+    iEvent.getByToken(gemSimHits_, gemSimHits); 
+  }
   edm::Handle<View<reco::Muon> > muons;
   if (! iEvent.getByToken(muons_, muons)) return;
-
   if (muons->size() == 0) return;
 
   int num_props = 0;
@@ -649,8 +668,12 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         
       data_.has_rechit_GE11 = false;
       data_.RdPhi_CSC_GE11 = 999999;
+      data_.nRecHits5 = 0;
+      data_.nRecHitsTot = 0;
       int rechit_counter = 0;
       int rechit_matches = 0;
+      int tmpNRH5 = 0;
+      int tmpNRHT = 0;
       for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++){
         rechit_counter++;
         if ( (hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM){
@@ -659,6 +682,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
           //if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and gemid.region() == ch->id().region()){
           //if (gemid.layer() == ch->id().layer() and gemid.region() == ch->id().region()){
             cout << "starting rechit" << endl;
+            tmpNRHT++;
             const auto& etaPart = GEMGeometry_->etaPartition(gemid);
             float strip = etaPart->strip(hit->localPosition());
             float stripAngle = etaPart->specificTopology().stripAngle(strip);
@@ -697,13 +721,28 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 //data_.RdPhi_inner_GE11 = cosAngle * (pos_local_inner.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_inner.y() + deltay_roll);
                 data_.RdPhi_CSC_GE11 = cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll);
                 data_.det_id = gemid.region()*(gemid.station()*100 + gemid.chamber());
+                if (data_.RdPhi_CSC_GE11 < 5) tmpNRH5++;
               }
             }
           }
         } 
       }
-
-
+      data_.nRecHits5 = tmpNRH5;
+      data_.nRecHitsTot = tmpNRHT;
+      if (isMC) {
+        data_.simDy = 999.;
+        float tmpDy = 999.;
+        for (const auto& simHit:*gemSimHits.product()) {
+          GEMDetId gemid((simHit).detUnitId());
+          if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()){
+          const auto& etaPart = GEMGeometry_->etaPartition(gemid);
+          LocalPoint pLocal = etaPart->toLocal(tsos_CSC.globalPosition());
+          float dy = pLocal.y() - simHit.localPosition().y();
+          if (dy < tmpDy) tmpDy = dy;
+          }
+        }
+        data_.simDy = tmpDy;
+      }
       if (data_.has_rechit_GE11 == false){
         data_.distance_global = 999;
         data_.distance_chamber = 999;
