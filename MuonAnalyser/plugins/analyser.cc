@@ -115,6 +115,8 @@ struct MuonData
   int rechit_layer_GE11;
   int rechit_chamber_GE11;
   int rechit_roll_GE11;
+  int recHit_first_strip;
+  int recHit_CLS;
   float rechit_x_GE11;
   float rechit_y_GE11;
   float rechit_r_GE11;
@@ -210,6 +212,8 @@ void MuonData::init()
   rechit_layer_GE11 = 999999;
   rechit_chamber_GE11 = 999999;
   rechit_roll_GE11 = 999999;
+  recHit_first_strip = 999999;
+  recHit_CLS = 999999;
   rechit_x_GE11 = 999999;
   rechit_y_GE11 = 999999;
   rechit_r_GE11 = 999999;
@@ -311,6 +315,8 @@ TTree* MuonData::book(TTree *t){
   t->Branch("rechit_layer_GE11", &rechit_layer_GE11);
   t->Branch("rechit_chamber_GE11", &rechit_chamber_GE11);
   t->Branch("rechit_roll_GE11", &rechit_roll_GE11);
+  t->Branch("recHit_first_strip", &recHit_first_strip);
+  t->Branch("recHit_CLS", &recHit_CLS);
   t->Branch("rechit_x_GE11", &rechit_x_GE11);
   t->Branch("rechit_y_GE11", &rechit_y_GE11);
   t->Branch("rechit_r_GE11", &rechit_r_GE11);
@@ -710,6 +716,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.rechit_layer_GE11 = gemid.layer();
                 data_.rechit_chamber_GE11 = gemid.chamber();
                 data_.rechit_roll_GE11 = gemid.roll();
+                data_.recHit_first_strip = (hit)->firstClusterStrip();
+                data_.recHit_CLS = (hit)->clusterSize();
                 data_.rechit_x_GE11 = etaPart->toGlobal((hit)->localPosition()).x();
                 data_.rechit_y_GE11 = etaPart->toGlobal((hit)->localPosition()).y();
                 data_.rechit_r_GE11 = etaPart->toGlobal((hit)->localPosition()).mag();
