@@ -161,6 +161,9 @@ struct MuonData
   float simDy;
   int nRecHitsTot;
   int nRecHits5;
+  int nRecHits2;
+
+  std::string closest;
 };
 
 void MuonData::init()
@@ -258,7 +261,10 @@ void MuonData::init()
 
   simDy = 999;
   nRecHits5 = 0;
+  nRecHits2 = 0;
   nRecHitsTot = 0;
+
+  closest = "none";
 }
 
 TTree* MuonData::book(TTree *t){
@@ -360,7 +366,10 @@ TTree* MuonData::book(TTree *t){
 
   t->Branch("simDy", &simDy);
   t->Branch("nRecHits5", &nRecHits5);
+  t->Branch("nRecHits2", &nRecHits2);
   t->Branch("nRecHitsTot", &nRecHitsTot);
+
+  t->Branch("closest", &closest);
   return t;
 }
 
@@ -427,14 +436,17 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
+  int num_props_ME11 = 0;
+  int num_props_noME11 = 0;
   int num_props = 0;
   int muons_with_cscSeg = 0;
   for (size_t i = 0; i < muons->size(); ++i){
     cout << "new muon" << endl;
+    cout << "evt number is " << iEvent.eventAuxiliary().event() << endl;
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
     const reco::Muon* mu = muRef.get();
 
-    if (mu->pt() < 2.0) continue;
+    //if (mu->pt() < 2.0) continue;  //can apply a pt cut later
     if (not mu->standAloneMuon()) continue;
     cout << "is standalone" << endl;
     data_.init();
@@ -453,11 +465,35 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         data_.CSCSeg_region = cscDetID.endcap();
         if (cscDetID.station() == 1 and cscDetID.ring() == 1){
           data_.hasME11 = 1;
+          std::cout << "has ME11 segment" << std::endl;
           for ( auto rh : cscSeg->specificRecHits()){
             if (rh.cscDetId().ring() == 1) data_.hasME11RecHit = 1;
             if (rh.cscDetId().ring() == 4) data_.hasME11ARecHit = 1;
           }
         }
+
+        //Closest segment finder! Start from station 4 and work inwards
+
+        
+        if (cscDetID.station() == 4){
+          if (cscDetID.ring() == 2 && data_.closest == "none"){data_.closest = "ME42";}
+          if (cscDetID.ring() == 1 && (data_.closest == "none" || data_.closest == "ME42")){data_.closest = "ME41";}
+        }
+        if (cscDetID.station() == 3 && (data_.closest == "none" || data_.closest == "ME41" || data_.closest == "ME42")){
+          if (cscDetID.ring() == 2 && data_.closest != "ME31"){data_.closest = "ME32";}
+          if (cscDetID.ring() == 1){data_.closest = "ME31";}
+        }
+        if (cscDetID.station() == 2 && (data_.closest != "ME13" || data_.closest != "ME12" || data_.closest != "ME11")){
+          if (cscDetID.ring() == 2 && data_.closest != "ME21"){data_.closest = "ME22";}
+          if (cscDetID.ring() == 1){data_.closest = "ME21";}
+        }
+        if (cscDetID.station() == 1){
+          if (cscDetID.ring() == 3 && (data_.closest != "ME12" || data_.closest != "ME11")){data_.closest = "ME13";}
+          if (cscDetID.ring() == 2 && data_.closest != "ME11"){data_.closest = "ME12";}
+          if (cscDetID.ring() == 1){data_.closest = "ME11";}
+        }
+
+
         if (cscDetID.station() == 1 and cscDetID.ring() == 4) data_.hasME11A = 1;
       }
     }
@@ -675,10 +711,12 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       data_.has_rechit_GE11 = false;
       data_.RdPhi_CSC_GE11 = 999999;
       data_.nRecHits5 = 0;
+      data_.nRecHits2 = 0;
       data_.nRecHitsTot = 0;
       int rechit_counter = 0;
       int rechit_matches = 0;
       int tmpNRH5 = 0;
+      int tmpNRH2 = 0;
       int tmpNRHT = 0;
       for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++){
         rechit_counter++;
@@ -703,6 +741,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
 
             if (ch->id().station() == 1 and ch->id().ring() == 1 and fabs((hit)->localPosition().x() - pos_local_CSC.x()) < 999.0){
+              if (abs(cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll)) < 5) tmpNRH5++;
+              if (abs(cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll)) < 2) tmpNRH2++;
+
 
               if (abs(data_.RdPhi_CSC_GE11) > abs(cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll))){
               //if ((pow(data_.rechit_x_GE11 - data_.prop_CSC_x_GE11, 2) + pow(data_.rechit_y_GE11 - data_.prop_CSC_y_GE11, 2)) > (pow(etaPart->toGlobal((hit)->localPosition()).x() - data_.prop_CSC_x_GE11, 2) + pow(etaPart->toGlobal((hit)->localPosition()).y() - data_.prop_CSC_y_GE11, 2))){
@@ -729,13 +770,13 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 //data_.RdPhi_inner_GE11 = cosAngle * (pos_local_inner.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_inner.y() + deltay_roll);
                 data_.RdPhi_CSC_GE11 = cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll);
                 data_.det_id = gemid.region()*(gemid.station()*100 + gemid.chamber());
-                if (data_.RdPhi_CSC_GE11 < 5) tmpNRH5++;
               }
             }
           }
         } 
       }
       data_.nRecHits5 = tmpNRH5;
+      data_.nRecHits2 = tmpNRH2;
       data_.nRecHitsTot = tmpNRHT;
       if (isMC) {
         data_.simDy = 999.;
@@ -779,6 +820,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       std::cout << "Num of rechits = " << rechit_counter << std::endl;
       std::cout << "Num of matches = " << rechit_matches << std::endl;
       cout << "Filling!" << endl;
+      if (data_.hasME11 == 1){num_props_ME11++;}
+      if (data_.hasME11 != 1){num_props_noME11 ++;}
       num_props++;
       tree_data_->Fill();
     }
@@ -787,6 +830,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   }
   std::cout << "Muons with cscSegs = " << muons_with_cscSeg << std::endl;
   std::cout << "Muons with prop to GE11 = " << num_props << std::endl;
+  std::cout << "Muons with prop to GE11 and ME11 = " << num_props_ME11 << std::endl;
+  std::cout << "Muons with prop to GE11 and no ME11 = " << num_props_noME11 << std::endl;
 }
 
 void analyser::beginJob(){}
