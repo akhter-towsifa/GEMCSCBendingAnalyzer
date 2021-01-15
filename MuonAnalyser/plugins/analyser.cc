@@ -163,7 +163,9 @@ struct MuonData
   int nRecHits5;
   int nRecHits2;
 
-  std::string closest;
+  int closest;
+  float closest_r;
+  float closest_z;
 };
 
 void MuonData::init()
@@ -264,7 +266,9 @@ void MuonData::init()
   nRecHits2 = 0;
   nRecHitsTot = 0;
 
-  closest = "none";
+  closest = 999;
+  closest_r = 999;
+  closest_z = 999;
 }
 
 TTree* MuonData::book(TTree *t){
@@ -370,6 +374,8 @@ TTree* MuonData::book(TTree *t){
   t->Branch("nRecHitsTot", &nRecHitsTot);
 
   t->Branch("closest", &closest);
+  t->Branch("closest_r", &closest_r);
+  t->Branch("closest_z", &closest_z);
   return t;
 }
 
@@ -456,6 +462,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     if (data_.nCSCSeg > 0){
       muons_with_cscSeg++;
     }
+    CSCSegment tmp_ME11_seg;
     auto matches = mu->matches();
     for ( auto MCM : matches){
       if (MCM.detector() != 2) continue;
@@ -466,6 +473,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         if (cscDetID.station() == 1 and cscDetID.ring() == 1){
           data_.hasME11 = 1;
           std::cout << "has ME11 segment" << std::endl;
+          //tmp_ME11_seg = cscSeg->cscSegment();
           for ( auto rh : cscSeg->specificRecHits()){
             if (rh.cscDetId().ring() == 1) data_.hasME11RecHit = 1;
             if (rh.cscDetId().ring() == 4) data_.hasME11ARecHit = 1;
@@ -474,7 +482,24 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
         //Closest segment finder! Start from station 4 and work inwards
 
-        
+	int tmp_station = 99;
+	int tmp_ring = 99;
+
+	if (cscDetID.station() < tmp_station){
+	  tmp_station = cscDetID.station();
+	  tmp_ring = cscDetID.ring();
+	}
+
+	if (cscDetID.station() == tmp_station){
+	  if (cscDetID.ring() < tmp_ring){
+	    tmp_ring = cscDetID.ring();
+	  }
+	}
+
+	data_.closest = std::stoi(std::to_string(tmp_station)+std::to_string(tmp_ring));
+	std::cout << "Closest now says " << data_.closest << std::endl;
+
+	/*        
         if (cscDetID.station() == 4){
           if (cscDetID.ring() == 2 && data_.closest == "none"){data_.closest = "ME42";}
           if (cscDetID.ring() == 1 && (data_.closest == "none" || data_.closest == "ME42")){data_.closest = "ME41";}
@@ -492,7 +517,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
           if (cscDetID.ring() == 2 && data_.closest != "ME11"){data_.closest = "ME12";}
           if (cscDetID.ring() == 1){data_.closest = "ME11";}
         }
-
+	*/
 
         if (cscDetID.station() == 1 and cscDetID.ring() == 4) data_.hasME11A = 1;
       }
@@ -569,21 +594,56 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       */
 
 
+      //Test ME11 seg prop
+      //if (data_.hasME11 == 1){
+      //  TrajectoryStateOnSurface tsos_CSC_ME11seg;
+      //  LocalTrajectoryParameters param(tmp_ME11_seg.localPosition(), tmp_ME11_seg.localDirection(), mu->charge());
+      //  //LocalTrajectoryError error(tmp_ME11_seg.localPositionError(), tmp_ME11_seg.localDirectionError());
+      //  AlgebraicSymMatrix mat(5,0);
+      //  mat = tmp_ME11_seg.parametersError().similarityT( tmp_ME11_seg.projectionMatrix() );
+      //  LocalTrajectoryError error(asSMatrix<5>(mat));
+      //  TrajectoryStateOnSurface tsos_ME11seg_GE11(param, error, tmp_ME11_seg.det()->surface(), &*theService_->magneticField());
+      //  tsos_CSC_ME11seg = propagator->propagate(tsos_ME11seg_GE11, ch->surface());
+      //  if (!tsos_CSC_ME11seg.isValid()) std::cout << "Bad" << std::endl;
+      //  if (tsos_CSC_ME11seg.isValid()) std::cout << "Good" << std::endl;
+      //}
+      //
 
-
+      float closest_x;
+      float closest_y;
+      float closest_z;
+      float closest_r;
 
 
       if ( muonTrack->outerPosition().Mag2() - muonTrack->innerPosition().Mag2() > 0){
         tsos_CSC = propagator->propagate(ttTrack_CSC.innermostMeasurementState(),ch->surface());
         data_.which_track_CSC_GE11 = 0;
+
+        //Closest point finder
+        GlobalPoint closest_GP = ttTrack_CSC.innermostMeasurementState().globalPosition();
+        closest_x = closest_GP.x();
+        closest_y = closest_GP.y();
+        closest_z = closest_GP.z();
+
       }
       else{
         tsos_CSC = propagator->propagate(ttTrack_CSC.outermostMeasurementState(),ch->surface());
         data_.which_track_CSC_GE11 = 1;
+
+	//Closest point finder
+	GlobalPoint closest_GP = ttTrack_CSC.outermostMeasurementState().globalPosition();
+        closest_x = closest_GP.x();
+        closest_y = closest_GP.y();
+        closest_z = closest_GP.z();
+
       }
       //Switched  Test ended here
 
+      closest_r = pow(pow(closest_x,2) + pow(closest_y,2), 0.5);
 
+      data_.closest_r = closest_r;
+      data_.closest_z = closest_z;
+      //std::cout << "Closest chamber is at ~~~~ R: " << closest_r << " ~~~~ Z: " << closest_z << std::endl;    // This reached quota very quickly if you submit, there will be a million print lines due to this
 
 
       if (!tsos_CSC.isValid()) continue;
