@@ -403,7 +403,7 @@ private:
 
   TTree * tree_data_;
   MuonData data_;
-
+  const CSCSegment *tmp_ME11_seg;
 };
 
 analyser::analyser(const edm::ParameterSet& iConfig)
@@ -425,6 +425,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   iSetup.get<MuonGeometryRecord>().get(GEMGeometry_);
 
   iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",ttrackBuilder_);
+ 
+  ESHandle<GlobalTrackingGeometry> theTrackingGeometry;
+  iSetup.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry);
 
   theService_->update(iSetup);
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
@@ -442,6 +445,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
+  isMC = false;
   int num_props_ME11 = 0;
   int num_props_noME11 = 0;
   int num_props = 0;
@@ -462,19 +466,18 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     if (data_.nCSCSeg > 0){
       muons_with_cscSeg++;
     }
-    CSCSegment tmp_ME11_seg;
     auto matches = mu->matches();
     for ( auto MCM : matches){
       if (MCM.detector() != 2) continue;
       for( auto MSM : MCM.segmentMatches){
-        auto cscSeg = MSM.cscSegmentRef;
-        auto cscDetID = cscSeg->cscDetId();
+        auto cscSegRef = MSM.cscSegmentRef;
+        auto cscDetID = cscSegRef->cscDetId();
         data_.CSCSeg_region = cscDetID.endcap();
-        if (cscDetID.station() == 1 and cscDetID.ring() == 1){
+        if (cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
           data_.hasME11 = 1;
           std::cout << "has ME11 segment" << std::endl;
-          //tmp_ME11_seg = cscSeg->cscSegment();
-          for ( auto rh : cscSeg->specificRecHits()){
+          tmp_ME11_seg = cscSegRef.get();
+          for ( auto rh : cscSegRef->specificRecHits()){
             if (rh.cscDetId().ring() == 1) data_.hasME11RecHit = 1;
             if (rh.cscDetId().ring() == 4) data_.hasME11ARecHit = 1;
           }
@@ -548,7 +551,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     const reco::Track* muonTrack = 0;
     if ( mu->outerTrack().isNonnull() ){
       muonTrack = mu->outerTrack().get();
-      }
+    }
     //reco::TransientTrack ttTrack_tracker = ttrackBuilder_->build(innerTrack); //tracker to GEM
 
     reco::TransientTrack ttTrack_CSC = ttrackBuilder_->build(muonTrack); //CSC to GEM
@@ -559,6 +562,26 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       //cout << "eta count = " << eta_count << endl;
       if (ch->id().station() != 1) continue; //Only takes GE1/1
       const BoundPlane& bps(ch->surface());
+
+      //Test ME11 seg prop
+      if (data_.hasME11 == 1){
+        TrajectoryStateOnSurface tsos_CSC_ME11seg;
+        LocalTrajectoryParameters param(tmp_ME11_seg->localPosition(), tmp_ME11_seg->localDirection(), mu->charge());
+        AlgebraicSymMatrix mat(5,0);
+        mat = tmp_ME11_seg->parametersError().similarityT( tmp_ME11_seg->projectionMatrix() );
+        LocalTrajectoryError error(asSMatrix<5>(mat));
+ 
+        DetId segDetId = tmp_ME11_seg->geographicalId();
+        const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
+
+        TrajectoryStateOnSurface tsos_ME11seg_GE11(param, error, segDet->surface(), &*theService_->magneticField());
+        tsos_CSC_ME11seg = propagator->propagate(tsos_ME11seg_GE11, ch->surface());
+        if (!tsos_CSC_ME11seg.isValid()) std::cout << "Bad" << std::endl;
+        if (tsos_CSC_ME11seg.isValid()) std::cout << "Good" << std::endl;
+      }
+ 
+
+
 
 /*
       // Tracker propagated
@@ -594,20 +617,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       */
 
 
-      //Test ME11 seg prop
-      //if (data_.hasME11 == 1){
-      //  TrajectoryStateOnSurface tsos_CSC_ME11seg;
-      //  LocalTrajectoryParameters param(tmp_ME11_seg.localPosition(), tmp_ME11_seg.localDirection(), mu->charge());
-      //  //LocalTrajectoryError error(tmp_ME11_seg.localPositionError(), tmp_ME11_seg.localDirectionError());
-      //  AlgebraicSymMatrix mat(5,0);
-      //  mat = tmp_ME11_seg.parametersError().similarityT( tmp_ME11_seg.projectionMatrix() );
-      //  LocalTrajectoryError error(asSMatrix<5>(mat));
-      //  TrajectoryStateOnSurface tsos_ME11seg_GE11(param, error, tmp_ME11_seg.det()->surface(), &*theService_->magneticField());
-      //  tsos_CSC_ME11seg = propagator->propagate(tsos_ME11seg_GE11, ch->surface());
-      //  if (!tsos_CSC_ME11seg.isValid()) std::cout << "Bad" << std::endl;
-      //  if (tsos_CSC_ME11seg.isValid()) std::cout << "Good" << std::endl;
-      //}
-      //
+     
 
       float closest_x;
       float closest_y;
