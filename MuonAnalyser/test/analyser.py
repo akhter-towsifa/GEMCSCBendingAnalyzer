@@ -46,7 +46,7 @@ process.source = cms.Source("PoolSource",
 			)
 				)
 
-process.source.fileNames.append('file:step3_984.root')
+process.source.fileNames.append('file:/eos/cms/store/express/Commissioning2020/ExpressCosmics/FEVT/Express-v1/000/338/714/00000/11A1DC01-0455-064E-BBD4-7602968E1475.root')
 
 process.options = cms.untracked.PSet()
 
@@ -55,8 +55,8 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string("out_an
 process.analyser = cms.EDAnalyzer('analyser', 
 	process.MuonServiceProxy, 
 	gemRecHits = cms.InputTag("gemRecHits"), 
-	gemSimHits = cms.InputTag("g4SimHits","MuonGEMHits"), 
-        muons = cms.InputTag("muonsFromCosmics"),
+	gemSimHits = cms.InputTag("gemSimHits"), 
+        muons = cms.InputTag("muons1Leg"),
 	#vertexCollection = cms.InputTag("offlinePrimaryVerticies")
 )
 

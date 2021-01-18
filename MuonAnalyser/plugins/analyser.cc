@@ -151,8 +151,6 @@ struct MuonData
   int CSCSeg_region;
   int num_props;
 
-  bool region_mismatch;
-
   float distance_global;
   float distance_chamber;
   float distance_eta;
@@ -166,6 +164,31 @@ struct MuonData
   int closest;
   float closest_r;
   float closest_z;
+  float closest_x;
+  float closest_y;
+
+
+
+
+  //Propagations from ME11 segment
+  float prop_ME11_x_GE11;
+  float prop_ME11_y_GE11;
+  float prop_ME11_r_GE11;
+  float prop_ME11_localx_GE11;
+  float prop_ME11_localy_GE11;
+  float prop_ME11_y_adjusted_GE11;
+  float prop_ME11_localphi_rad_GE11;
+  float prop_ME11_localphi_deg_GE11;
+
+  float RdPhi_ME11_GE11;
+  int det_id_ME11;
+
+  int closest_ME11;
+  float closest_r_ME11;
+  float closest_z_ME11;
+  float closest_x_ME11;
+  float closest_y_ME11;
+
 };
 
 void MuonData::init()
@@ -254,8 +277,6 @@ void MuonData::init()
   CSCSeg_region = 0;
   num_props = 0;
 
-  region_mismatch = 1;
-
   distance_global = 999;
   distance_chamber = 999;
   distance_eta = 999;
@@ -269,6 +290,27 @@ void MuonData::init()
   closest = 999;
   closest_r = 999;
   closest_z = 999;
+  closest_x = 999;
+  closest_y = 999;
+
+  prop_ME11_x_GE11 = 9999999;
+  prop_ME11_y_GE11 = 9999999;
+  prop_ME11_r_GE11 = 9999999;
+  prop_ME11_localx_GE11 = 9999999;
+  prop_ME11_localy_GE11 = 9999999;
+  prop_ME11_y_adjusted_GE11 = 9999999;
+  prop_ME11_localphi_rad_GE11 = 9999999;
+  prop_ME11_localphi_deg_GE11 = 9999999;
+
+  RdPhi_ME11_GE11 = 9999999;
+  det_id_ME11 = 9999999;
+
+  closest_ME11 = 999;
+  closest_r_ME11 = 999;
+  closest_z_ME11 = 999;
+  closest_x_ME11 = 999;
+  closest_y_ME11 = 999;
+
 }
 
 TTree* MuonData::book(TTree *t){
@@ -361,8 +403,6 @@ TTree* MuonData::book(TTree *t){
   t->Branch("CSCSeg_region", &CSCSeg_region);
   t->Branch("num_props", &num_props);
 
-  t->Branch("region_mismatch", &region_mismatch);
-
   t->Branch("distance_global", &distance_global);
   t->Branch("distance_chamber", &distance_chamber);
   t->Branch("distance_eta", &distance_eta);
@@ -376,6 +416,28 @@ TTree* MuonData::book(TTree *t){
   t->Branch("closest", &closest);
   t->Branch("closest_r", &closest_r);
   t->Branch("closest_z", &closest_z);
+
+
+  t->Branch("prop_ME11_x_GE11", &prop_ME11_x_GE11);
+  t->Branch("prop_ME11_y_GE11", &prop_ME11_y_GE11);
+  t->Branch("prop_ME11_r_GE11", &prop_ME11_r_GE11);
+  t->Branch("prop_ME11_localx_GE11", &prop_ME11_localx_GE11);
+  t->Branch("prop_ME11_localy_GE11", &prop_ME11_localy_GE11);
+  t->Branch("prop_ME11_y_adjusted_GE11", &prop_ME11_y_adjusted_GE11);
+  t->Branch("prop_ME11_localphi_rad_GE11", &prop_ME11_localphi_rad_GE11);
+  t->Branch("prop_ME11_localphi_deg_GE11", &prop_ME11_localphi_deg_GE11);
+
+  t->Branch("RdPhi_ME11_GE11", &RdPhi_ME11_GE11);
+  t->Branch("det_id_ME11", &det_id_ME11);
+
+  t->Branch("closest_ME11", &closest_ME11);
+  t->Branch("closest_r_ME11", &closest_r_ME11);
+  t->Branch("closest_z_ME11", &closest_z_ME11);
+  t->Branch("closest_x_ME11", &closest_x_ME11);
+  t->Branch("closest_y_ME11", &closest_y_ME11);
+
+
+
   return t;
 }
 
@@ -470,6 +532,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     for ( auto MCM : matches){
       if (MCM.detector() != 2) continue;
       for( auto MSM : MCM.segmentMatches){
+        std::cout << "Looping over segments" << std::endl;
         auto cscSegRef = MSM.cscSegmentRef;
         auto cscDetID = cscSegRef->cscDetId();
         data_.CSCSeg_region = cscDetID.endcap();
@@ -502,25 +565,6 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 	data_.closest = std::stoi(std::to_string(tmp_station)+std::to_string(tmp_ring));
 	std::cout << "Closest now says " << data_.closest << std::endl;
 
-	/*        
-        if (cscDetID.station() == 4){
-          if (cscDetID.ring() == 2 && data_.closest == "none"){data_.closest = "ME42";}
-          if (cscDetID.ring() == 1 && (data_.closest == "none" || data_.closest == "ME42")){data_.closest = "ME41";}
-        }
-        if (cscDetID.station() == 3 && (data_.closest == "none" || data_.closest == "ME41" || data_.closest == "ME42")){
-          if (cscDetID.ring() == 2 && data_.closest != "ME31"){data_.closest = "ME32";}
-          if (cscDetID.ring() == 1){data_.closest = "ME31";}
-        }
-        if (cscDetID.station() == 2 && (data_.closest != "ME13" || data_.closest != "ME12" || data_.closest != "ME11")){
-          if (cscDetID.ring() == 2 && data_.closest != "ME21"){data_.closest = "ME22";}
-          if (cscDetID.ring() == 1){data_.closest = "ME21";}
-        }
-        if (cscDetID.station() == 1){
-          if (cscDetID.ring() == 3 && (data_.closest != "ME12" || data_.closest != "ME11")){data_.closest = "ME13";}
-          if (cscDetID.ring() == 2 && data_.closest != "ME11"){data_.closest = "ME12";}
-          if (cscDetID.ring() == 1){data_.closest = "ME11";}
-        }
-	*/
 
         if (cscDetID.station() == 1 and cscDetID.ring() == 4) data_.hasME11A = 1;
       }
@@ -564,8 +608,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       const BoundPlane& bps(ch->surface());
 
       //Test ME11 seg prop
+      TrajectoryStateOnSurface tsos_CSC_ME11seg;
       if (data_.hasME11 == 1){
-        TrajectoryStateOnSurface tsos_CSC_ME11seg;
         LocalTrajectoryParameters param(tmp_ME11_seg->localPosition(), tmp_ME11_seg->localDirection(), mu->charge());
         AlgebraicSymMatrix mat(5,0);
         mat = tmp_ME11_seg->parametersError().similarityT( tmp_ME11_seg->projectionMatrix() );
@@ -578,6 +622,11 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         tsos_CSC_ME11seg = propagator->propagate(tsos_ME11seg_GE11, ch->surface());
         if (!tsos_CSC_ME11seg.isValid()) std::cout << "Bad" << std::endl;
         if (tsos_CSC_ME11seg.isValid()) std::cout << "Good" << std::endl;
+
+        data_.closest_r_ME11 = pow(pow(tmp_ME11_seg->globalPosition().x(),2) + pow(tmp_ME11_seg->globalPosition().y(),2), 0.5);
+        data_.closest_z_ME11 = tmp_ME11_seg->globalPosition().z();
+        data_.closest_x_ME11 = tmp_ME11_seg->globalPosition().x();
+        data_.closest_y_ME11 = tmp_ME11_seg->globalPosition().y();
       }
  
 
@@ -653,13 +702,12 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
       data_.closest_r = closest_r;
       data_.closest_z = closest_z;
+      data_.closest_x = closest_x;
+      data_.closest_y = closest_y;
       //std::cout << "Closest chamber is at ~~~~ R: " << closest_r << " ~~~~ Z: " << closest_z << std::endl;    // This reached quota very quickly if you submit, there will be a million print lines due to this
 
 
       if (!tsos_CSC.isValid()) continue;
-      if ((ch->id().region() == 1 && data_.CSCSeg_region == 1) || (ch->id().region() == -1 && data_.CSCSeg_region == 2)){
-        data_.region_mismatch = 0;
-      }
       if (!((ch->id().region() == 1 && data_.CSCSeg_region == 1) || (ch->id().region() == -1 && data_.CSCSeg_region == 2))) continue;
 
       GlobalPoint pos_global_CSC = tsos_CSC.globalPosition();
@@ -673,7 +721,6 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       if (!(bps.bounds().inside(pos2D_local_CSC) and ch->id().station() == 1 and ch->id().ring() == 1)) continue;
       //cout << "Track used was " << data_.which_track_CSC_GE11 << endl;
       cout << "pos_local_CSC = " << pos_local_CSC << endl;
-      //cout << "bps.bounds().inside(pos2D_local_CSC) = " << bps.bounds().inside(pos2D_local_CSC) << endl;
 
       //cout << "charge is " << mu->charge() << endl;
       data_.num_props++;
@@ -691,11 +738,6 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       const float fidcut_angle = 1.0;
       const float cut_ang = 5.0 - fidcut_angle;
       const float cut_chamber = 5.0;
-      //const float fidcut_y = 5.0;
-      //const float cut_even_high = 250.0 - fidcut_y;
-      //const float cut_odd_high = 250.0 - fidcut_y;
-      //const float cut_even_low = 130.0 + fidcut_y;
-      //const float cut_odd_low = 130.0 + fidcut_y;
 
       const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
       //float strip = etaPart_ch->strip(pos_local);
@@ -777,6 +819,35 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       //  }
       //}
 
+
+      //ME11 prop part
+      LocalPoint pos_local_ME11;
+      if (tsos_CSC_ME11seg.isValid()){
+
+        GlobalPoint pos_global_ME11 = tsos_CSC_ME11seg.globalPosition();
+        pos_local_ME11 = ch->toLocal(tsos_CSC_ME11seg.globalPosition());
+        const GlobalPoint pos2D_global_ME11(pos_global_ME11.x(), pos_global_ME11.y(), 0);
+        const LocalPoint pos2D_local_ME11(pos_local_ME11.x(), pos_local_ME11.y(), 0);
+      
+        LocalPoint local_to_center_ME11(pos_local_ME11.x(), prop_y_to_center + pos_local_ME11.y(), 0);
+        const float prop_ME11_localphi_rad = (3.14159265/2.) - local_to_center_ME11.phi();
+        const float prop_ME11_localphi_deg = prop_CSC_localphi_rad*180/3.14169265;
+
+
+        data_.prop_ME11_x_GE11 = pos_global_ME11.x();
+        data_.prop_ME11_y_GE11 = pos_global_ME11.y();
+        data_.prop_ME11_r_GE11 = pos_global_ME11.mag();
+        data_.prop_ME11_localx_GE11 = pos_local_ME11.x();
+        data_.prop_ME11_localy_GE11 = pos_local_ME11.y();
+        data_.prop_ME11_y_adjusted_GE11 = prop_y_to_center + pos_local_ME11.y();
+        data_.prop_ME11_localphi_rad_GE11 = prop_ME11_localphi_rad;
+        data_.prop_ME11_localphi_deg_GE11 = prop_ME11_localphi_deg;
+      }
+      //////////////////
+
+
+
+
         
       data_.has_rechit_GE11 = false;
       data_.RdPhi_CSC_GE11 = 999999;
@@ -840,6 +911,17 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 //data_.RdPhi_inner_GE11 = cosAngle * (pos_local_inner.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_inner.y() + deltay_roll);
                 data_.RdPhi_CSC_GE11 = cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll);
                 data_.det_id = gemid.region()*(gemid.station()*100 + gemid.chamber());
+
+
+
+
+                //ME11 seg matcher
+                if (tsos_CSC_ME11seg.isValid()){
+                  if (abs(data_.RdPhi_ME11_GE11) > abs(cosAngle * (pos_local_ME11.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_ME11.y() + deltay_roll))){
+                    data_.RdPhi_ME11_GE11 = cosAngle * (pos_local_ME11.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_ME11.y() + deltay_roll);
+                    data_.det_id_ME11 = gemid.region()*(gemid.station()*100 + gemid.chamber());
+                  }
+                }
               }
             }
           }
