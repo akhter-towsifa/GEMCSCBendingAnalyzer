@@ -46,7 +46,7 @@ process.source = cms.Source("PoolSource",
 			)
 				)
 
-process.source.fileNames.append('file:/eos/cms/store/express/Commissioning2020/ExpressCosmics/FEVT/Express-v1/000/338/714/00000/11A1DC01-0455-064E-BBD4-7602968E1475.root')
+process.source.fileNames.append('file:A6D8F0A8-462B-0344-91D7-35EC85B5DB6A.root')
 
 process.options = cms.untracked.PSet()
 
