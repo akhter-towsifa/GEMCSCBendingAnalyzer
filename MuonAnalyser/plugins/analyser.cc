@@ -191,6 +191,16 @@ struct MuonData
 
   bool ME11seg_goodProp;
 
+
+
+  //Sim info for MC
+  float sim_r;
+  float sim_x;
+  float sim_y;
+  float sim_z;
+  float sim_localx;
+  float sim_localy;
+
 };
 
 void MuonData::init()
@@ -315,6 +325,15 @@ void MuonData::init()
 
   ME11seg_goodProp = 0;
 
+
+
+  //Sim info for MC
+  sim_r = 99999999;
+  sim_x = 99999999;
+  sim_y = 99999999;
+  sim_z = 99999999;
+  sim_localx = 99999999;
+  sim_localy = 99999999;
 }
 
 TTree* MuonData::book(TTree *t){
@@ -442,6 +461,16 @@ TTree* MuonData::book(TTree *t){
 
   t->Branch("ME11seg_goodProp", &ME11seg_goodProp);
 
+
+
+  //Sim info for MC
+  t->Branch("sim_r", &sim_r);
+  t->Branch("sim_x", &sim_x);
+  t->Branch("sim_y", &sim_y);
+  t->Branch("sim_z", &sim_z);
+  t->Branch("sim_localx", &sim_localx);
+  t->Branch("sim_localy", &sim_localy);
+
   return t;
 }
 
@@ -511,7 +540,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
-  isMC = false;
+  //isMC = false;
   int num_props_ME11 = 0;
   int num_props_noME11 = 0;
   int num_props = 0;
@@ -952,13 +981,24 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       if (isMC) {
         data_.simDy = 999.;
         float tmpDy = 999.;
+        float tmpDr = 999.;
         for (const auto& simHit:*gemSimHits.product()) {
           GEMDetId gemid((simHit).detUnitId());
           if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()){
-          const auto& etaPart = GEMGeometry_->etaPartition(gemid);
-          LocalPoint pLocal = etaPart->toLocal(tsos_CSC.globalPosition());
-          float dy = pLocal.y() - simHit.localPosition().y();
-          if (dy < tmpDy) tmpDy = dy;
+            const auto& etaPart = GEMGeometry_->etaPartition(gemid);
+            GlobalPoint pGlobal = tsos_CSC.globalPosition();
+            float dy = pGlobal.y() - etaPart->toGlobal(simHit.localPosition()).y();
+            float dx = pGlobal.x() - etaPart->toGlobal(simHit.localPosition()).x();
+            if (dy < tmpDy) tmpDy = dy;
+            if (pow(pow(dy, 2) + pow(dx, 2), 0.5) < tmpDr){
+              data_.sim_x = etaPart->toGlobal(simHit.localPosition()).x();
+              data_.sim_y = etaPart->toGlobal(simHit.localPosition()).y();
+              data_.sim_z = etaPart->toGlobal(simHit.localPosition()).z();
+              data_.sim_r = pow(pow(data_.sim_x, 2) + pow(data_.sim_y, 2), 0.5);
+              data_.sim_localx = simHit.localPosition().x();
+              data_.sim_localy = simHit.localPosition().y();
+              tmpDr = pow(pow(dy, 2) + pow(dx, 2), 0.5);
+            }
           }
         }
         data_.simDy = tmpDy;
