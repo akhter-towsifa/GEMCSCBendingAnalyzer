@@ -46,7 +46,8 @@ process.source = cms.Source("PoolSource",
 			)
 				)
 
-process.source.fileNames.append('file:A6D8F0A8-462B-0344-91D7-35EC85B5DB6A.root')
+#process.source.fileNames.append('file:A6D8F0A8-462B-0344-91D7-35EC85B5DB6A.root')
+process.source.fileNames.append('file:cosmics_test.root')
 
 process.options = cms.untracked.PSet()
 
@@ -55,8 +56,8 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string("out_an
 process.analyser = cms.EDAnalyzer('analyser', 
 	process.MuonServiceProxy, 
 	gemRecHits = cms.InputTag("gemRecHits"), 
-	gemSimHits = cms.InputTag("gemSimHits"), 
-        muons = cms.InputTag("muons1Leg"),
+	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
+        muons = cms.InputTag("muons"),
 	#vertexCollection = cms.InputTag("offlinePrimaryVerticies")
 )
 

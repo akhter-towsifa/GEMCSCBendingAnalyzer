@@ -4,7 +4,7 @@ config = config()
 ###2018runA  314472-318876
 #section general
 config.General.requestName = 'analyser'
-config.General.workArea = 'cosmics_MC_0115'#working dir 
+config.General.workArea = 'cosmics_MC_0125_fixedMC'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
