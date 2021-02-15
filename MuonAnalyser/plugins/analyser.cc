@@ -213,6 +213,8 @@ struct MuonData
   float sim_z;
   float sim_localx;
   float sim_localy;
+  float sim_localy_adjusted;
+  int nSim;
 
 };
 
@@ -362,6 +364,8 @@ void MuonData::init()
   sim_z = 99999999;
   sim_localx = 99999999;
   sim_localy = 99999999;
+  sim_localy_adjusted = 99999999;
+  nSim = 99999999;
 }
 
 TTree* MuonData::book(TTree *t){
@@ -513,7 +517,8 @@ TTree* MuonData::book(TTree *t){
   t->Branch("sim_z", &sim_z);
   t->Branch("sim_localx", &sim_localx);
   t->Branch("sim_localy", &sim_localy);
-
+  t->Branch("sim_localy_adjusted", &sim_localy_adjusted);
+  t->Branch("nSim", &nSim);
 
   return t;
 }
@@ -677,6 +682,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     reco::TransientTrack ttTrack_CSC = ttrackBuilder_->build(muonTrack); //CSC to GEM
 
     float count = 0;
+    std::cout << "Starting chamber loop" << std::endl;
     for (const auto& ch : GEMGeometry_->etaPartitions()) {
       //eta_count ++;
       //cout << "eta count = " << eta_count << endl;
@@ -689,18 +695,23 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       TrajectoryStateOnSurface tsos_CSC_ME11trk;
       if (data_.hasME11 == 1){
 
-        
+        std::cout << "Doing segment propagations" << std::endl; 
         //ME11 segment propagation
         LocalTrajectoryParameters param(tmp_ME11_seg->localPosition(), tmp_ME11_seg->localDirection(), mu->charge());
+        std::cout << "param check" << std::endl;
         AlgebraicSymMatrix mat(5,0);
         mat = tmp_ME11_seg->parametersError().similarityT( tmp_ME11_seg->projectionMatrix() );
+        std::cout << "mat check" << std::endl;
         LocalTrajectoryError error(asSMatrix<5>(mat));
- 
+        std::cout << "error check" << std::endl; 
+
         DetId segDetId = tmp_ME11_seg->geographicalId();
         const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
+        std::cout << "det check" << std::endl;
 
         TrajectoryStateOnSurface tsos_ME11seg_GE11(param, error, segDet->surface(), &*theService_->magneticField());
         tsos_CSC_ME11seg = propagator->propagate(tsos_ME11seg_GE11, ch->surface());
+        std::cout << "segprop check" << std::endl;
         //////////////////////////
         
         
@@ -708,26 +719,30 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         //DetId segDetId = tmp_ME11_seg->geographicalId();
         //const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
         tsos_CSC_ME11trk = propagator->propagate(ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())), ch->surface());
+        std::cout << "trkprop check" << std::endl;
         /////////////////////////////////////////////////////
 
-        const LocalPoint pos2D_local_ME11(tmp_ME11_seg->localPosition().x(), tmp_ME11_seg->localPosition().y(), 0);
+        //const LocalPoint pos2D_local_ME11(tmp_ME11_seg->localPosition().x(), tmp_ME11_seg->localPosition().y(), 0);
 
 
-        LocalPoint pos_local_ME11trk = ch->toLocal(tsos_CSC_ME11trk.globalPosition());
-        LocalPoint pos_local_ME11seg = ch->toLocal(tsos_CSC_ME11seg.globalPosition());
-        const LocalPoint pos2D_local_ME11trk(pos_local_ME11trk.x(), pos_local_ME11trk.y(), 0);
-        const LocalPoint pos2D_local_ME11seg(pos_local_ME11seg.x(), pos_local_ME11seg.y(), 0);
+        if (tsos_CSC_ME11trk.isValid() and tsos_CSC_ME11seg.isValid()){
+          LocalPoint pos_local_ME11trk = ch->toLocal(tsos_CSC_ME11trk.globalPosition());
+          LocalPoint pos_local_ME11seg = ch->toLocal(tsos_CSC_ME11seg.globalPosition());
+          const LocalPoint pos2D_local_ME11trk(pos_local_ME11trk.x(), pos_local_ME11trk.y(), 0);
+          const LocalPoint pos2D_local_ME11seg(pos_local_ME11seg.x(), pos_local_ME11seg.y(), 0);
+          std::cout << "locals check" << std::endl;
+          if (!(bps.bounds().inside(pos2D_local_ME11trk) and bps.bounds().inside(pos2D_local_ME11seg) and ch->id().station() == 1 and ch->id().ring() == 1)){
+            data_.ME11seg_goodProp = 1;
 
+            data_.closest_z_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).z();
+            data_.closest_x_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).x();
+            data_.closest_y_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).y();
 
-        if (!(bps.bounds().inside(pos2D_local_ME11trk) and bps.bounds().inside(pos2D_local_ME11seg) and ch->id().station() == 1 and ch->id().ring() == 1)){
-          data_.ME11seg_goodProp = 1;
+            data_.closest_r_ME11 = pow(pow(data_.closest_x_ME11,2) + pow(data_.closest_y_ME11,2), 0.5);
+            std::cout << "positions check" << std::endl;
+
+          }
         }
-
-        data_.closest_z_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).z();
-        data_.closest_x_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).x();
-        data_.closest_y_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).y();
-
-        data_.closest_r_ME11 = pow(pow(data_.closest_x_ME11,2) + pow(data_.closest_y_ME11,2), 0.5);
       }
  
 
@@ -773,7 +788,6 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       float closest_y;
       float closest_z;
       float closest_r;
-
 
       if ( muonTrack->outerPosition().Mag2() - muonTrack->innerPosition().Mag2() > 0){
         tsos_CSC = propagator->propagate(ttTrack_CSC.innermostMeasurementState(),ch->surface());
@@ -930,7 +944,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         GlobalPoint pos_global_ME11seg = tsos_CSC_ME11seg.globalPosition();
         pos_local_ME11seg = ch->toLocal(tsos_CSC_ME11seg.globalPosition());
         const GlobalPoint pos2D_global_ME11seg(pos_global_ME11seg.x(), pos_global_ME11seg.y(), 0);
-        const LocalPoint pos2D_local_ME11seg(pos_local_ME11seg.x(), pos_local_ME11seg.y(), 0);
+        //const LocalPoint pos2D_local_ME11seg(pos_local_ME11seg.x(), pos_local_ME11seg.y(), 0);
       
         LocalPoint local_to_center_ME11seg(pos_local_ME11seg.x(), prop_y_to_center + pos_local_ME11seg.y(), 0);
         const float prop_ME11seg_localphi_rad = (3.14159265/2.) - local_to_center_ME11seg.phi();
@@ -950,7 +964,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         GlobalPoint pos_global_ME11trk = tsos_CSC_ME11trk.globalPosition();
         pos_local_ME11trk = ch->toLocal(tsos_CSC_ME11trk.globalPosition());
         const GlobalPoint pos2D_global_ME11trk(pos_global_ME11trk.x(), pos_global_ME11trk.y(), 0);
-        const LocalPoint pos2D_local_ME11trk(pos_local_ME11trk.x(), pos_local_ME11trk.y(), 0);
+        //const LocalPoint pos2D_local_ME11trk(pos_local_ME11trk.x(), pos_local_ME11trk.y(), 0);
 
         LocalPoint local_to_center_ME11trk(pos_local_ME11trk.x(), prop_y_to_center + pos_local_ME11trk.y(), 0);
         const float prop_ME11trk_localphi_rad = (3.14159265/2.) - local_to_center_ME11trk.phi();
@@ -1059,12 +1073,15 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       data_.nRecHits2 = tmpNRH2;
       data_.nRecHitsTot = tmpNRHT;
       if (isMC) {
+        data_.nSim = 99999999;
         data_.simDy = 999.;
         float tmpDy = 999.;
         float tmpDr = 999.;
+        int tmpSimCounter = 0;
         for (const auto& simHit:*gemSimHits.product()) {
           GEMDetId gemid((simHit).detUnitId());
           if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()){
+            tmpSimCounter ++;
             const auto& etaPart = GEMGeometry_->etaPartition(gemid);
             GlobalPoint pGlobal = tsos_CSC.globalPosition();
             float dy = pGlobal.y() - etaPart->toGlobal(simHit.localPosition()).y();
@@ -1077,11 +1094,13 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
               data_.sim_r = pow(pow(data_.sim_x, 2) + pow(data_.sim_y, 2), 0.5);
               data_.sim_localx = simHit.localPosition().x();
               data_.sim_localy = simHit.localPosition().y();
+              data_.sim_localy_adjusted = data_.sim_localy + etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp();
               tmpDr = pow(pow(dy, 2) + pow(dx, 2), 0.5);
             }
           }
         }
         data_.simDy = tmpDy;
+        data_.nSim = tmpSimCounter;
       }
       if (data_.has_rechit_GE11 == false){
         data_.distance_global = 999;

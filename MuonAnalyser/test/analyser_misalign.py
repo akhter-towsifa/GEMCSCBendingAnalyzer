@@ -20,6 +20,31 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
 
 
+
+### This is the misalignment part
+process.GlobalTag.toGet = cms.VPSet(
+    cms.PSet(
+        connect = cms.string('sqlite_file:Alignments.db'),
+        record = cms.string('GEMAlignmentRcd'),
+        tag = cms.string('GEM')
+    ),
+    cms.PSet(
+        connect = cms.string('sqlite_file:Alignments.db'),
+        record = cms.string('GEMAlignmentErrorExtendedRcd'),
+        tag = cms.string('test')
+    ),
+    cms.PSet(record=cms.string('GlobalPositionRcd'), tag = cms.string('IdealGeometry'))
+)
+################################
+
+
+
+process.GEMGeometryESModule.applyAlignment = cms.bool(True)
+
+
+
+
+
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
 from FWCore.ParameterSet.VarParsing import VarParsing

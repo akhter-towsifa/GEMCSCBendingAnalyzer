@@ -3,14 +3,14 @@ from CRABClient.UserUtilities import config
 config = config()
 ###2018runA  314472-318876
 #section general
-config.General.requestName = 'analyser'
-config.General.workArea = 'cosmics_MC_0207'#working dir 
+config.General.requestName = 'analyser_misalign'
+config.General.workArea = 'cosmics_MC_0205_misaligntestFix2'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
 #section JobType
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'analyser.py'
+config.JobType.psetName = 'analyser_misalign.py'
 config.JobType.maxMemoryMB = 2000
 config.JobType.maxJobRuntimeMin = 1440 # 1440min = 24hours
 config.JobType.numCores = 1
@@ -19,7 +19,7 @@ config.JobType.allowUndistributedCMSSW = True
 #config.JobType.pyCfgParams
 #config.JobType.inputFiles
 
-#config.JobType.inputFiles = ['/uscms/home/daebi/nobackup/analyser/CMSSW_11_0_0/src/GEMCSCBendingAnalyzer/MuonAnalyser/test/test.db']
+config.JobType.inputFiles = ['/afs/cern.ch/work/d/daebi/analyser/CMSSW_11_1_0/src/GEMCSCBendingAnalyzer/MuonAnalyser/test/Alignments.db']
 
 #section Data
 #config.Data.inputDataset = '/SLHC23_patch1_2023Muon_gen_sim_Pt2_50_1M/tahuang-SLHC25_patch1_2023Muon_1M_L1_PU0_Pt2_50_updategemeta-1bf93df4dfbb43dc918bd6e47dedbf79/USER'
