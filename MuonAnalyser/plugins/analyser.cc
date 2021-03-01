@@ -694,7 +694,6 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       TrajectoryStateOnSurface tsos_CSC_ME11seg;
       TrajectoryStateOnSurface tsos_CSC_ME11trk;
       if (data_.hasME11 == 1){
-
         std::cout << "Doing segment propagations" << std::endl; 
         //ME11 segment propagation
         LocalTrajectoryParameters param(tmp_ME11_seg->localPosition(), tmp_ME11_seg->localDirection(), mu->charge());
@@ -716,10 +715,15 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         
         
         //Track propagation starting at ME11 segment location
-        //DetId segDetId = tmp_ME11_seg->geographicalId();
-        //const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
-        tsos_CSC_ME11trk = propagator->propagate(ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())), ch->surface());
-        std::cout << "trkprop check" << std::endl;
+        if (ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())).isValid()){  //Had segfaults for not-valid trajectory states
+          //DetId segDetId = tmp_ME11_seg->geographicalId();
+          //const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
+          //std::cout << "trkprop testing starting position " << segDet->toGlobal(tmp_ME11_seg->localPosition()) << std::endl;
+          //std::cout << "is the state on surface valid? " << ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())).isValid() << std::endl;
+          //std::cout << "what does the state on surface look like? " << ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())) << std::endl;
+          tsos_CSC_ME11trk = propagator->propagate(ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())), ch->surface());
+          std::cout << "trkprop check" << std::endl;
+        }
         /////////////////////////////////////////////////////
 
         //const LocalPoint pos2D_local_ME11(tmp_ME11_seg->localPosition().x(), tmp_ME11_seg->localPosition().y(), 0);
