@@ -35,6 +35,8 @@ process.GlobalTag.toGet = cms.VPSet(
     ),
     cms.PSet(record=cms.string('GlobalPositionRcd'), tag = cms.string('IdealGeometry'))
 )
+
+process.GEMGeometryESModule.applyAlignment = cms.bool(True)
 ################################
 
 
@@ -72,7 +74,7 @@ process.source = cms.Source("PoolSource",
 				)
 
 #process.source.fileNames.append('file:A6D8F0A8-462B-0344-91D7-35EC85B5DB6A.root')
-process.source.fileNames.append('file:MCsegfault_test3.root')
+process.source.fileNames.append('file:step2_223.root')
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
