@@ -71,7 +71,6 @@ struct MuonData
   float muon_pt;
 
   //Prop from tracker
-  bool has_prop_GE11;
   int prop_region_GE11;
   int prop_station_GE11;
   int prop_layer_GE11;
@@ -79,7 +78,7 @@ struct MuonData
   int prop_roll_GE11;
 
 
-/*
+ 
   float prop_inner_x_GE11;
   float prop_inner_y_GE11;
   float prop_inner_r_GE11;
@@ -90,7 +89,7 @@ struct MuonData
   float prop_inner_localphi_deg_GE11;
   float prop_inner_chi2_GE11;
   float prop_inner_ndof_GE11;
-*/
+  float prop_inner_chi2ndof_GE11;
 
   //Prop from CSC
   float prop_CSC_x_GE11;
@@ -101,43 +100,56 @@ struct MuonData
   float prop_CSC_y_adjusted_GE11;
   float prop_CSC_localphi_rad_GE11;
   float prop_CSC_localphi_deg_GE11;
-
-
-
   float prop_CSC_chi2_GE11;
   float prop_CSC_ndof_GE11;
   float prop_CSC_chi2ndof_GE11;
 
 
-  bool has_rechit_GE11;
-  int rechit_region_GE11;
-  int rechit_station_GE11;
-  int rechit_layer_GE11;
-  int rechit_chamber_GE11;
-  int rechit_roll_GE11;
-  int recHit_first_strip;
-  int recHit_CLS;
-  float rechit_x_GE11;
-  float rechit_y_GE11;
-  float rechit_r_GE11;
-  float rechit_localx_GE11;
-  float rechit_localy_GE11;
-  float rechit_y_adjusted_GE11;
-  float rechit_localphi_rad_GE11;
-  float rechit_localphi_deg_GE11;
+  bool has_rechit_CSC_GE11;
+  int rechit_region_CSC_GE11;
+  int rechit_station_CSC_GE11;
+  int rechit_layer_CSC_GE11;
+  int rechit_chamber_CSC_GE11;
+  int rechit_roll_CSC_GE11;
+  int recHit_first_strip_CSC;
+  int recHit_CLS_CSC;
+  float rechit_x_CSC_GE11;
+  float rechit_y_CSC_GE11;
+  float rechit_r_CSC_GE11;
+  float rechit_localx_CSC_GE11;
+  float rechit_localy_CSC_GE11;
+  float rechit_y_adjusted_CSC_GE11;
+  float rechit_localphi_rad_CSC_GE11;
+  float rechit_localphi_deg_CSC_GE11;
 
+  bool has_rechit_inner_GE11;
+  int rechit_region_inner_GE11;
+  int rechit_station_inner_GE11;
+  int rechit_layer_inner_GE11;
+  int rechit_chamber_inner_GE11;
+  int rechit_roll_inner_GE11;
+  int recHit_first_strip_inner;
+  int recHit_CLS_inner;
+  float rechit_x_inner_GE11;
+  float rechit_y_inner_GE11;
+  float rechit_r_inner_GE11;
+  float rechit_localx_inner_GE11;
+  float rechit_localy_inner_GE11;
+  float rechit_y_adjusted_inner_GE11;
+  float rechit_localphi_rad_inner_GE11;
+  float rechit_localphi_deg_inner_GE11;
 
-  //float RdPhi_inner_GE11;
+  float RdPhi_inner_GE11;
   float RdPhi_CSC_GE11;
   int det_id;
 
 
-  //bool has_fidcut_inner_GE11;
+  bool has_fidcut_inner_GE11;
   bool has_fidcut_CSC_GE11;
   int isGEMmuon;
 
   int which_track_CSC_GE11;
-  //int which_track_inner_GE11;
+  int which_track_inner_GE11;
   int hasME11;
   int hasME11RecHit;  
   int hasME11A;
@@ -151,59 +163,54 @@ struct MuonData
   int CSCSeg_region;
   int num_props;
 
-  float distance_global;
-  float distance_chamber;
-  float distance_eta;
-  float distance_phi;
-
   float simDy;
   int nRecHitsTot;
   int nRecHits5;
   int nRecHits2;
 
   int closest;
-  float closest_r;
-  float closest_z;
-  float closest_x;
-  float closest_y;
+  float startingPoint_x_CSC;
+  float startingPoint_y_CSC;
+  float startingPoint_z_CSC;
+  float startingPoint_r_CSC;
 
-
-
+  float startingPoint_x_inner;
+  float startingPoint_y_inner;
+  float startingPoint_z_inner;
+  float startingPoint_r_inner;
 
   //ME11 track based prop
-  float prop_ME11trk_x_GE11;
-  float prop_ME11trk_y_GE11;
-  float prop_ME11trk_r_GE11;
-  float prop_ME11trk_localx_GE11;
-  float prop_ME11trk_localy_GE11;
-  float prop_ME11trk_y_adjusted_GE11;
-  float prop_ME11trk_localphi_rad_GE11;
-  float prop_ME11trk_localphi_deg_GE11;
+  float prop_outerSeg_x_GE11;
+  float prop_outerSeg_y_GE11;
+  float prop_outerSeg_r_GE11;
+  float prop_outerSeg_localx_GE11;
+  float prop_outerSeg_localy_GE11;
+  float prop_outerSeg_y_adjusted_GE11;
+  float prop_outerSeg_localphi_rad_GE11;
+  float prop_outerSeg_localphi_deg_GE11;
 
-  float RdPhi_ME11trk_GE11;
-  int det_id_ME11trk;
+  float prop_innerSeg_x_GE11;
+  float prop_innerSeg_y_GE11;
+  float prop_innerSeg_r_GE11;
+  float prop_innerSeg_localx_GE11;
+  float prop_innerSeg_localy_GE11;
+  float prop_innerSeg_y_adjusted_GE11;
+  float prop_innerSeg_localphi_rad_GE11;
+  float prop_innerSeg_localphi_deg_GE11;
+
+  float RdPhi_outerSeg_GE11;
+  float RdPhi_innerSeg_GE11;
 
   int closest_ME11;
-  float closest_r_ME11;
-  float closest_z_ME11;
-  float closest_x_ME11;
-  float closest_y_ME11;
+  float startingPoint_r_ME11;
+  float startingPoint_z_ME11;
+  float startingPoint_x_ME11;
+  float startingPoint_y_ME11;
 
-  //ME11 seg based prop
-  float prop_ME11seg_x_GE11;
-  float prop_ME11seg_y_GE11;
-  float prop_ME11seg_r_GE11;
-  float prop_ME11seg_localx_GE11;
-  float prop_ME11seg_localy_GE11;
-  float prop_ME11seg_y_adjusted_GE11;
-  float prop_ME11seg_localphi_rad_GE11;
-  float prop_ME11seg_localphi_deg_GE11;
-
-  float RdPhi_ME11seg_GE11;
-  int det_id_ME11seg;
-
-  bool ME11seg_goodProp;
-
+  bool has_prop_inner;
+  bool has_prop_CSC;
+  bool has_prop_innerSeg;
+  bool has_prop_outerSeg;
 
 
   //Sim info for MC
@@ -223,7 +230,6 @@ void MuonData::init()
   muon_charge = 9999;
   muon_pt = 9999;
 
-  has_prop_GE11 = false;
   prop_region_GE11 = 99999;
   prop_station_GE11 = 99999;
   prop_layer_GE11 = 99999;
@@ -231,7 +237,7 @@ void MuonData::init()
   prop_roll_GE11 = 99999;
 
 
-/*
+
   prop_inner_x_GE11 = 99999;
   prop_inner_y_GE11 = 99999;
   prop_inner_r_GE11 = 99999;
@@ -242,7 +248,7 @@ void MuonData::init()
   prop_inner_localphi_deg_GE11 = 99999;
   prop_inner_chi2_GE11 = 99999;
   prop_inner_ndof_GE11 = 99999;
-*/
+  prop_inner_chi2ndof_GE11 = 99999;
 
   prop_CSC_x_GE11 = 99999;
   prop_CSC_y_GE11 = 99999;
@@ -252,45 +258,57 @@ void MuonData::init()
   prop_CSC_y_adjusted_GE11 = 99999;
   prop_CSC_localphi_rad_GE11 = 99999;
   prop_CSC_localphi_deg_GE11 = 99999;
-
-
-
-
   prop_CSC_chi2_GE11 = 99999;
   prop_CSC_ndof_GE11 = 99999;
   prop_CSC_chi2ndof_GE11 = 99999;
 
 
-  has_rechit_GE11 = false;
-  rechit_region_GE11 = 999999;
-  rechit_station_GE11 = 999999;
-  rechit_layer_GE11 = 999999;
-  rechit_chamber_GE11 = 999999;
-  rechit_roll_GE11 = 999999;
-  recHit_first_strip = 999999;
-  recHit_CLS = 999999;
-  rechit_x_GE11 = 999999;
-  rechit_y_GE11 = 999999;
-  rechit_r_GE11 = 999999;
-  rechit_localx_GE11 = 999999;
-  rechit_localy_GE11 = 999999;
-  rechit_y_adjusted_GE11 = 999999;
-  rechit_localphi_rad_GE11 = 999999;
-  rechit_localphi_deg_GE11 = 999999;
+  has_rechit_CSC_GE11 = false;
+  rechit_region_CSC_GE11 = 999999;
+  rechit_station_CSC_GE11 = 999999;
+  rechit_layer_CSC_GE11 = 999999;
+  rechit_chamber_CSC_GE11 = 999999;
+  rechit_roll_CSC_GE11 = 999999;
+  recHit_first_strip_CSC = 999999;
+  recHit_CLS_CSC = 999999;
+  rechit_x_CSC_GE11 = 999999;
+  rechit_y_CSC_GE11 = 999999;
+  rechit_r_CSC_GE11 = 999999;
+  rechit_localx_CSC_GE11 = 999999;
+  rechit_localy_CSC_GE11 = 999999;
+  rechit_y_adjusted_CSC_GE11 = 999999;
+  rechit_localphi_rad_CSC_GE11 = 999999;
+  rechit_localphi_deg_CSC_GE11 = 999999;
+
+  has_rechit_inner_GE11 = false;
+  rechit_region_inner_GE11 = 999999;
+  rechit_station_inner_GE11 = 999999;
+  rechit_layer_inner_GE11 = 999999;
+  rechit_chamber_inner_GE11 = 999999;
+  rechit_roll_inner_GE11 = 999999;
+  recHit_first_strip_inner = 999999;
+  recHit_CLS_inner = 999999;
+  rechit_x_inner_GE11 = 999999;
+  rechit_y_inner_GE11 = 999999;
+  rechit_r_inner_GE11 = 999999;
+  rechit_localx_inner_GE11 = 999999;
+  rechit_localy_inner_GE11 = 999999;
+  rechit_y_adjusted_inner_GE11 = 999999;
+  rechit_localphi_rad_inner_GE11 = 999999;
+  rechit_localphi_deg_inner_GE11 = 999999;
 
 
-
-  //RdPhi_inner_GE11 = 999999;
+  RdPhi_inner_GE11 = 999999;
   RdPhi_CSC_GE11 = 999999;
   det_id = 999999;
 
 
-  //has_fidcut_inner_GE11 = false;
+  has_fidcut_inner_GE11 = false;
   has_fidcut_CSC_GE11 = false;
   isGEMmuon = 0;
 
   which_track_CSC_GE11 = 999;
-  //which_track_inner_GE11 = 999;
+  which_track_inner_GE11 = 999;
   hasME11 = 0;
   hasME11RecHit = 0; 
   hasME11A = 0;
@@ -304,57 +322,54 @@ void MuonData::init()
   CSCSeg_region = 0;
   num_props = 0;
 
-  distance_global = 999;
-  distance_chamber = 999;
-  distance_eta = 999;
-  distance_phi = 999;
-
   simDy = 999;
   nRecHits5 = 0;
   nRecHits2 = 0;
   nRecHitsTot = 0;
 
   closest = 999;
-  closest_r = 999;
-  closest_z = 999;
-  closest_x = 999;
-  closest_y = 999;
+  startingPoint_x_CSC = 999;
+  startingPoint_y_CSC = 999;
+  startingPoint_z_CSC = 999;
+  startingPoint_r_CSC = 999;
+
+  startingPoint_x_inner = 999;
+  startingPoint_y_inner = 999;
+  startingPoint_z_inner = 999;
+  startingPoint_r_inner = 999;
 
   //ME11 track based prop
-  prop_ME11trk_x_GE11 = 9999999;
-  prop_ME11trk_y_GE11 = 9999999;
-  prop_ME11trk_r_GE11 = 9999999;
-  prop_ME11trk_localx_GE11 = 9999999;
-  prop_ME11trk_localy_GE11 = 9999999;
-  prop_ME11trk_y_adjusted_GE11 = 9999999;
-  prop_ME11trk_localphi_rad_GE11 = 9999999;
-  prop_ME11trk_localphi_deg_GE11 = 9999999;
+  prop_outerSeg_x_GE11 = 9999999;
+  prop_outerSeg_y_GE11 = 9999999;
+  prop_outerSeg_r_GE11 = 9999999;
+  prop_outerSeg_localx_GE11 = 9999999;
+  prop_outerSeg_localy_GE11 = 9999999;
+  prop_outerSeg_y_adjusted_GE11 = 9999999;
+  prop_outerSeg_localphi_rad_GE11 = 9999999;
+  prop_outerSeg_localphi_deg_GE11 = 9999999;
 
-  RdPhi_ME11trk_GE11 = 9999999;
-  det_id_ME11trk = 9999999;
+  prop_innerSeg_x_GE11 = 9999999;
+  prop_innerSeg_y_GE11 = 9999999;
+  prop_innerSeg_r_GE11 = 9999999;
+  prop_innerSeg_localx_GE11 = 9999999;
+  prop_innerSeg_localy_GE11 = 9999999;
+  prop_innerSeg_y_adjusted_GE11 = 9999999;
+  prop_innerSeg_localphi_rad_GE11 = 9999999;
+  prop_innerSeg_localphi_deg_GE11 = 9999999;
+
+  RdPhi_outerSeg_GE11 = 9999999;
+  RdPhi_innerSeg_GE11 = 9999999;
 
   closest_ME11 = 999;
-  closest_r_ME11 = 999;
-  closest_z_ME11 = 999;
-  closest_x_ME11 = 999;
-  closest_y_ME11 = 999;
+  startingPoint_r_ME11 = 999;
+  startingPoint_z_ME11 = 999;
+  startingPoint_x_ME11 = 999;
+  startingPoint_y_ME11 = 999;
 
-  //ME11 seg based prop
-  prop_ME11seg_x_GE11 = 9999999;
-  prop_ME11seg_y_GE11 = 9999999;
-  prop_ME11seg_r_GE11 = 9999999;
-  prop_ME11seg_localx_GE11 = 9999999;
-  prop_ME11seg_localy_GE11 = 9999999;
-  prop_ME11seg_y_adjusted_GE11 = 9999999;
-  prop_ME11seg_localphi_rad_GE11 = 9999999;
-  prop_ME11seg_localphi_deg_GE11 = 9999999;
-
-  RdPhi_ME11seg_GE11 = 9999999;
-  det_id_ME11seg = 9999999;
-
-
-  ME11seg_goodProp = 0;
-
+  has_prop_inner = false;
+  has_prop_CSC = false;
+  has_prop_innerSeg = false;
+  has_prop_outerSeg = false;
 
 
   //Sim info for MC
@@ -374,8 +389,6 @@ TTree* MuonData::book(TTree *t){
 
   t->Branch("muon_charge", &muon_charge);
   t->Branch("muon_pt", &muon_pt);
-//Propogated Inner
-  t->Branch("has_prop_GE11", &has_prop_GE11);
   t->Branch("prop_region_GE11", &prop_region_GE11);
   t->Branch("prop_station_GE11", &prop_station_GE11);
   t->Branch("prop_layer_GE11", &prop_layer_GE11);
@@ -384,7 +397,8 @@ TTree* MuonData::book(TTree *t){
 
 
 
-/*
+
+//Propagated Inner
   t->Branch("prop_inner_x_GE11", &prop_inner_x_GE11);
   t->Branch("prop_inner_y_GE11", &prop_inner_y_GE11);
   t->Branch("prop_inner_r_GE11", &prop_inner_r_GE11);
@@ -395,7 +409,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("prop_inner_localphi_deg_GE11", &prop_inner_localphi_deg_GE11);
   t->Branch("prop_inner_chi2_GE11", &prop_inner_chi2_GE11);
   t->Branch("prop_inner_ndof_GE11", &prop_inner_ndof_GE11);
-*/
+  t->Branch("prop_inner_chi2ndof_GE11", &prop_inner_chi2ndof_GE11);
 
 //Propogated CSC
   t->Branch("prop_CSC_x_GE11", &prop_CSC_x_GE11);
@@ -406,44 +420,57 @@ TTree* MuonData::book(TTree *t){
   t->Branch("prop_CSC_y_adjusted_GE11", &prop_CSC_y_adjusted_GE11);
   t->Branch("prop_CSC_localphi_rad_GE11", &prop_CSC_localphi_rad_GE11);
   t->Branch("prop_CSC_localphi_deg_GE11", &prop_CSC_localphi_deg_GE11);
-
-
-
-
   t->Branch("prop_CSC_chi2_GE11", &prop_CSC_chi2_GE11);
   t->Branch("prop_CSC_ndof_GE11", &prop_CSC_ndof_GE11);
   t->Branch("prop_CSC_chi2ndof_GE11", &prop_CSC_chi2ndof_GE11);
 
 
 //Reconstructed
-  t->Branch("has_rechit_GE11", &has_rechit_GE11);
-  t->Branch("rechit_region_GE11", &rechit_region_GE11);
-  t->Branch("rechit_station_GE11", &rechit_station_GE11);
-  t->Branch("rechit_layer_GE11", &rechit_layer_GE11);
-  t->Branch("rechit_chamber_GE11", &rechit_chamber_GE11);
-  t->Branch("rechit_roll_GE11", &rechit_roll_GE11);
-  t->Branch("recHit_first_strip", &recHit_first_strip);
-  t->Branch("recHit_CLS", &recHit_CLS);
-  t->Branch("rechit_x_GE11", &rechit_x_GE11);
-  t->Branch("rechit_y_GE11", &rechit_y_GE11);
-  t->Branch("rechit_r_GE11", &rechit_r_GE11);
-  t->Branch("rechit_localx_GE11", &rechit_localx_GE11);
-  t->Branch("rechit_localy_GE11", &rechit_localy_GE11);
-  t->Branch("rechit_y_adjusted_GE11", &rechit_y_adjusted_GE11);
-  t->Branch("rechit_localphi_rad_GE11", &rechit_localphi_rad_GE11);
-  t->Branch("rechit_localphi_deg_GE11", &rechit_localphi_deg_GE11);
+  t->Branch("has_rechit_CSC_GE11", &has_rechit_CSC_GE11);
+  t->Branch("rechit_region_CSC_GE11", &rechit_region_CSC_GE11);
+  t->Branch("rechit_station_CSC_GE11", &rechit_station_CSC_GE11);
+  t->Branch("rechit_layer_CSC_GE11", &rechit_layer_CSC_GE11);
+  t->Branch("rechit_chamber_CSC_GE11", &rechit_chamber_CSC_GE11);
+  t->Branch("rechit_roll_CSC_GE11", &rechit_roll_CSC_GE11);
+  t->Branch("recHit_first_strip_CSC", &recHit_first_strip_CSC);
+  t->Branch("recHit_CLS_CSC", &recHit_CLS_CSC);
+  t->Branch("rechit_x_CSC_GE11", &rechit_x_CSC_GE11);
+  t->Branch("rechit_y_CSC_GE11", &rechit_y_CSC_GE11);
+  t->Branch("rechit_r_CSC_GE11", &rechit_r_CSC_GE11);
+  t->Branch("rechit_localx_CSC_GE11", &rechit_localx_CSC_GE11);
+  t->Branch("rechit_localy_CSC_GE11", &rechit_localy_CSC_GE11);
+  t->Branch("rechit_y_adjusted_CSC_GE11", &rechit_y_adjusted_CSC_GE11);
+  t->Branch("rechit_localphi_rad_CSC_GE11", &rechit_localphi_rad_CSC_GE11);
+  t->Branch("rechit_localphi_deg_CSC_GE11", &rechit_localphi_deg_CSC_GE11);
+
+  t->Branch("has_rechit_inner_GE11", &has_rechit_inner_GE11);
+  t->Branch("rechit_region_inner_GE11", &rechit_region_inner_GE11);
+  t->Branch("rechit_station_inner_GE11", &rechit_station_inner_GE11);
+  t->Branch("rechit_layer_inner_GE11", &rechit_layer_inner_GE11);
+  t->Branch("rechit_chamber_inner_GE11", &rechit_chamber_inner_GE11);
+  t->Branch("rechit_roll_inner_GE11", &rechit_roll_inner_GE11);
+  t->Branch("recHit_first_strip_inner", &recHit_first_strip_inner);
+  t->Branch("recHit_CLS_inner", &recHit_CLS_inner);
+  t->Branch("rechit_x_inner_GE11", &rechit_x_inner_GE11);
+  t->Branch("rechit_y_inner_GE11", &rechit_y_inner_GE11);
+  t->Branch("rechit_r_inner_GE11", &rechit_r_inner_GE11);
+  t->Branch("rechit_localx_inner_GE11", &rechit_localx_inner_GE11);
+  t->Branch("rechit_localy_inner_GE11", &rechit_localy_inner_GE11);
+  t->Branch("rechit_y_adjusted_inner_GE11", &rechit_y_adjusted_inner_GE11);
+  t->Branch("rechit_localphi_rad_inner_GE11", &rechit_localphi_rad_inner_GE11);
+  t->Branch("rechit_localphi_deg_inner_GE11", &rechit_localphi_deg_inner_GE11);
 
 //Residual
-  //t->Branch("RdPhi_inner_GE11", &RdPhi_inner_GE11);
+  t->Branch("RdPhi_inner_GE11", &RdPhi_inner_GE11);
   t->Branch("RdPhi_CSC_GE11", &RdPhi_CSC_GE11);
   t->Branch("det_id", &det_id);
 //Cut
-  //t->Branch("has_fidcut_inner_GE11", &has_fidcut_inner_GE11);
+  t->Branch("has_fidcut_inner_GE11", &has_fidcut_inner_GE11);
   t->Branch("has_fidcut_CSC_GE11", &has_fidcut_CSC_GE11);
   t->Branch("isGEMmuon", &isGEMmuon);
 
   t->Branch("which_track_CSC_GE11", &which_track_CSC_GE11);
-  //t->Branch("which_track_inner_GE11", &which_track_inner_GE11);
+  t->Branch("which_track_inner_GE11", &which_track_inner_GE11);
  
   t->Branch("hasME11", &hasME11);
   t->Branch("hasME11RecHit", &hasME11RecHit);
@@ -458,56 +485,54 @@ TTree* MuonData::book(TTree *t){
   t->Branch("CSCSeg_region", &CSCSeg_region);
   t->Branch("num_props", &num_props);
 
-  t->Branch("distance_global", &distance_global);
-  t->Branch("distance_chamber", &distance_chamber);
-  t->Branch("distance_eta", &distance_eta);
-  t->Branch("distance_phi", &distance_phi);
-
   t->Branch("simDy", &simDy);
   t->Branch("nRecHits5", &nRecHits5);
   t->Branch("nRecHits2", &nRecHits2);
   t->Branch("nRecHitsTot", &nRecHitsTot);
 
   t->Branch("closest", &closest);
-  t->Branch("closest_r", &closest_r);
-  t->Branch("closest_z", &closest_z);
+  t->Branch("startingPoint_x_CSC", &startingPoint_x_CSC);
+  t->Branch("startingPoint_y_CSC", &startingPoint_y_CSC);
+  t->Branch("startingPoint_z_CSC", &startingPoint_z_CSC);
+  t->Branch("startingPoint_r_CSC", &startingPoint_r_CSC);
+
+  t->Branch("startingPoint_x_inner", &startingPoint_x_inner);
+  t->Branch("startingPoint_y_inner", &startingPoint_y_inner);
+  t->Branch("startingPoint_z_inner", &startingPoint_z_inner);
+  t->Branch("startingPoint_r_inner", &startingPoint_r_inner);
 
   //ME11 trackbased prop
-  t->Branch("prop_ME11trk_x_GE11", &prop_ME11trk_x_GE11);
-  t->Branch("prop_ME11trk_y_GE11", &prop_ME11trk_y_GE11);
-  t->Branch("prop_ME11trk_r_GE11", &prop_ME11trk_r_GE11);
-  t->Branch("prop_ME11trk_localx_GE11", &prop_ME11trk_localx_GE11);
-  t->Branch("prop_ME11trk_localy_GE11", &prop_ME11trk_localy_GE11);
-  t->Branch("prop_ME11trk_y_adjusted_GE11", &prop_ME11trk_y_adjusted_GE11);
-  t->Branch("prop_ME11trk_localphi_rad_GE11", &prop_ME11trk_localphi_rad_GE11);
-  t->Branch("prop_ME11trk_localphi_deg_GE11", &prop_ME11trk_localphi_deg_GE11);
+  t->Branch("prop_outerSeg_x_GE11", &prop_outerSeg_x_GE11);
+  t->Branch("prop_outerSeg_y_GE11", &prop_outerSeg_y_GE11);
+  t->Branch("prop_outerSeg_r_GE11", &prop_outerSeg_r_GE11);
+  t->Branch("prop_outerSeg_localx_GE11", &prop_outerSeg_localx_GE11);
+  t->Branch("prop_outerSeg_localy_GE11", &prop_outerSeg_localy_GE11);
+  t->Branch("prop_outerSeg_y_adjusted_GE11", &prop_outerSeg_y_adjusted_GE11);
+  t->Branch("prop_outerSeg_localphi_rad_GE11", &prop_outerSeg_localphi_rad_GE11);
+  t->Branch("prop_outerSeg_localphi_deg_GE11", &prop_outerSeg_localphi_deg_GE11);
 
-  t->Branch("RdPhi_ME11trk_GE11", &RdPhi_ME11trk_GE11);
-  t->Branch("det_id_ME11trk", &det_id_ME11trk);
+  t->Branch("prop_innerSeg_x_GE11", &prop_innerSeg_x_GE11);
+  t->Branch("prop_innerSeg_y_GE11", &prop_innerSeg_y_GE11);
+  t->Branch("prop_innerSeg_r_GE11", &prop_innerSeg_r_GE11);
+  t->Branch("prop_innerSeg_localx_GE11", &prop_innerSeg_localx_GE11);
+  t->Branch("prop_innerSeg_localy_GE11", &prop_innerSeg_localy_GE11);
+  t->Branch("prop_innerSeg_y_adjusted_GE11", &prop_innerSeg_y_adjusted_GE11);
+  t->Branch("prop_innerSeg_localphi_rad_GE11", &prop_innerSeg_localphi_rad_GE11);
+  t->Branch("prop_innerSeg_localphi_deg_GE11", &prop_innerSeg_localphi_deg_GE11);
+
+  t->Branch("RdPhi_outerSeg_GE11", &RdPhi_outerSeg_GE11);
+  t->Branch("RdPhi_innerSeg_GE11", &RdPhi_innerSeg_GE11);
 
   t->Branch("closest_ME11", &closest_ME11);
-  t->Branch("closest_r_ME11", &closest_r_ME11);
-  t->Branch("closest_z_ME11", &closest_z_ME11);
-  t->Branch("closest_x_ME11", &closest_x_ME11);
-  t->Branch("closest_y_ME11", &closest_y_ME11);
+  t->Branch("startingPoint_r_ME11", &startingPoint_r_ME11);
+  t->Branch("startingPoint_z_ME11", &startingPoint_z_ME11);
+  t->Branch("startingPoint_x_ME11", &startingPoint_x_ME11);
+  t->Branch("startingPoint_y_ME11", &startingPoint_y_ME11);
 
-
-  //ME11 seg based prop
-  t->Branch("prop_ME11seg_x_GE11", &prop_ME11seg_x_GE11);
-  t->Branch("prop_ME11seg_y_GE11", &prop_ME11seg_y_GE11);
-  t->Branch("prop_ME11seg_r_GE11", &prop_ME11seg_r_GE11);
-  t->Branch("prop_ME11seg_localx_GE11", &prop_ME11seg_localx_GE11);
-  t->Branch("prop_ME11seg_localy_GE11", &prop_ME11seg_localy_GE11);
-  t->Branch("prop_ME11seg_y_adjusted_GE11", &prop_ME11seg_y_adjusted_GE11);
-  t->Branch("prop_ME11seg_localphi_rad_GE11", &prop_ME11seg_localphi_rad_GE11);
-  t->Branch("prop_ME11seg_localphi_deg_GE11", &prop_ME11seg_localphi_deg_GE11);
-
-  t->Branch("RdPhi_ME11seg_GE11", &RdPhi_ME11seg_GE11);
-  t->Branch("det_id_ME11seg", &det_id_ME11seg);
-
-
-  t->Branch("ME11seg_goodProp", &ME11seg_goodProp);
-
+  t->Branch("has_prop_inner", &has_prop_inner);
+  t->Branch("has_prop_CSC", &has_prop_CSC);
+  t->Branch("has_prop_innerSeg", &has_prop_innerSeg);
+  t->Branch("has_prop_outerSeg", &has_prop_outerSeg);
 
 
   //Sim info for MC
@@ -545,6 +570,10 @@ private:
 
   edm::ESHandle<GEMGeometry> GEMGeometry_;
 
+  bool tracker_prop;
+  bool CSC_prop;
+  bool debug;
+
   TTree * tree_data_;
   MuonData data_;
   const CSCSegment *tmp_ME11_seg;
@@ -559,6 +588,11 @@ analyser::analyser(const edm::ParameterSet& iConfig)
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
+
+  tracker_prop = iConfig.getParameter<bool>("tracker_prop");
+  CSC_prop = iConfig.getParameter<bool>("CSC_prop");
+  debug = iConfig.getParameter<bool>("debug");
+  cout << "tracker_prop " << tracker_prop << " CSC_prop " << CSC_prop << " debug " << debug << std::endl;
 
   tree_data_ = data_.book(tree_data_);
 }
@@ -617,13 +651,13 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     for ( auto MCM : matches){
       if (MCM.detector() != 2) continue;
       for( auto MSM : MCM.segmentMatches){
-        std::cout << "Looping over segments" << std::endl;
+        if (debug)std::cout << "Looping over segments" << std::endl;
         auto cscSegRef = MSM.cscSegmentRef;
         auto cscDetID = cscSegRef->cscDetId();
         data_.CSCSeg_region = cscDetID.endcap();
         if (cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
           data_.hasME11 = 1;
-          std::cout << "has ME11 segment" << std::endl;
+          if (debug)std::cout << "has ME11 segment" << std::endl;
           tmp_ME11_seg = cscSegRef.get();
           for ( auto rh : cscSegRef->specificRecHits()){
             if (rh.cscDetId().ring() == 1) data_.hasME11RecHit = 1;
@@ -644,7 +678,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 	}
 
 	data_.closest = std::stoi(std::to_string(tmp_station)+std::to_string(tmp_ring));
-	std::cout << "Closest now says " << data_.closest << std::endl;
+	if (debug)std::cout << "Closest now says " << data_.closest << std::endl;
 
 
         if (cscDetID.station() == 1 and cscDetID.ring() == 4) data_.hasME11A = 1;
@@ -653,18 +687,6 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     
     data_.evtNum = iEvent.eventAuxiliary().event();
     data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock();
-/*
-    if (not mu->innerTrack()) continue;
-    const reco::Track* innerTrack = mu->track().get();
-    const reco::Track* muonTrack = 0;
-    const reco::Track* muonOuterTrack = 0;
-    if ( mu->globalTrack().isNonnull() ){
-      muonTrack = mu->globalTrack().get(); 
-      muonOuterTrack = mu->outerTrack().get();
-      }
-    else 
-      continue;
-*/
 
     //Get det info
     //int chamber_count = 0;
@@ -673,78 +695,77 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     //}
     //cout << "chamber count = " << chamber_count << endl;
 
-    const reco::Track* muonTrack = 0;
-    if ( mu->outerTrack().isNonnull() ){
-      muonTrack = mu->outerTrack().get();
-    }
-    //reco::TransientTrack ttTrack_tracker = ttrackBuilder_->build(innerTrack); //tracker to GEM
 
-    reco::TransientTrack ttTrack_CSC = ttrackBuilder_->build(muonTrack); //CSC to GEM
+    //Get the tracks
+    if (debug)std::cout << "Getting tracks" << std::endl;
+    const reco::Track* globalTrack = 0;
+    const reco::Track* innerTrack = 0;
+    const reco::Track* outerTrack = 0;
+    reco::TransientTrack ttTrack_global;
+    reco::TransientTrack ttTrack_tracker;
+    reco::TransientTrack ttTrack_CSC;
+    if ( mu->globalTrack().isNonnull() ){ globalTrack = mu->globalTrack().get(); ttTrack_global = ttrackBuilder_->build(globalTrack);}
+    if ( mu->track().isNonnull() ){ innerTrack = mu->track().get(); ttTrack_tracker = ttrackBuilder_->build(innerTrack);}
+    if ( mu->outerTrack().isNonnull() ){ outerTrack = mu->outerTrack().get(); ttTrack_CSC = ttrackBuilder_->build(outerTrack);}
 
+
+    //Start the propagations
     float count = 0;
-    std::cout << "Starting chamber loop" << std::endl;
+    if (debug)std::cout << "Starting chamber loop" << std::endl;
     for (const auto& ch : GEMGeometry_->etaPartitions()) {
-      //eta_count ++;
-      //cout << "eta count = " << eta_count << endl;
       if (ch->id().station() != 1) continue; //Only takes GE1/1
       const BoundPlane& bps(ch->surface());
 
-      //Test ME11 prop
-      data_.ME11seg_goodProp = 0;
-      TrajectoryStateOnSurface tsos_CSC_ME11seg;
-      TrajectoryStateOnSurface tsos_CSC_ME11trk;
-      if (data_.hasME11 == 1){
-        std::cout << "Doing segment propagations" << std::endl; 
-        //ME11 segment propagation
-        LocalTrajectoryParameters param(tmp_ME11_seg->localPosition(), tmp_ME11_seg->localDirection(), mu->charge());
-        std::cout << "param check" << std::endl;
-        AlgebraicSymMatrix mat(5,0);
-        mat = tmp_ME11_seg->parametersError().similarityT( tmp_ME11_seg->projectionMatrix() );
-        std::cout << "mat check" << std::endl;
-        LocalTrajectoryError error(asSMatrix<5>(mat));
-        std::cout << "error check" << std::endl; 
-
+      //Props from ME11 segment
+      data_.has_prop_innerSeg = 0;
+      data_.has_prop_outerSeg = 0;
+      TrajectoryStateOnSurface tsos_ME11trk_outer;
+      TrajectoryStateOnSurface tsos_ME11trk_inner;
+      LocalPoint pos_local_outerSeg;
+      LocalPoint pos_local_innerSeg;
+      GlobalPoint pos_global_outerSeg;
+      GlobalPoint pos_global_innerSeg;
+      if (data_.hasME11 == 1 and ch->id().station() == 1 and ch->id().ring() == 1){
+        if (debug)std::cout << "Doing segment propagations" << std::endl; 
         DetId segDetId = tmp_ME11_seg->geographicalId();
         const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
-        std::cout << "det check" << std::endl;
+        data_.startingPoint_z_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).z();
+        data_.startingPoint_x_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).x();
+        data_.startingPoint_y_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).y();
+        data_.startingPoint_r_ME11 = pow(pow(data_.startingPoint_x_ME11,2) + pow(data_.startingPoint_y_ME11,2), 0.5);
+        if (debug)std::cout << "Got segment starting position" << std::endl;
+        
 
-        TrajectoryStateOnSurface tsos_ME11seg_GE11(param, error, segDet->surface(), &*theService_->magneticField());
-        tsos_CSC_ME11seg = propagator->propagate(tsos_ME11seg_GE11, ch->surface());
-        std::cout << "segprop check" << std::endl;
-        //////////////////////////
-        
-        
         //Track propagation starting at ME11 segment location
-        if (ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())).isValid()){  //Had segfaults for not-valid trajectory states
-          //DetId segDetId = tmp_ME11_seg->geographicalId();
-          //const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
-          //std::cout << "trkprop testing starting position " << segDet->toGlobal(tmp_ME11_seg->localPosition()) << std::endl;
-          //std::cout << "is the state on surface valid? " << ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())).isValid() << std::endl;
-          //std::cout << "what does the state on surface look like? " << ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())) << std::endl;
-          tsos_CSC_ME11trk = propagator->propagate(ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())), ch->surface());
-          std::cout << "trkprop check" << std::endl;
+        if (tracker_prop and ttTrack_tracker.isValid()){
+          if (ttTrack_tracker.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())).isValid()){  //Had segfaults for not-valid trajectory states
+            tsos_ME11trk_inner = propagator->propagate(ttTrack_tracker.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())), ch->surface());
+            if (debug)std::cout << "inner trkprop check" << std::endl;
+            if (tsos_ME11trk_inner.isValid()){
+              pos_global_innerSeg = tsos_ME11trk_inner.globalPosition();
+              pos_local_innerSeg = ch->toLocal(tsos_ME11trk_inner.globalPosition());
+              const GlobalPoint pos2D_global_innerSeg(pos_global_innerSeg.x(), pos_global_innerSeg.y(), 0);
+              const LocalPoint pos2D_local_innerSeg(pos_local_innerSeg.x(), pos_local_innerSeg.y(), 0);
+              if (!(pos_global_innerSeg.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_innerSeg) and ch->id().station() == 1 and ch->id().ring() == 1){
+                data_.has_prop_innerSeg = true;
+              }
+            }
+          }
         }
-        /////////////////////////////////////////////////////
-
-        //const LocalPoint pos2D_local_ME11(tmp_ME11_seg->localPosition().x(), tmp_ME11_seg->localPosition().y(), 0);
-
-
-        if (tsos_CSC_ME11trk.isValid() and tsos_CSC_ME11seg.isValid()){
-          LocalPoint pos_local_ME11trk = ch->toLocal(tsos_CSC_ME11trk.globalPosition());
-          LocalPoint pos_local_ME11seg = ch->toLocal(tsos_CSC_ME11seg.globalPosition());
-          const LocalPoint pos2D_local_ME11trk(pos_local_ME11trk.x(), pos_local_ME11trk.y(), 0);
-          const LocalPoint pos2D_local_ME11seg(pos_local_ME11seg.x(), pos_local_ME11seg.y(), 0);
-          std::cout << "locals check" << std::endl;
-          if (!(bps.bounds().inside(pos2D_local_ME11trk) and bps.bounds().inside(pos2D_local_ME11seg) and ch->id().station() == 1 and ch->id().ring() == 1)){
-            data_.ME11seg_goodProp = 1;
-
-            data_.closest_z_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).z();
-            data_.closest_x_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).x();
-            data_.closest_y_ME11 = segDet->toGlobal(tmp_ME11_seg->localPosition()).y();
-
-            data_.closest_r_ME11 = pow(pow(data_.closest_x_ME11,2) + pow(data_.closest_y_ME11,2), 0.5);
-            std::cout << "positions check" << std::endl;
-
+        //CSC propagation starting at ME11 segment location
+        if (CSC_prop and ttTrack_CSC.isValid()){
+          if (ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())).isValid()){  //Had segfaults for not-valid trajectory states
+            tsos_ME11trk_outer = propagator->propagate(ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())), ch->surface());
+            if (debug)std::cout << "outer trkprop check" << std::endl;
+            if (tsos_ME11trk_outer.isValid()){
+              pos_global_outerSeg = tsos_ME11trk_outer.globalPosition();
+              pos_local_outerSeg = ch->toLocal(tsos_ME11trk_outer.globalPosition());
+              const GlobalPoint pos2D_global_outerSeg(pos_global_outerSeg.x(), pos_global_outerSeg.y(), 0);
+              const LocalPoint pos2D_local_outerSeg(pos_local_outerSeg.x(), pos_local_outerSeg.y(), 0);
+              if (!(pos_global_outerSeg.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_outerSeg) and ch->id().station() == 1 and ch->id().ring() == 1){
+                data_.has_prop_outerSeg = true;
+              }
+            }
           }
         }
       }
@@ -752,123 +773,107 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
 
 
-/*
       // Tracker propagated
       TrajectoryStateOnSurface tsos_inner;
-      if ( innerTrack->outerPosition().Mag2() - innerTrack->innerPosition().Mag2() > 0){
-        tsos_inner = propagator->propagate(ttTrack_tracker.outermostMeasurementState(),ch->surface());
-        data_.which_track_inner_GE11 = "outer most";
+      GlobalPoint pos_global_inner;
+      LocalPoint pos_local_inner;
+      data_.has_prop_inner = false;
+      if(tracker_prop and ttTrack_tracker.isValid()){
+        if(debug)std::cout << "Starting tracker prop" << std::endl;
+        float startingPoint_x_inner;
+        float startingPoint_y_inner;
+        float startingPoint_z_inner;
+        float startingPoint_r_inner;
+        GlobalPoint startingPoint_GP_inner;
+        if ( innerTrack->outerPosition().Mag2() - innerTrack->innerPosition().Mag2() > 0){
+          tsos_inner = propagator->propagate(ttTrack_tracker.outermostMeasurementState(),ch->surface());
+          data_.which_track_inner_GE11 = 1;
+          startingPoint_GP_inner = ttTrack_tracker.outermostMeasurementState().globalPosition();
+        }
+        else{
+          tsos_inner = propagator->propagate(ttTrack_tracker.innermostMeasurementState(),ch->surface());
+          data_.which_track_inner_GE11 = 0;
+          startingPoint_GP_inner = ttTrack_tracker.innermostMeasurementState().globalPosition();
+        }
+        startingPoint_x_inner = startingPoint_GP_inner.x();
+        startingPoint_y_inner = startingPoint_GP_inner.y();
+        startingPoint_z_inner = startingPoint_GP_inner.z();
+        startingPoint_r_inner = pow(pow(startingPoint_x_inner,2) + pow(startingPoint_y_inner,2), 0.5);
+
+        data_.startingPoint_x_inner = startingPoint_x_inner;
+        data_.startingPoint_y_inner = startingPoint_y_inner;
+        data_.startingPoint_z_inner = startingPoint_z_inner;
+        data_.startingPoint_r_inner = startingPoint_r_inner;
+        if (tsos_inner.isValid()){
+          pos_global_inner = tsos_inner.globalPosition();
+          pos_local_inner = ch->toLocal(tsos_inner.globalPosition());
+          const GlobalPoint pos2D_global_inner(pos_global_inner.x(), pos_global_inner.y(), 0);
+          const LocalPoint pos2D_local_inner(pos_local_inner.x(), pos_local_inner.y(), 0);
+          if (!(pos_global_inner.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_inner) and ch->id().station() == 1 and ch->id().ring() == 1){
+            data_.has_prop_inner = true;
+          }
+        }
       }
-      else{
-        tsos_inner = propagator->propagate(ttTrack_tracker.innermostMeasurementState(),ch->surface());
-        data_.which_track_inner_GE11 = "inner most";
-      }
-      if (!tsos_inner.isValid()) continue;
-      GlobalPoint pos_global_inner = tsos_inner.globalPosition();
-      LocalPoint pos_local_inner = ch->toLocal(tsos_inner.globalPosition());
-      const GlobalPoint pos2D_global_inner(pos_global_inner.x(), pos_global_inner.y(), 0);
-      const LocalPoint pos2D_local_inner(pos_local_inner.x(), pos_local_inner.y(), 0);
-      if (pos_global_inner.eta() * mu->eta() < 0.0) continue;
-*/
 
       // CSC propagated
-      // Switching for test
       TrajectoryStateOnSurface tsos_CSC;
-      /*
-      if ( muonTrack->outerPosition().Mag2() - muonTrack->innerPosition().Mag2() > 0){
-        tsos_CSC = propagator->propagate(ttTrack_CSC.outermostMeasurementState(),ch->surface());
-        data_.which_track_CSC_GE11 = 0;
+      GlobalPoint pos_global_CSC;
+      LocalPoint pos_local_CSC;
+      data_.has_prop_CSC = false;
+      if(CSC_prop and ttTrack_CSC.isValid()){
+        if(debug)std::cout << "Starting CSC prop" << std::endl;
+        float startingPoint_x_CSC;
+        float startingPoint_y_CSC;
+        float startingPoint_z_CSC;
+        float startingPoint_r_CSC;
+        GlobalPoint startingPoint_GP_CSC;
+
+        if ( outerTrack->outerPosition().Mag2() - outerTrack->innerPosition().Mag2() > 0){
+          tsos_CSC = propagator->propagate(ttTrack_CSC.innermostMeasurementState(),ch->surface());
+          data_.which_track_CSC_GE11 = 1;
+          startingPoint_GP_CSC = ttTrack_CSC.innermostMeasurementState().globalPosition();
+        }
+        else{
+          tsos_CSC = propagator->propagate(ttTrack_CSC.outermostMeasurementState(),ch->surface());
+          data_.which_track_CSC_GE11 = 0;
+          startingPoint_GP_CSC = ttTrack_CSC.outermostMeasurementState().globalPosition();
+        }
+        startingPoint_x_CSC = startingPoint_GP_CSC.x();
+        startingPoint_y_CSC = startingPoint_GP_CSC.y();
+        startingPoint_z_CSC = startingPoint_GP_CSC.z();
+        startingPoint_r_CSC = pow(pow(startingPoint_x_CSC,2) + pow(startingPoint_y_CSC,2), 0.5);
+
+        data_.startingPoint_x_CSC = startingPoint_x_CSC;
+        data_.startingPoint_y_CSC = startingPoint_y_CSC;
+        data_.startingPoint_z_CSC = startingPoint_z_CSC;
+        data_.startingPoint_r_CSC = startingPoint_r_CSC;
+        if (tsos_CSC.isValid()){
+          pos_global_CSC = tsos_CSC.globalPosition();
+          pos_local_CSC = ch->toLocal(tsos_CSC.globalPosition());
+          const GlobalPoint pos2D_global_CSC(pos_global_CSC.x(), pos_global_CSC.y(), 0);
+          const LocalPoint pos2D_local_CSC(pos_local_CSC.x(), pos_local_CSC.y(), 0);
+          if (!(pos_global_CSC.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_CSC) and ch->id().station() == 1 and ch->id().ring() == 1){
+            data_.has_prop_CSC = true;
+          }
+        }
       }
-      else{
-        tsos_CSC = propagator->propagate(ttTrack_CSC.innermostMeasurementState(),ch->surface());
-        data_.which_track_CSC_GE11 = 1;
-      }
-      */
+      //Skip chambers with no props
+      if (!(data_.has_prop_CSC or data_.has_prop_inner or data_.has_prop_outerSeg or data_.has_prop_innerSeg)) continue;
 
-
-     
-
-      float closest_x;
-      float closest_y;
-      float closest_z;
-      float closest_r;
-
-      if ( muonTrack->outerPosition().Mag2() - muonTrack->innerPosition().Mag2() > 0){
-        tsos_CSC = propagator->propagate(ttTrack_CSC.innermostMeasurementState(),ch->surface());
-        data_.which_track_CSC_GE11 = 0;
-
-        //Closest point finder
-        GlobalPoint closest_GP = ttTrack_CSC.innermostMeasurementState().globalPosition();
-        closest_x = closest_GP.x();
-        closest_y = closest_GP.y();
-        closest_z = closest_GP.z();
-
-      }
-      else{
-        tsos_CSC = propagator->propagate(ttTrack_CSC.outermostMeasurementState(),ch->surface());
-        data_.which_track_CSC_GE11 = 1;
-
-	//Closest point finder
-	GlobalPoint closest_GP = ttTrack_CSC.outermostMeasurementState().globalPosition();
-        closest_x = closest_GP.x();
-        closest_y = closest_GP.y();
-        closest_z = closest_GP.z();
-
-      }
-      //Switched  Test ended here
-
-      closest_r = pow(pow(closest_x,2) + pow(closest_y,2), 0.5);
-
-      data_.closest_r = closest_r;
-      data_.closest_z = closest_z;
-      data_.closest_x = closest_x;
-      data_.closest_y = closest_y;
-      //std::cout << "Closest chamber is at ~~~~ R: " << closest_r << " ~~~~ Z: " << closest_z << std::endl;    // This reached quota very quickly if you submit, there will be a million print lines due to this
-
-
-      if (!tsos_CSC.isValid()) continue;
-      if (!((ch->id().region() == 1 && data_.CSCSeg_region == 1) || (ch->id().region() == -1 && data_.CSCSeg_region == 2))) continue;
-
-      GlobalPoint pos_global_CSC = tsos_CSC.globalPosition();
-      LocalPoint pos_local_CSC = ch->toLocal(tsos_CSC.globalPosition());
-      const GlobalPoint pos2D_global_CSC(pos_global_CSC.x(), pos_global_CSC.y(), 0);
-      const LocalPoint pos2D_local_CSC(pos_local_CSC.x(), pos_local_CSC.y(), 0);
-      //if (pos_global_CSC.eta() * mu->eta() < 0.0) continue;
-     
-
-      //if (bps.bounds().inside(pos2D_local_inner) and bps.bounds().inside(pos2D_local_CSC) and ch->id().station() == 1 and ch->id().ring() == 1){
-      if (!(bps.bounds().inside(pos2D_local_CSC) and ch->id().station() == 1 and ch->id().ring() == 1)) continue;
-      //cout << "Track used was " << data_.which_track_CSC_GE11 << endl;
-      cout << "pos_local_CSC = " << pos_local_CSC << endl;
-
-      //cout << "charge is " << mu->charge() << endl;
+      if(debug)cout << "charge is " << mu->charge() << endl;
       data_.num_props++;
       data_.muon_charge = mu->charge();
       data_.muon_pt = mu->pt();
-
-      //data_.prop_inner_chi2_GE11 = innerTrack->chi2();
-      //data_.prop_inner_ndof_GE11 = innerTrack->ndof();
-
-      data_.prop_CSC_chi2_GE11 = muonTrack->chi2();
-      data_.prop_CSC_ndof_GE11 = muonTrack->ndof();
-      data_.prop_CSC_chi2ndof_GE11 = data_.prop_CSC_chi2_GE11/data_.prop_CSC_ndof_GE11;
-
 
       const float fidcut_angle = 1.0;
       const float cut_ang = 5.0 - fidcut_angle;
       const float cut_chamber = 5.0;
 
       const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
-      //float strip = etaPart_ch->strip(pos_local);
 
-      // Tracker prop
       const float prop_y_to_center = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp();
-      //LocalPoint local_to_center_inner(pos_local_inner.x(), prop_y_to_center + pos_local_inner.y(), 0);
-      //const float prop_inner_localphi_rad = (3.14159265/2.) - local_to_center_inner.phi();
-      //const float prop_inner_localphi_deg = prop_inner_localphi_rad*180/3.14169265;
       count++;
 
-      data_.has_prop_GE11 = true;
       data_.prop_region_GE11 = ch->id().region();
       data_.prop_station_GE11 = ch->id().station();
       data_.prop_layer_GE11 = ch->id().layer();
@@ -876,115 +881,107 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       data_.prop_roll_GE11 = ch->id().roll();
 
 
-
-/*
-      data_.prop_inner_x_GE11 = pos_global_inner.x();
-      data_.prop_inner_y_GE11 = pos_global_inner.y();
-      data_.prop_inner_r_GE11 = pos_global_inner.mag();
-      data_.prop_inner_localx_GE11 = pos_local_inner.x();
-      data_.prop_inner_localy_GE11 = pos_local_inner.y();
-      data_.prop_inner_y_adjusted_GE11 = prop_y_to_center + pos_local_inner.y();
-      data_.prop_inner_localphi_rad_GE11 = prop_inner_localphi_rad;
-      data_.prop_inner_localphi_deg_GE11 = prop_inner_localphi_deg;
-
-      if (ch->id().chamber()%2 == 0){
-        if (prop_inner_localphi_deg > -cut_ang && prop_inner_localphi_deg < cut_ang && prop_y_to_center + pos_local_inner.y() > cut_low && prop_y_to_center + pos_local_inner.y() < cut_even_high){
-          data_.has_fidcut_inner_GE11 = true;
-        }
-      }
-      if (ch->id().chamber()%2 == 1){
-        if (prop_inner_localphi_deg > -cut_ang && prop_inner_localphi_deg < cut_ang && prop_y_to_center + pos_local_inner.y() > cut_low && prop_y_to_center + pos_local_inner.y() < cut_odd_high){
-          data_.has_fidcut_inner_GE11 = true;
-        }
-      }
-*/
       // CSC prop
-      LocalPoint local_to_center_CSC(pos_local_CSC.x(), prop_y_to_center + pos_local_CSC.y(), 0);
-      const float prop_CSC_localphi_rad = (3.14159265/2.) - local_to_center_CSC.phi();
-      const float prop_CSC_localphi_deg = prop_CSC_localphi_rad*180/3.14169265;
+      if (data_.has_prop_CSC){
+        cout << "pos_local_CSC = " << pos_local_CSC << endl;
+        data_.prop_CSC_chi2_GE11 = outerTrack->chi2();
+        data_.prop_CSC_ndof_GE11 = outerTrack->ndof();
+        data_.prop_CSC_chi2ndof_GE11 = data_.prop_CSC_chi2_GE11/data_.prop_CSC_ndof_GE11;
+        LocalPoint local_to_center_CSC(pos_local_CSC.x(), prop_y_to_center + pos_local_CSC.y(), 0);
+        const float prop_CSC_localphi_rad = (3.14159265/2.) - local_to_center_CSC.phi();
+        const float prop_CSC_localphi_deg = prop_CSC_localphi_rad*180/3.14169265;
 
 
-      data_.prop_CSC_x_GE11 = pos_global_CSC.x();
-      data_.prop_CSC_y_GE11 = pos_global_CSC.y();
-      data_.prop_CSC_r_GE11 = pos_global_CSC.mag();
-      data_.prop_CSC_localx_GE11 = pos_local_CSC.x();
-      data_.prop_CSC_localy_GE11 = pos_local_CSC.y();
-      data_.prop_CSC_y_adjusted_GE11 = prop_y_to_center + pos_local_CSC.y();
-      data_.prop_CSC_localphi_rad_GE11 = prop_CSC_localphi_rad;
-      data_.prop_CSC_localphi_deg_GE11 = prop_CSC_localphi_deg;
+        data_.prop_CSC_x_GE11 = pos_global_CSC.x();
+        data_.prop_CSC_y_GE11 = pos_global_CSC.y();
+        data_.prop_CSC_r_GE11 = pos_global_CSC.mag();
+        data_.prop_CSC_localx_GE11 = pos_local_CSC.x();
+        data_.prop_CSC_localy_GE11 = pos_local_CSC.y();
+        data_.prop_CSC_y_adjusted_GE11 = prop_y_to_center + pos_local_CSC.y();
+        data_.prop_CSC_localphi_rad_GE11 = prop_CSC_localphi_rad;
+        data_.prop_CSC_localphi_deg_GE11 = prop_CSC_localphi_deg;
 
-      auto& parameters(ch->specs()->parameters());
-      float height(parameters[2]);
+        auto& parameters(ch->specs()->parameters());
+        float height(parameters[2]);
 
-      if ((abs(prop_CSC_localphi_deg) < cut_ang && (pos_local_CSC.y()) < (height - cut_chamber) && ch->id().roll() == 1) || (abs(prop_CSC_localphi_deg) < cut_ang && (pos_local_CSC.y()) > (height - cut_chamber) && ch->id().roll() == 8)){
-        data_.has_fidcut_CSC_GE11 = true;
+        if ((abs(prop_CSC_localphi_deg) < cut_ang && (pos_local_CSC.y()) < (height - cut_chamber) && ch->id().roll() == 1) || (abs(prop_CSC_localphi_deg) < cut_ang && (pos_local_CSC.y()) > (height - cut_chamber) && ch->id().roll() == 8)){
+          data_.has_fidcut_CSC_GE11 = true;
+        }
+        else{
+          data_.has_fidcut_CSC_GE11 = false;
+        }
       }
-      else{
-        data_.has_fidcut_CSC_GE11 = false;
+
+      // inner prop
+      if (data_.has_prop_inner){
+        cout << "pos_local_inner = " << pos_local_inner << endl;
+        data_.prop_inner_chi2_GE11 = innerTrack->chi2();
+        data_.prop_inner_ndof_GE11 = innerTrack->ndof();
+        data_.prop_inner_chi2ndof_GE11 = data_.prop_inner_chi2_GE11/data_.prop_inner_ndof_GE11;
+        LocalPoint local_to_center_inner(pos_local_inner.x(), prop_y_to_center + pos_local_inner.y(), 0);
+        const float prop_inner_localphi_rad = (3.14159265/2.) - local_to_center_inner.phi();
+        const float prop_inner_localphi_deg = prop_inner_localphi_rad*180/3.14169265;
+
+
+        data_.prop_inner_x_GE11 = pos_global_inner.x();
+        data_.prop_inner_y_GE11 = pos_global_inner.y();
+        data_.prop_inner_r_GE11 = pos_global_inner.mag();
+        data_.prop_inner_localx_GE11 = pos_local_inner.x();
+        data_.prop_inner_localy_GE11 = pos_local_inner.y();
+        data_.prop_inner_y_adjusted_GE11 = prop_y_to_center + pos_local_inner.y();
+        data_.prop_inner_localphi_rad_GE11 = prop_inner_localphi_rad;
+        data_.prop_inner_localphi_deg_GE11 = prop_inner_localphi_deg;
+
+        auto& parameters(ch->specs()->parameters());
+        float height(parameters[2]);
+
+        if ((abs(prop_inner_localphi_deg) < cut_ang && (pos_local_inner.y()) < (height - cut_chamber) && ch->id().roll() == 1) || (abs(prop_inner_localphi_deg) < cut_ang && (pos_local_inner.y()) > (height - cut_chamber) && ch->id().roll() == 8)){
+          data_.has_fidcut_inner_GE11 = true;
+        }
+        else{
+          data_.has_fidcut_inner_GE11 = false;
+        }
       }
 
-
-
-      //if (ch->id().chamber()%2 == 0){
-      //  if (prop_CSC_localphi_deg > -cut_ang && prop_CSC_localphi_deg < cut_ang && prop_y_to_center + pos_local_CSC.y() > cut_even_low && prop_y_to_center + pos_local_CSC.y() < cut_even_high){
-      //    data_.has_fidcut_CSC_GE11 = true;
-      //  }
-      //}
-      //if (ch->id().chamber()%2 == 1){
-      //  if (ch->id().roll() == 1 && ){
-      //    if (prop_CSC_localphi_deg > -cut_ang && prop_CSC_localphi_deg < cut_ang && prop_y_to_center + pos_local_CSC.y() > cut_odd_low && prop_y_to_center + pos_local_CSC.y() < cut_odd_high){
-      //      data_.has_fidcut_CSC_GE11 = true;
-      //    }
-      //  }
-      //}
 
 
       //ME11 prop part
-      LocalPoint pos_local_ME11seg;
-      LocalPoint pos_local_ME11trk;
-      if (data_.ME11seg_goodProp){
+      if (data_.has_prop_outerSeg){
+        cout << "pos_local_outerSeg = " << pos_local_outerSeg << endl;
+        GlobalPoint pos_global_outerSeg = tsos_ME11trk_outer.globalPosition();
 
-        //Seg part
-        GlobalPoint pos_global_ME11seg = tsos_CSC_ME11seg.globalPosition();
-        pos_local_ME11seg = ch->toLocal(tsos_CSC_ME11seg.globalPosition());
-        const GlobalPoint pos2D_global_ME11seg(pos_global_ME11seg.x(), pos_global_ME11seg.y(), 0);
-        //const LocalPoint pos2D_local_ME11seg(pos_local_ME11seg.x(), pos_local_ME11seg.y(), 0);
-      
-        LocalPoint local_to_center_ME11seg(pos_local_ME11seg.x(), prop_y_to_center + pos_local_ME11seg.y(), 0);
-        const float prop_ME11seg_localphi_rad = (3.14159265/2.) - local_to_center_ME11seg.phi();
-        const float prop_ME11seg_localphi_deg = prop_CSC_localphi_rad*180/3.14169265;
+        LocalPoint local_to_center_outerSeg(pos_local_outerSeg.x(), prop_y_to_center + pos_local_outerSeg.y(), 0);
+        const float prop_outerSeg_localphi_rad = (3.14159265/2.) - local_to_center_outerSeg.phi();
+        const float prop_outerSeg_localphi_deg = prop_outerSeg_localphi_rad*180/3.14169265;
 
 
-        data_.prop_ME11seg_x_GE11 = pos_global_ME11seg.x();
-        data_.prop_ME11seg_y_GE11 = pos_global_ME11seg.y();
-        data_.prop_ME11seg_r_GE11 = pos_global_ME11seg.mag();
-        data_.prop_ME11seg_localx_GE11 = pos_local_ME11seg.x();
-        data_.prop_ME11seg_localy_GE11 = pos_local_ME11seg.y();
-        data_.prop_ME11seg_y_adjusted_GE11 = prop_y_to_center + pos_local_ME11seg.y();
-        data_.prop_ME11seg_localphi_rad_GE11 = prop_ME11seg_localphi_rad;
-        data_.prop_ME11seg_localphi_deg_GE11 = prop_ME11seg_localphi_deg;
+        data_.prop_outerSeg_x_GE11 = pos_global_outerSeg.x();
+        data_.prop_outerSeg_y_GE11 = pos_global_outerSeg.y();
+        data_.prop_outerSeg_r_GE11 = pos_global_outerSeg.mag();
+        data_.prop_outerSeg_localx_GE11 = pos_local_outerSeg.x();
+        data_.prop_outerSeg_localy_GE11 = pos_local_outerSeg.y();
+        data_.prop_outerSeg_y_adjusted_GE11 = prop_y_to_center + pos_local_outerSeg.y();
+        data_.prop_outerSeg_localphi_rad_GE11 = prop_outerSeg_localphi_rad;
+        data_.prop_outerSeg_localphi_deg_GE11 = prop_outerSeg_localphi_deg;
+      }
 
-        //Trk part
-        GlobalPoint pos_global_ME11trk = tsos_CSC_ME11trk.globalPosition();
-        pos_local_ME11trk = ch->toLocal(tsos_CSC_ME11trk.globalPosition());
-        const GlobalPoint pos2D_global_ME11trk(pos_global_ME11trk.x(), pos_global_ME11trk.y(), 0);
-        //const LocalPoint pos2D_local_ME11trk(pos_local_ME11trk.x(), pos_local_ME11trk.y(), 0);
+      if (data_.has_prop_innerSeg){
+        cout << "pos_local_innerSeg = " << pos_local_innerSeg << endl;
+        GlobalPoint pos_global_innerSeg = tsos_ME11trk_inner.globalPosition();
 
-        LocalPoint local_to_center_ME11trk(pos_local_ME11trk.x(), prop_y_to_center + pos_local_ME11trk.y(), 0);
-        const float prop_ME11trk_localphi_rad = (3.14159265/2.) - local_to_center_ME11trk.phi();
-        const float prop_ME11trk_localphi_deg = prop_CSC_localphi_rad*180/3.14169265;
-
-
-        data_.prop_ME11trk_x_GE11 = pos_global_ME11trk.x();
-        data_.prop_ME11trk_y_GE11 = pos_global_ME11trk.y();
-        data_.prop_ME11trk_r_GE11 = pos_global_ME11trk.mag();
-        data_.prop_ME11trk_localx_GE11 = pos_local_ME11trk.x();
-        data_.prop_ME11trk_localy_GE11 = pos_local_ME11trk.y();
-        data_.prop_ME11trk_y_adjusted_GE11 = prop_y_to_center + pos_local_ME11trk.y();
-        data_.prop_ME11trk_localphi_rad_GE11 = prop_ME11trk_localphi_rad;
-        data_.prop_ME11trk_localphi_deg_GE11 = prop_ME11trk_localphi_deg;
+        LocalPoint local_to_center_innerSeg(pos_local_innerSeg.x(), prop_y_to_center + pos_local_innerSeg.y(), 0);
+        const float prop_innerSeg_localphi_rad = (3.14159265/2.) - local_to_center_innerSeg.phi();
+        const float prop_innerSeg_localphi_deg = prop_innerSeg_localphi_rad*180/3.14169265;
 
 
+        data_.prop_innerSeg_x_GE11 = pos_global_innerSeg.x();
+        data_.prop_innerSeg_y_GE11 = pos_global_innerSeg.y();
+        data_.prop_innerSeg_r_GE11 = pos_global_innerSeg.mag();
+        data_.prop_innerSeg_localx_GE11 = pos_local_innerSeg.x();
+        data_.prop_innerSeg_localy_GE11 = pos_local_innerSeg.y();
+        data_.prop_innerSeg_y_adjusted_GE11 = prop_y_to_center + pos_local_innerSeg.y();
+        data_.prop_innerSeg_localphi_rad_GE11 = prop_innerSeg_localphi_rad;
+        data_.prop_innerSeg_localphi_deg_GE11 = prop_innerSeg_localphi_deg;
       }
       //////////////////
 
@@ -992,8 +989,10 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
 
         
-      data_.has_rechit_GE11 = false;
+      data_.has_rechit_CSC_GE11 = false;
       data_.RdPhi_CSC_GE11 = 999999;
+      data_.has_rechit_inner_GE11 = false;
+      data_.RdPhi_inner_GE11 = 999999;
       data_.nRecHits5 = 0;
       data_.nRecHits2 = 0;
       data_.nRecHitsTot = 0;
@@ -1027,46 +1026,62 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
             if (ch->id().station() == 1 and ch->id().ring() == 1 and fabs((hit)->localPosition().x() - pos_local_CSC.x()) < 999.0){
               if (abs(cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll)) < 5) tmpNRH5++;
               if (abs(cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll)) < 2) tmpNRH2++;
+              data_.det_id = gemid.region()*(gemid.station()*100 + gemid.chamber());
 
-
-              if (abs(data_.RdPhi_CSC_GE11) > abs(cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll))){
-              //if ((pow(data_.rechit_x_GE11 - data_.prop_CSC_x_GE11, 2) + pow(data_.rechit_y_GE11 - data_.prop_CSC_y_GE11, 2)) > (pow(etaPart->toGlobal((hit)->localPosition()).x() - data_.prop_CSC_x_GE11, 2) + pow(etaPart->toGlobal((hit)->localPosition()).y() - data_.prop_CSC_y_GE11, 2))){
+              //CSC matcher
+              if (data_.has_prop_CSC and abs(data_.RdPhi_CSC_GE11) > abs(cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll))){
                 rechit_matches++;
                 std::cout << "Overwrite" << std::endl;
 
-
-                data_.has_rechit_GE11 = true;
-                data_.rechit_region_GE11 = gemid.region();
-                data_.rechit_station_GE11 = gemid.station();
-                data_.rechit_layer_GE11 = gemid.layer();
-                data_.rechit_chamber_GE11 = gemid.chamber();
-                data_.rechit_roll_GE11 = gemid.roll();
-                data_.recHit_first_strip = (hit)->firstClusterStrip();
-                data_.recHit_CLS = (hit)->clusterSize();
-                data_.rechit_x_GE11 = etaPart->toGlobal((hit)->localPosition()).x();
-                data_.rechit_y_GE11 = etaPart->toGlobal((hit)->localPosition()).y();
-                data_.rechit_r_GE11 = etaPart->toGlobal((hit)->localPosition()).mag();
-                data_.rechit_localx_GE11 = (hit)->localPosition().x();
-                data_.rechit_localy_GE11 = (hit)->localPosition().y();
-                data_.rechit_y_adjusted_GE11 = rechit_y_to_center + (hit)->localPosition().y();
-                data_.rechit_localphi_rad_GE11 = rechit_localphi_rad;
-                data_.rechit_localphi_deg_GE11 = rechit_localphi_deg;
-                //data_.RdPhi_inner_GE11 = cosAngle * (pos_local_inner.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_inner.y() + deltay_roll);
+                data_.has_rechit_CSC_GE11 = true;
+                data_.rechit_region_CSC_GE11 = gemid.region();
+                data_.rechit_station_CSC_GE11 = gemid.station();
+                data_.rechit_layer_CSC_GE11 = gemid.layer();
+                data_.rechit_chamber_CSC_GE11 = gemid.chamber();
+                data_.rechit_roll_CSC_GE11 = gemid.roll();
+                data_.recHit_first_strip_CSC = (hit)->firstClusterStrip();
+                data_.recHit_CLS_CSC = (hit)->clusterSize();
+                data_.rechit_x_CSC_GE11 = etaPart->toGlobal((hit)->localPosition()).x();
+                data_.rechit_y_CSC_GE11 = etaPart->toGlobal((hit)->localPosition()).y();
+                data_.rechit_r_CSC_GE11 = etaPart->toGlobal((hit)->localPosition()).mag();
+                data_.rechit_localx_CSC_GE11 = (hit)->localPosition().x();
+                data_.rechit_localy_CSC_GE11 = (hit)->localPosition().y();
+                data_.rechit_y_adjusted_CSC_GE11 = rechit_y_to_center + (hit)->localPosition().y();
+                data_.rechit_localphi_rad_CSC_GE11 = rechit_localphi_rad;
+                data_.rechit_localphi_deg_CSC_GE11 = rechit_localphi_deg;
                 data_.RdPhi_CSC_GE11 = cosAngle * (pos_local_CSC.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_CSC.y() + deltay_roll);
-                data_.det_id = gemid.region()*(gemid.station()*100 + gemid.chamber());
+              }
+              //inner matcher
+              if (data_.has_prop_inner and abs(data_.RdPhi_inner_GE11) > abs(cosAngle * (pos_local_inner.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_inner.y() + deltay_roll))){
+                std::cout << "Overwrite" << std::endl;
 
-
-
-                }
+                data_.has_rechit_inner_GE11 = true;
+                data_.rechit_region_inner_GE11 = gemid.region();
+                data_.rechit_station_inner_GE11 = gemid.station();
+                data_.rechit_layer_inner_GE11 = gemid.layer();
+                data_.rechit_chamber_inner_GE11 = gemid.chamber();
+                data_.rechit_roll_inner_GE11 = gemid.roll();
+                data_.recHit_first_strip_inner = (hit)->firstClusterStrip();
+                data_.recHit_CLS_inner = (hit)->clusterSize();
+                data_.rechit_x_inner_GE11 = etaPart->toGlobal((hit)->localPosition()).x();
+                data_.rechit_y_inner_GE11 = etaPart->toGlobal((hit)->localPosition()).y();
+                data_.rechit_r_inner_GE11 = etaPart->toGlobal((hit)->localPosition()).mag();
+                data_.rechit_localx_inner_GE11 = (hit)->localPosition().x();
+                data_.rechit_localy_inner_GE11 = (hit)->localPosition().y();
+                data_.rechit_y_adjusted_inner_GE11 = rechit_y_to_center + (hit)->localPosition().y();
+                data_.rechit_localphi_rad_inner_GE11 = rechit_localphi_rad;
+                data_.rechit_localphi_deg_inner_GE11 = rechit_localphi_deg;
+                data_.RdPhi_inner_GE11 = cosAngle * (pos_local_inner.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_inner.y() + deltay_roll);
+              }
               //ME11 seg matcher
-              if (data_.ME11seg_goodProp){
-                if (abs(data_.RdPhi_ME11seg_GE11) > abs(cosAngle * (pos_local_ME11seg.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_ME11seg.y() + deltay_roll))){
-                  data_.RdPhi_ME11seg_GE11 = cosAngle * (pos_local_ME11seg.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_ME11seg.y() + deltay_roll);
-                  data_.det_id_ME11seg = gemid.region()*(gemid.station()*100 + gemid.chamber());
+              if (data_.has_prop_outerSeg){
+                if (abs(data_.RdPhi_outerSeg_GE11) > abs(cosAngle * (pos_local_outerSeg.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_outerSeg.y() + deltay_roll))){
+                  data_.RdPhi_outerSeg_GE11 = cosAngle * (pos_local_outerSeg.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_outerSeg.y() + deltay_roll);
                 }
-                if (abs(data_.RdPhi_ME11trk_GE11) > abs(cosAngle * (pos_local_ME11trk.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_ME11trk.y() + deltay_roll))){
-                  data_.RdPhi_ME11trk_GE11 = cosAngle * (pos_local_ME11trk.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_ME11trk.y() + deltay_roll);
-                  data_.det_id_ME11trk = gemid.region()*(gemid.station()*100 + gemid.chamber());
+              }
+              if (data_.has_prop_innerSeg){
+                if (abs(data_.RdPhi_innerSeg_GE11) > abs(cosAngle * (pos_local_innerSeg.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_innerSeg.y() + deltay_roll))){
+                  data_.RdPhi_innerSeg_GE11 = cosAngle * (pos_local_innerSeg.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_innerSeg.y() + deltay_roll);
                 }
               }
             }
@@ -1106,33 +1121,10 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         data_.simDy = tmpDy;
         data_.nSim = tmpSimCounter;
       }
-      if (data_.has_rechit_GE11 == false){
-        data_.distance_global = 999;
-        data_.distance_chamber = 999;
-        data_.distance_eta = 999;
-        data_.distance_phi = 999;
-
-        for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++){
-          if ( (hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM){
-            GEMDetId gemid((hit)->geographicalId());
-            const auto& etaPart = GEMGeometry_->etaPartition(gemid);
-            if (gemid.layer() == ch->id().layer() and gemid.region() == ch->id().region() and gemid.station() == 1){
-              if (pow(pow(data_.prop_CSC_x_GE11 - etaPart->toGlobal((hit)->localPosition()).x(), 2) + pow(data_.prop_CSC_y_GE11 - etaPart->toGlobal((hit)->localPosition()).x(), 2), 0.5) < data_.distance_global){
-                data_.distance_global = pow(pow(data_.prop_CSC_x_GE11 - etaPart->toGlobal((hit)->localPosition()).x(), 2) + pow(data_.prop_CSC_y_GE11 - etaPart->toGlobal((hit)->localPosition()).x(), 2), 0.5);
-                data_.distance_chamber = gemid.chamber() - data_.prop_chamber_GE11;
-                data_.distance_eta = gemid.roll() - data_.prop_roll_GE11;
-                data_.distance_phi = etaPart->toGlobal((hit)->localPosition()).phi() - pos_global_CSC.phi();
-                if (data_.distance_phi > M_PI) data_.distance_phi = data_.distance_phi - 2.*M_PI;
-                if (data_.distance_phi < -1.*M_PI) data_.distance_phi = data_.distance_phi + 2*M_PI;
-              }
-            }
-          }
-        }
-      }
 
 
-      std::cout << "Num of rechits = " << rechit_counter << std::endl;
-      std::cout << "Num of matches = " << rechit_matches << std::endl;
+      if (debug)std::cout << "Num of rechits = " << rechit_counter << std::endl;
+      if (debug)std::cout << "Num of matches = " << rechit_matches << std::endl;
       cout << "Filling!" << endl;
       if (data_.hasME11 == 1){num_props_ME11++;}
       if (data_.hasME11 != 1){num_props_noME11 ++;}

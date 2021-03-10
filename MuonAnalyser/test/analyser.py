@@ -46,8 +46,7 @@ process.source = cms.Source("PoolSource",
 			)
 				)
 
-#process.source.fileNames.append('file:A6D8F0A8-462B-0344-91D7-35EC85B5DB6A.root')
-process.source.fileNames.append('file:MCsegfault_test3.root')
+process.source.fileNames.append('file:step2_223.root')
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -60,7 +59,10 @@ process.analyser = cms.EDAnalyzer('analyser',
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("muons"),
-	vertexCollection = cms.InputTag("offlinePrimaryVerticies")
+	vertexCollection = cms.InputTag("offlinePrimaryVerticies"),
+	tracker_prop = cms.bool(True),
+	CSC_prop = cms.bool(True),
+        debug = cms.bool(False)
 )
 
 #process.p = cms.EndPath(process.analyser)
