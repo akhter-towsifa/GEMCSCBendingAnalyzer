@@ -4,7 +4,7 @@ config = config()
 ###2018runA  314472-318876
 #section general
 config.General.requestName = 'analyser'
-config.General.workArea = 'cosmics_MC_0207'#working dir 
+config.General.workArea = 'pp_4prop_NewSegmentTSOSwithTrack_ErrorsAreWrong_apr08_2021'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
@@ -22,18 +22,9 @@ config.JobType.allowUndistributedCMSSW = True
 #config.JobType.inputFiles = ['/uscms/home/daebi/nobackup/analyser/CMSSW_11_0_0/src/GEMCSCBendingAnalyzer/MuonAnalyser/test/test.db']
 
 #section Data
-#config.Data.inputDataset = '/SLHC23_patch1_2023Muon_gen_sim_Pt2_50_1M/tahuang-SLHC25_patch1_2023Muon_1M_L1_PU0_Pt2_50_updategemeta-1bf93df4dfbb43dc918bd6e47dedbf79/USER'
-#config.Data.inputDataset = '/SingleMuon/Run2016G-v1/RAW'
-#config.Data.inputDataset = '/SingleMuon/Run2016H-v1/RAW'
-#config.Data.inputDataset = '/SingleMuon/tahuang-RERECO_Run2018D_singlemuon_GEMon_320995-321475_20180917-8a1254d3d0a422ad143b7aead0544ce7/USER'
-#config.Data.inputDataset = '/SingleMuon/tahuang-RERECO_Run2018D_singlemuon_GEMon_323470-324200_20181005-4201715c0f9d22f1f7baffdbca473c7b/USER'
-#config.Data.inputDataset = '/RelValSingleMuPt15Eta1p7_2p7/CMSSW_10_3_0_pre4-103X_upgrade2023_realistic_v2_2023D17noPUEA1000-v1/GEN-SIM-RECO'
-#config.Data.inputDataset = '/SingleMuon/Run2018D-ZMu-PromptReco-v2/RAW-RECO'
-#config.Data.inputDataset = '/singleMuonGun_pT-30to200_1102_phase1_2021_realistic/hyunyong-crab_singleMuonGun_pT-30to200_1102_phase1_2021_realistic_step2-1b4eba2dcd577d6bb642bb3e45609e5f/USER'
-#config.Data.inputDataset = '/Cosmics/Commissioning2020-MuAlGlobalCosmics-PromptReco-v1/ALCARECO'
-config.Data.inputDataset = '/UndergroundCosmicMu_cfi_1102_phase1_2021/hyunyong-crab_UndergroundCosmicMu_1102_phase1_2021_step3-c9a68e0f82896adf960bb4af1c4e9584/USER'
-#config.Data.inputDataset = '/singleMuonGun_30pT_1102_phase1_2021_realistic/hyunyong-crab_singleMuonGun_30pT_1102_phase1_2021_realistic_step2-1b4eba2dcd577d6bb642bb3e45609e5f/USER'
-#config.Data.inputDataset = '/SingleMu_Pt50_500K_01_22_20/daebi-SingleMu_Pt30_to_200_500K_RAW2DIGI_RECO_phase2-26430e2fb821d1f1477c362253785707/USER'
+config.Data.inputDataset = '/singleMuonGun_MuAl_pT-30to200_1102_phase1_2021_realistic/hyunyong-crab_singleMuonGun_pT-30to200_1102_phase1_2021_realistic_RAW2DIGI_FullRECOv4-1b4eba2dcd577d6bb642bb3e45609e5f/USER'
+
+
 config.Data.inputDBS = 'phys03'
 #config.Data.inputDBS = 'global'
 config.Data.splitting = 'FileBased'

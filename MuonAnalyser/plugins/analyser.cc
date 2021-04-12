@@ -207,6 +207,16 @@ struct MuonData
   float startingPoint_x_ME11;
   float startingPoint_y_ME11;
 
+  float startingPoint_r_outerSeg;
+  float startingPoint_z_outerSeg;
+  float startingPoint_x_outerSeg;
+  float startingPoint_y_outerSeg;
+
+  float startingPoint_r_innerSeg;
+  float startingPoint_z_innerSeg;
+  float startingPoint_x_innerSeg;
+  float startingPoint_y_innerSeg;
+
   bool has_prop_inner;
   bool has_prop_CSC;
   bool has_prop_innerSeg;
@@ -365,6 +375,16 @@ void MuonData::init()
   startingPoint_z_ME11 = 999;
   startingPoint_x_ME11 = 999;
   startingPoint_y_ME11 = 999;
+
+  startingPoint_r_outerSeg = 999;
+  startingPoint_z_outerSeg = 999;
+  startingPoint_x_outerSeg = 999;
+  startingPoint_y_outerSeg = 999;
+
+  startingPoint_r_innerSeg = 999;
+  startingPoint_z_innerSeg = 999;
+  startingPoint_x_innerSeg = 999;
+  startingPoint_y_innerSeg = 999;
 
   has_prop_inner = false;
   has_prop_CSC = false;
@@ -529,6 +549,16 @@ TTree* MuonData::book(TTree *t){
   t->Branch("startingPoint_x_ME11", &startingPoint_x_ME11);
   t->Branch("startingPoint_y_ME11", &startingPoint_y_ME11);
 
+  t->Branch("startingPoint_r_outerSeg", &startingPoint_r_outerSeg);
+  t->Branch("startingPoint_z_outerSeg", &startingPoint_z_outerSeg);
+  t->Branch("startingPoint_x_outerSeg", &startingPoint_x_outerSeg);
+  t->Branch("startingPoint_y_outerSeg", &startingPoint_y_outerSeg);
+
+  t->Branch("startingPoint_r_innerSeg", &startingPoint_r_innerSeg);
+  t->Branch("startingPoint_z_innerSeg", &startingPoint_z_innerSeg);
+  t->Branch("startingPoint_x_innerSeg", &startingPoint_x_innerSeg);
+  t->Branch("startingPoint_y_innerSeg", &startingPoint_y_innerSeg);
+
   t->Branch("has_prop_inner", &has_prop_inner);
   t->Branch("has_prop_CSC", &has_prop_CSC);
   t->Branch("has_prop_innerSeg", &has_prop_innerSeg);
@@ -609,8 +639,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
   theService_->update(iSetup);
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
-  
- 
+
   bool isMC = false;
   if (! iEvent.eventAuxiliary().isRealData()) isMC = true;
   edm::Handle<GEMRecHitCollection> gemRecHits;
@@ -656,6 +685,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         auto cscDetID = cscSegRef->cscDetId();
         data_.CSCSeg_region = cscDetID.endcap();
         if (cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
+          if (debug && data_.hasME11 == 1) std::cout << "Already has an ME11 seg" << std::endl;
           data_.hasME11 = 1;
           if (debug)std::cout << "has ME11 segment" << std::endl;
           tmp_ME11_seg = cscSegRef.get();
@@ -736,10 +766,49 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         if (debug)std::cout << "Got segment starting position" << std::endl;
         
 
+        //We noticed a problem with the segment position and the stateOnSurface position not being equal (apr 8 2021)
+        //Attempting to move back to generating our own TSOS by hand with track momentum
+        //Using commit from Feb3 to remember how to create our own TSOS
+        //
+        //LocalTrajectoryParameters param(tmp_ME11_seg->localPosition(), tmp_ME11_seg->localDirection(), mu->charge());
+        //AlgebraicSymMatrix mat(5,0);
+        //mat = tmp_ME11_seg->parametersError().similarityT( tmp_ME11_seg->projectionMatrix() );
+        //LocalTrajectoryError error(asSMatrix<5>(mat));
+        //DetId segDetId = tmp_ME11_seg->geographicalId(); //We Have This Already
+        //const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId); //We Have This Already
+        //TrajectoryStateOnSurface tsos_ME11seg_GE11(param, error, segDet->surface(), &*theService_->magneticField());
+        //tsos_CSC_ME11seg = propagator->propagate(tsos_ME11seg_GE11, ch->surface());
+        //
+        //Issue is now using the segment position but track direction and momentum -- what is the projectionMatrix?
+
+
+
         //Track propagation starting at ME11 segment location
         if (tracker_prop and ttTrack_tracker.isValid()){
           if (ttTrack_tracker.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())).isValid()){  //Had segfaults for not-valid trajectory states
-            tsos_ME11trk_inner = propagator->propagate(ttTrack_tracker.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())), ch->surface());
+            //Working on updating how we make TSOS
+            //TrajectoryStateOnSurface innerSeg_TSOS = ttTrack_tracker.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition()));
+
+            //Begin new test
+            //To Do
+            //Switch from local to global coordinates and build through that (for compatability with tracks)
+            //
+            //LocalTrajectoryParameters - previously we had (position, direction, charge) but this seems wrong https://github.com/cms-sw/cmssw/blob/ba6e8604a35283e39e89bc031766843d0afc3240/DataFormats/TrajectoryState/interface/LocalTrajectoryParameters.h#L70
+            //Here it shows that the second piece should be the momentum, but I don't think segments have momentum info
+            //
+            //This seems to be working, but I need to ask about the error matrix still
+            if (debug)std::cout << "Testing momentums! Wow fun stuff! " << tmp_ME11_seg->localDirection() << std::endl;
+            GlobalVector tracker_momentum_at_surface = ttTrack_tracker.trajectoryStateClosestToPoint(segDet->toGlobal(tmp_ME11_seg->localPosition())).momentum();
+            LocalTrajectoryParameters param(tmp_ME11_seg->localPosition(), segDet->toLocal(tracker_momentum_at_surface), mu->charge());
+            AlgebraicSymMatrix  mat(5,0);
+            mat = tmp_ME11_seg->parametersError().similarityT( tmp_ME11_seg->projectionMatrix() );
+            LocalTrajectoryError error(asSMatrix<5>(mat));
+            TrajectoryStateOnSurface innerSeg_TSOS(param, error, segDet->surface(), &*theService_->magneticField());
+
+            if (debug)std::cout << "Momentum from the tracks closest measurement" << tracker_momentum_at_surface << std::endl;
+            //End new test
+
+            tsos_ME11trk_inner = propagator->propagate(innerSeg_TSOS, ch->surface());
             if (debug)std::cout << "inner trkprop check" << std::endl;
             if (tsos_ME11trk_inner.isValid()){
               pos_global_innerSeg = tsos_ME11trk_inner.globalPosition();
@@ -748,6 +817,22 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
               const LocalPoint pos2D_local_innerSeg(pos_local_innerSeg.x(), pos_local_innerSeg.y(), 0);
               if (!(pos_global_innerSeg.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_innerSeg) and ch->id().station() == 1 and ch->id().ring() == 1){
                 data_.has_prop_innerSeg = true;
+                float startingPoint_x_innerSeg;
+                float startingPoint_y_innerSeg;
+                float startingPoint_z_innerSeg;
+                float startingPoint_r_innerSeg;
+                GlobalPoint startingPoint_GP_innerSeg = innerSeg_TSOS.globalPosition();
+                startingPoint_x_innerSeg = startingPoint_GP_innerSeg.x();
+                startingPoint_y_innerSeg = startingPoint_GP_innerSeg.y();
+                startingPoint_z_innerSeg = startingPoint_GP_innerSeg.z();
+                startingPoint_r_innerSeg = pow(pow(startingPoint_x_innerSeg,2) + pow(startingPoint_y_innerSeg,2), 0.5);
+                data_.startingPoint_x_innerSeg = startingPoint_x_innerSeg;
+                data_.startingPoint_y_innerSeg = startingPoint_y_innerSeg;
+                data_.startingPoint_z_innerSeg = startingPoint_z_innerSeg;
+                data_.startingPoint_r_innerSeg = startingPoint_r_innerSeg;
+
+                const MagneticField* innerSeg_magField = innerSeg_TSOS.magneticField();
+                std::cout << "Mag field looks like " << innerSeg_magField << std::endl;
               }
             }
           }
@@ -755,7 +840,22 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         //CSC propagation starting at ME11 segment location
         if (CSC_prop and ttTrack_CSC.isValid()){
           if (ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())).isValid()){  //Had segfaults for not-valid trajectory states
-            tsos_ME11trk_outer = propagator->propagate(ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition())), ch->surface());
+            //Testing new method for TSOS
+            //TrajectoryStateOnSurface outerSeg_TSOS = ttTrack_CSC.stateOnSurface(segDet->toGlobal(tmp_ME11_seg->localPosition()));
+
+            if (debug)std::cout << "Testing momentums! Wow fun stuff! " << tmp_ME11_seg->localDirection() << std::endl;
+            GlobalVector tracker_momentum_at_surface = ttTrack_CSC.trajectoryStateClosestToPoint(segDet->toGlobal(tmp_ME11_seg->localPosition())).momentum();
+            LocalTrajectoryParameters param(tmp_ME11_seg->localPosition(), segDet->toLocal(tracker_momentum_at_surface), mu->charge());
+            AlgebraicSymMatrix  mat(5,0);
+            mat = tmp_ME11_seg->parametersError().similarityT( tmp_ME11_seg->projectionMatrix() );
+            LocalTrajectoryError error(asSMatrix<5>(mat));
+            TrajectoryStateOnSurface outerSeg_TSOS(param, error, segDet->surface(), &*theService_->magneticField());
+
+            if (debug)std::cout << "Momentum from the tracks closest measurement" << tracker_momentum_at_surface << std::endl;
+            //End new test
+
+
+            tsos_ME11trk_outer = propagator->propagate(outerSeg_TSOS, ch->surface());
             if (debug)std::cout << "outer trkprop check" << std::endl;
             if (tsos_ME11trk_outer.isValid()){
               pos_global_outerSeg = tsos_ME11trk_outer.globalPosition();
@@ -764,6 +864,19 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
               const LocalPoint pos2D_local_outerSeg(pos_local_outerSeg.x(), pos_local_outerSeg.y(), 0);
               if (!(pos_global_outerSeg.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_outerSeg) and ch->id().station() == 1 and ch->id().ring() == 1){
                 data_.has_prop_outerSeg = true;
+                float startingPoint_x_outerSeg;
+                float startingPoint_y_outerSeg;
+                float startingPoint_z_outerSeg;
+                float startingPoint_r_outerSeg;
+                GlobalPoint startingPoint_GP_outerSeg = outerSeg_TSOS.globalPosition();
+                startingPoint_x_outerSeg = startingPoint_GP_outerSeg.x();
+                startingPoint_y_outerSeg = startingPoint_GP_outerSeg.y();
+                startingPoint_z_outerSeg = startingPoint_GP_outerSeg.z();
+                startingPoint_r_outerSeg = pow(pow(startingPoint_x_outerSeg,2) + pow(startingPoint_y_outerSeg,2), 0.5);
+                data_.startingPoint_x_outerSeg = startingPoint_x_outerSeg;
+                data_.startingPoint_y_outerSeg = startingPoint_y_outerSeg;
+                data_.startingPoint_z_outerSeg = startingPoint_z_outerSeg;
+                data_.startingPoint_r_outerSeg = startingPoint_r_outerSeg;
               }
             }
           }
@@ -828,13 +941,16 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         float startingPoint_r_CSC;
         GlobalPoint startingPoint_GP_CSC;
 
-        if ( outerTrack->outerPosition().Mag2() - outerTrack->innerPosition().Mag2() > 0){
+        //if ( outerTrack->outerPosition().Mag2() - outerTrack->innerPosition().Mag2() > 0){
+        if ( outerTrack->outerPosition().Mag2() - outerTrack->innerPosition().Mag2() < 0){ //Flipped test!!! Now uses farthest most position
           tsos_CSC = propagator->propagate(ttTrack_CSC.innermostMeasurementState(),ch->surface());
+          //tsos_CSC = propagator_opposite->propagate(ttTrack_CSC.innermostMeasurementState(),ch->surface());
           data_.which_track_CSC_GE11 = 1;
           startingPoint_GP_CSC = ttTrack_CSC.innermostMeasurementState().globalPosition();
         }
         else{
           tsos_CSC = propagator->propagate(ttTrack_CSC.outermostMeasurementState(),ch->surface());
+          //tsos_CSC = propagator_opposite->propagate(ttTrack_CSC.outermostMeasurementState(),ch->surface());
           data_.which_track_CSC_GE11 = 0;
           startingPoint_GP_CSC = ttTrack_CSC.outermostMeasurementState().globalPosition();
         }
@@ -1073,6 +1189,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.rechit_localphi_deg_inner_GE11 = rechit_localphi_deg;
                 data_.RdPhi_inner_GE11 = cosAngle * (pos_local_inner.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_inner.y() + deltay_roll);
               }
+              if(debug)cout << "Starting ME11 rechit match" << endl;
               //ME11 seg matcher
               if (data_.has_prop_outerSeg){
                 if (abs(data_.RdPhi_outerSeg_GE11) > abs(cosAngle * (pos_local_outerSeg.x() - (hit)->localPosition().x()) + sinAngle * (pos_local_outerSeg.y() + deltay_roll))){
@@ -1091,7 +1208,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       data_.nRecHits5 = tmpNRH5;
       data_.nRecHits2 = tmpNRH2;
       data_.nRecHitsTot = tmpNRHT;
-      if (isMC) {
+      if (isMC and data_.has_prop_CSC) {
+        if(debug)cout << "Starting sim info" << endl;
         data_.nSim = 99999999;
         data_.simDy = 999.;
         float tmpDy = 999.;
@@ -1100,6 +1218,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         for (const auto& simHit:*gemSimHits.product()) {
           GEMDetId gemid((simHit).detUnitId());
           if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()){
+            if(debug)cout << "Found a match simhit" << endl;
             tmpSimCounter ++;
             const auto& etaPart = GEMGeometry_->etaPartition(gemid);
             GlobalPoint pGlobal = tsos_CSC.globalPosition();
@@ -1122,6 +1241,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         data_.nSim = tmpSimCounter;
       }
 
+      std::cout << "Sim point was " << data_.sim_localx << ", " << data_.sim_localy << std::endl;
 
       if (debug)std::cout << "Num of rechits = " << rechit_counter << std::endl;
       if (debug)std::cout << "Num of matches = " << rechit_matches << std::endl;
