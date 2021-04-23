@@ -1,12 +1,16 @@
 import os
 
-filepath = "/eos/user/d/daebi/cosmic_MC/" #MC cosmic
+#filepath = "/eos/user/d/daebi/cosmic_MC/" #MC cosmic
 #filepath = "/eos/cms/store/express/Commissioning2020/ExpressCosmics/FEVT/Express-v1/000/337/973/00000/" #MWGR4 express dataset
 #filepath = "/eos/cms/store/express/Commissioning2020/ExpressCosmics/FEVT/Express-v1/000/338/714/" #MWGR5 express dataset
-pwd = "/afs/cern.ch/work/d/daebi/analyser/CMSSW_11_1_0/src/GEMCSCBendingAnalyzer/MuonAnalyser/condor/align_MC_test/"
+filepath = "/eos/cms/store/express/Commissioning2021/ExpressCosmics/FEVT/Express-v1/000/341/169/" #MWGR3 express dataset
+pwd = "/afs/cern.ch/work/d/daebi/analyser/CMSSW_11_3_0_pre5/src/GEMCSCBendingAnalyzer/MuonAnalyser/condor/MWGR3_condor/run341169_z_match/"
+
+n_files_per_condor = 20
+
 
 #Whether or not to use a misalignment
-misalign = True
+misalign = False
 misalign_db = "gemAl.db"
 misalign_tag = "GEM"
 misalign_APR_tag = "test"
@@ -28,6 +32,7 @@ filelist = os.listdir(filepath)
 print filelist
 
 filecounter = 0
+files_in_condor = 0
 
 for subdir in filelist:
 
@@ -113,22 +118,28 @@ for subdir in filelist:
     ana_script.write('        gemRecHits = cms.InputTag("gemRecHits"),\n')
     ana_script.write('        gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"),\n')
     ana_script.write('        muons = cms.InputTag("muons"),\n')
-    ana_script.write('        vertexCollection = cms.InputTag("offlinePrimaryVerticies")\n')
+    ana_script.write('        vertexCollection = cms.InputTag("offlinePrimaryVerticies"),\n')
+    ana_script.write('        tracker_prop = cms.bool(False),\n')
+    ana_script.write('        CSC_prop = cms.bool(True),\n')
+    ana_script.write('        debug = cms.bool(False)\n')
     ana_script.write(')\n')
     ana_script.write('process.p = cms.EndPath(process.analyser)\n')
 
-    c_name = "scripts/condor_"+name+".sh"
-    c_script = open(c_name, "write")
-    c_script.write("#!/bin/bash\n")
-    c_script.write("date\n")
-    c_script.write("cd "+pwd+"\n")
-    c_script.write("eval `scramv1 runtime -sh`\n")
+
+    if files_in_condor == 0:
+      c_name = "scripts/condor_"+name+".sh"
+      c_script = open(c_name, "write")
+      c_script.write("#!/bin/bash\n")
+      c_script.write("date\n")
+      c_script.write("cd "+pwd+"\n")
+      c_script.write("eval `scramv1 runtime -sh`\n")
     c_script.write("cmsRun "+ana_name+"\n")
     c_script.write("echo 'done'\n")
     c_script.write("date\n")
 
-    condor_sub = open("scripts/submit_"+name+".sh", "write")
-    condor_sub.write("""universe                = vanilla
+    if files_in_condor == 0:
+      condor_sub = open("scripts/submit_"+name+".sh", "write")
+      condor_sub.write("""universe                = vanilla
 executable              = {fname}
 arguments               = no
 output                  = {pwd}/output/out_{name}.$(ClusterId).$(ProcId).out
@@ -138,11 +149,14 @@ request_memory          = 4000M
 +JobFlavour             = "workday"
 queue""".format(fname = c_name, pwd = pwd, name = name))
 
-    sub_all.write("echo File {filecounter}\n".format(filecounter = filecounter))
-    sub_all.write("condor_submit scripts/submit_"+name+".sh\n")
+      sub_all.write("echo File {filecounter}\n".format(filecounter = filecounter))
+      sub_all.write("condor_submit scripts/submit_"+name+".sh\n")
     filecounter += 1
+    files_in_condor += 1
 
     os.system("chmod 755 "+c_name)
+    if files_in_condor == n_files_per_condor:
+      files_in_condor = 0
 
 os.system("chmod 755 submit_all.sh")
 

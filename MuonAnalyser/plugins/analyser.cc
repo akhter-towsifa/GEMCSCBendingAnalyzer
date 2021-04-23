@@ -69,6 +69,7 @@ struct MuonData
 
   int muon_charge;
   float muon_pt;
+  float muon_eta;
 
   //Prop from tracker
   int prop_region_GE11;
@@ -239,6 +240,7 @@ void MuonData::init()
 {
   muon_charge = 9999;
   muon_pt = 9999;
+  muon_eta = 9999;
 
   prop_region_GE11 = 99999;
   prop_station_GE11 = 99999;
@@ -409,6 +411,7 @@ TTree* MuonData::book(TTree *t){
 
   t->Branch("muon_charge", &muon_charge);
   t->Branch("muon_pt", &muon_pt);
+  t->Branch("muon_eta", &muon_eta);
   t->Branch("prop_region_GE11", &prop_region_GE11);
   t->Branch("prop_station_GE11", &prop_station_GE11);
   t->Branch("prop_layer_GE11", &prop_layer_GE11);
@@ -815,7 +818,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
               pos_local_innerSeg = ch->toLocal(tsos_ME11trk_inner.globalPosition());
               const GlobalPoint pos2D_global_innerSeg(pos_global_innerSeg.x(), pos_global_innerSeg.y(), 0);
               const LocalPoint pos2D_local_innerSeg(pos_local_innerSeg.x(), pos_local_innerSeg.y(), 0);
-              if (!(pos_global_innerSeg.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_innerSeg) and ch->id().station() == 1 and ch->id().ring() == 1){
+              //if (!(pos_global_innerSeg.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_innerSeg) and ch->id().station() == 1 and ch->id().ring() == 1){
+              if (!(pos_global_innerSeg.z() * innerSeg_TSOS.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_innerSeg) and ch->id().station() == 1 and ch->id().ring() == 1){
                 data_.has_prop_innerSeg = true;
                 float startingPoint_x_innerSeg;
                 float startingPoint_y_innerSeg;
@@ -862,7 +866,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
               pos_local_outerSeg = ch->toLocal(tsos_ME11trk_outer.globalPosition());
               const GlobalPoint pos2D_global_outerSeg(pos_global_outerSeg.x(), pos_global_outerSeg.y(), 0);
               const LocalPoint pos2D_local_outerSeg(pos_local_outerSeg.x(), pos_local_outerSeg.y(), 0);
-              if (!(pos_global_outerSeg.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_outerSeg) and ch->id().station() == 1 and ch->id().ring() == 1){
+              //if (!(pos_global_outerSeg.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_outerSeg) and ch->id().station() == 1 and ch->id().ring() == 1){
+              if (!(pos_global_outerSeg.z() * outerSeg_TSOS.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_outerSeg) and ch->id().station() == 1 and ch->id().ring() == 1){
                 data_.has_prop_outerSeg = true;
                 float startingPoint_x_outerSeg;
                 float startingPoint_y_outerSeg;
@@ -922,7 +927,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
           pos_local_inner = ch->toLocal(tsos_inner.globalPosition());
           const GlobalPoint pos2D_global_inner(pos_global_inner.x(), pos_global_inner.y(), 0);
           const LocalPoint pos2D_local_inner(pos_local_inner.x(), pos_local_inner.y(), 0);
-          if (!(pos_global_inner.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_inner) and ch->id().station() == 1 and ch->id().ring() == 1){
+          //if (!(pos_global_inner.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_inner) and ch->id().station() == 1 and ch->id().ring() == 1){
+          if (!(pos_global_inner.z() * tsos_inner.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_inner) and ch->id().station() == 1 and ch->id().ring() == 1){
             data_.has_prop_inner = true;
           }
         }
@@ -941,16 +947,14 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         float startingPoint_r_CSC;
         GlobalPoint startingPoint_GP_CSC;
 
-        //if ( outerTrack->outerPosition().Mag2() - outerTrack->innerPosition().Mag2() > 0){
-        if ( outerTrack->outerPosition().Mag2() - outerTrack->innerPosition().Mag2() < 0){ //Flipped test!!! Now uses farthest most position
+        if ( outerTrack->outerPosition().Mag2() - outerTrack->innerPosition().Mag2() > 0){
+          //if ( outerTrack->outerPosition().Mag2() - outerTrack->innerPosition().Mag2() < 0){ //Flipped test!!! Now uses farthest most position
           tsos_CSC = propagator->propagate(ttTrack_CSC.innermostMeasurementState(),ch->surface());
-          //tsos_CSC = propagator_opposite->propagate(ttTrack_CSC.innermostMeasurementState(),ch->surface());
           data_.which_track_CSC_GE11 = 1;
           startingPoint_GP_CSC = ttTrack_CSC.innermostMeasurementState().globalPosition();
         }
         else{
           tsos_CSC = propagator->propagate(ttTrack_CSC.outermostMeasurementState(),ch->surface());
-          //tsos_CSC = propagator_opposite->propagate(ttTrack_CSC.outermostMeasurementState(),ch->surface());
           data_.which_track_CSC_GE11 = 0;
           startingPoint_GP_CSC = ttTrack_CSC.outermostMeasurementState().globalPosition();
         }
@@ -968,7 +972,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
           pos_local_CSC = ch->toLocal(tsos_CSC.globalPosition());
           const GlobalPoint pos2D_global_CSC(pos_global_CSC.x(), pos_global_CSC.y(), 0);
           const LocalPoint pos2D_local_CSC(pos_local_CSC.x(), pos_local_CSC.y(), 0);
-          if (!(pos_global_CSC.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_CSC) and ch->id().station() == 1 and ch->id().ring() == 1){
+          //if (!(pos_global_CSC.eta() * mu->eta() < 0.0) and bps.bounds().inside(pos2D_local_CSC) and ch->id().station() == 1 and ch->id().ring() == 1){
+          if (!(pos_global_CSC.z() * tsos_CSC.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_CSC) and ch->id().station() == 1 and ch->id().ring() == 1){
             data_.has_prop_CSC = true;
           }
         }
@@ -980,6 +985,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       data_.num_props++;
       data_.muon_charge = mu->charge();
       data_.muon_pt = mu->pt();
+      data_.muon_eta = mu->eta();
 
       const float fidcut_angle = 1.0;
       const float cut_ang = 5.0 - fidcut_angle;
