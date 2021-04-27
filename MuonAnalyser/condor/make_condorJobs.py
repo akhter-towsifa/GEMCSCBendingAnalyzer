@@ -4,9 +4,11 @@ import os
 #filepath = "/eos/cms/store/express/Commissioning2020/ExpressCosmics/FEVT/Express-v1/000/337/973/00000/" #MWGR4 express dataset
 #filepath = "/eos/cms/store/express/Commissioning2020/ExpressCosmics/FEVT/Express-v1/000/338/714/" #MWGR5 express dataset
 filepath = "/eos/cms/store/express/Commissioning2021/ExpressCosmics/FEVT/Express-v1/000/341/169/" #MWGR3 express dataset
-pwd = "/afs/cern.ch/work/d/daebi/analyser/CMSSW_11_3_0_pre5/src/GEMCSCBendingAnalyzer/MuonAnalyser/condor/test_condor/"
+pwd = os.getcwd()+'/'
 
-n_files_per_python = 20
+submit_together = True #cd scripts // condor_submit submit_all_condor.sh
+submit_individ = False #./submit_all.sh
+n_files_per_python = 3
 
 #Whether or not to use a misalignment
 misalign = False
@@ -41,13 +43,14 @@ for subdir in filelist:
   filelist_tmp = os.listdir(filepath_tmp)
 
   for name in filelist_tmp:
-    print "path = ", filepath_tmp, " name = ", name
+    #print "path = ", filepath_tmp, " name = ", name
     if (".root" not in name):
       continue
     name = name[:-5] #Take filename without '.root'
-    print name
+    #print name
 
     if files_in_python == 0:
+      print filecounter
       ana_name = "python/analyser_"+name+".py"
       ana_script = open(ana_name, "write")
 
@@ -61,7 +64,7 @@ for subdir in filelist:
       print "WE DONE!"
     if files_in_python == n_files_per_python or (subdir == filelist[-1] and name == filelist_tmp[-1][:-5]):
       files_in_python = 0
-      print job_filelist
+      #print job_filelist
 
       ana_script.write("import FWCore.ParameterSet.Config as cms \n")
       ana_script.write("from Configuration.Eras.Era_Run3_cff import Run3\n")
@@ -135,6 +138,8 @@ for subdir in filelist:
       ana_script.write(')\n')
       ana_script.write('process.p = cms.EndPath(process.analyser)\n')
 
+      job_filelist = []
+
 
       c_script.write("#!/bin/bash\n")
       c_script.write("date\n")
@@ -144,8 +149,9 @@ for subdir in filelist:
       c_script.write("echo 'done'\n")
       c_script.write("date\n")
 
-      condor_sub = open("scripts/submit_"+name+".sh", "write")
-      condor_sub.write("""universe                = vanilla
+      if submit_individ:
+        condor_sub = open("scripts/submit_"+name+".sh", "write")
+        condor_sub.write("""universe                = vanilla
 executable              = {fname}
 arguments               = no
 output                  = {pwd}/output/out_{name}.$(ClusterId).$(ProcId).out
@@ -155,19 +161,22 @@ request_memory          = 4000M
 +JobFlavour             = "workday"
 queue""".format(fname = c_name, pwd = pwd, name = name))
 
-      sub_all.write("echo File {filecounter}\n".format(filecounter = filecounter))
-      sub_all.write("condor_submit scripts/submit_"+name+".sh\n")
+        sub_all.write("echo File {filecounter}\n".format(filecounter = filecounter))
+        sub_all.write("condor_submit scripts/submit_"+name+".sh\n")
     filecounter += 1
 
     os.system("chmod 755 "+c_name)
 
-os.system("chmod 755 submit_all.sh")
+if submit_individ:
+  os.system("chmod 755 submit_all.sh")
 
-
-sub_all = open("submit_all_condor.sh", "write")
-sub_all.write("""executable              = $(filename)
-output                  = output/job_$(filename).out
-error                   = error/job_$(filename).err
-log                     = lob/job_$(filename).log
+if submit_together:
+  sub_all = open("scripts/submit_all_condor.sh", "write")
+  sub_all.write("""executable              = $(filename)
+output                  = {pwd}/output/$(filename).out
+error                   = {pwd}/error/$(filename).err
+log                     = {pwd}/log/$(filename).log
+request_memory          = 4000M
++JobFlavour             = "workday"
 universe                = vanilla
-queue filename matching files scripts/condor*.sh""")
+queue filename matching files condor*.sh""".format(pwd = pwd))
