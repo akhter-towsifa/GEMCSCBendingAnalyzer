@@ -3,7 +3,7 @@ import os
 #filepath = "/eos/user/d/daebi/cosmic_MC/" #MC cosmic
 #filepath = "/eos/cms/store/express/Commissioning2020/ExpressCosmics/FEVT/Express-v1/000/337/973/00000/" #MWGR4 express dataset
 #filepath = "/eos/cms/store/express/Commissioning2020/ExpressCosmics/FEVT/Express-v1/000/338/714/" #MWGR5 express dataset
-filepath = "/eos/cms/store/express/Commissioning2021/ExpressCosmics/FEVT/Express-v1/000/341/169/" #MWGR3 express dataset
+filepath = "/eos/cms/store/express/Commissioning2021/ExpressCosmics/FEVT/Express-v1/000/341/343/" #MWGR3 express dataset
 pwd = os.getcwd()+'/'
 
 submit_together = True #cd scripts // condor_submit submit_all_condor.sh
