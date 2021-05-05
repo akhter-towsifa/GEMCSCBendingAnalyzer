@@ -70,6 +70,7 @@ struct MuonData
   int muon_charge;
   float muon_pt;
   float muon_eta;
+  float muon_momentum;
 
   //Shared prop
   int prop_location[5];
@@ -181,12 +182,8 @@ struct MuonData
 
 
   //Sim info for MC
-  float sim_r;
-  float sim_x;
-  float sim_y;
-  float sim_z;
-  float sim_localx;
-  float sim_localy;
+  float sim_GP[3];
+  float sim_LP[3];
   float sim_localy_adjusted;
   int nSim;
 
@@ -197,7 +194,7 @@ void MuonData::init()
   muon_charge = 9999;
   muon_pt = 9999;
   muon_eta = 9999;
-
+  muon_momentum = 9999;
 
   for (int i=0; i<4; ++i){
     prop_location[i] = 99999;
@@ -324,12 +321,10 @@ void MuonData::init()
 
 
   //Sim info for MC
-  sim_r = 99999999;
-  sim_x = 99999999;
-  sim_y = 99999999;
-  sim_z = 99999999;
-  sim_localx = 99999999;
-  sim_localy = 99999999;
+  for (int i=0; i<2; ++i){
+    sim_GP[i] = 99999999;
+    sim_LP[i] = 99999999;
+  }
   sim_localy_adjusted = 99999999;
   nSim = 99999999;
 }
@@ -341,15 +336,16 @@ TTree* MuonData::book(TTree *t){
   t->Branch("muon_charge", &muon_charge);
   t->Branch("muon_pt", &muon_pt);
   t->Branch("muon_eta", &muon_eta);
+  t->Branch("muon_momentum", &muon_momentum);
 
 //Shared prop info
-  t->Branch("prop_location", &prop_location, "prop_location[5] (reg, sta, cha, lay, roll)");
+  t->Branch("prop_location", &prop_location, "prop_location[5] (reg, sta, cha, lay, roll)/I");
 
 
 //Propagated Inner
-  t->Branch("prop_inner_GP_GE11", &prop_inner_GP_GE11, "prop_inner_GP_GE11[3] (x,y,z)");
-  t->Branch("prop_inner_LP_GE11", &prop_inner_LP_GE11, "prop_inner_LP_GE11[3] (x,y,z)");
-  t->Branch("prop_inner_GP_startingPoint", &prop_inner_GP_startingPoint, "prop_inner_GP_startingPoint[3] (x,y,z)");
+  t->Branch("prop_inner_GP_GE11", &prop_inner_GP_GE11, "prop_inner_GP_GE11[3] (x,y,z)/F");
+  t->Branch("prop_inner_LP_GE11", &prop_inner_LP_GE11, "prop_inner_LP_GE11[3] (x,y,z)/F");
+  t->Branch("prop_inner_GP_startingPoint", &prop_inner_GP_startingPoint, "prop_inner_GP_startingPoint[3] (x,y,z)/F");
   t->Branch("prop_inner_y_adjusted_GE11", &prop_inner_y_adjusted_GE11);
   t->Branch("prop_inner_localphi_rad_GE11", &prop_inner_localphi_rad_GE11);
   t->Branch("prop_inner_localphi_deg_GE11", &prop_inner_localphi_deg_GE11);
@@ -357,9 +353,9 @@ TTree* MuonData::book(TTree *t){
   t->Branch("prop_inner_ndof_GE11", &prop_inner_ndof_GE11);
 
 //Propagated CSC
-  t->Branch("prop_CSC_GP_GE11", &prop_CSC_GP_GE11, "prop_CSC_GP_GE11[3] (x,y,z)");
-  t->Branch("prop_CSC_LP_GE11", &prop_CSC_LP_GE11, "prop_CSC_LP_GE11[3] (x,y,z)");
-  t->Branch("prop_CSC_GP_startingPoint", &prop_CSC_GP_startingPoint, "prop_CSC_GP_startingPoint[3] (x,y,z)");
+  t->Branch("prop_CSC_GP_GE11", &prop_CSC_GP_GE11, "prop_CSC_GP_GE11[3] (x,y,z)/F");
+  t->Branch("prop_CSC_LP_GE11", &prop_CSC_LP_GE11, "prop_CSC_LP_GE11[3] (x,y,z)/F");
+  t->Branch("prop_CSC_GP_startingPoint", &prop_CSC_GP_startingPoint, "prop_CSC_GP_startingPoint[3] (x,y,z)/F");
   t->Branch("prop_CSC_y_adjusted_GE11", &prop_CSC_y_adjusted_GE11);
   t->Branch("prop_CSC_localphi_rad_GE11", &prop_CSC_localphi_rad_GE11);
   t->Branch("prop_CSC_localphi_deg_GE11", &prop_CSC_localphi_deg_GE11);
@@ -367,26 +363,26 @@ TTree* MuonData::book(TTree *t){
   t->Branch("prop_CSC_ndof_GE11", &prop_CSC_ndof_GE11);
 
 //Propagated Inner ME11
-  t->Branch("prop_innerSeg_GP_GE11", &prop_innerSeg_GP_GE11, "prop_innerSeg_GP_GE11[3] (x,y,z)");
-  t->Branch("prop_innerSeg_LP_GE11", &prop_innerSeg_LP_GE11, "prop_innerSeg_LP_GE11[3] (x,y,z)");
-  t->Branch("prop_innerSeg_GP_startingPoint", &prop_innerSeg_GP_startingPoint, "prop_innerSeg_GP_startingPoint[3] (x,y,z)");
+  t->Branch("prop_innerSeg_GP_GE11", &prop_innerSeg_GP_GE11, "prop_innerSeg_GP_GE11[3] (x,y,z)/F");
+  t->Branch("prop_innerSeg_LP_GE11", &prop_innerSeg_LP_GE11, "prop_innerSeg_LP_GE11[3] (x,y,z)/F");
+  t->Branch("prop_innerSeg_GP_startingPoint", &prop_innerSeg_GP_startingPoint, "prop_innerSeg_GP_startingPoint[3] (x,y,z)/F");
   t->Branch("prop_innerSeg_y_adjusted_GE11", &prop_innerSeg_y_adjusted_GE11);
   t->Branch("prop_innerSeg_localphi_rad_GE11", &prop_innerSeg_localphi_rad_GE11);
   t->Branch("prop_innerSeg_localphi_deg_GE11", &prop_innerSeg_localphi_deg_GE11);
 
 //Propagated Outer ME11
-  t->Branch("prop_outerSeg_GP_GE11", &prop_outerSeg_GP_GE11, "prop_outerSeg_GP_GE11[3] (x,y,z)");
-  t->Branch("prop_outerSeg_LP_GE11", &prop_outerSeg_LP_GE11, "prop_outerSeg_LP_GE11[3] (x,y,z)");
-  t->Branch("prop_outerSeg_GP_startingPoint", &prop_outerSeg_GP_startingPoint, "prop_outerSeg_GP_startingPoint[3] (x,y,z)");
+  t->Branch("prop_outerSeg_GP_GE11", &prop_outerSeg_GP_GE11, "prop_outerSeg_GP_GE11[3] (x,y,z)/F");
+  t->Branch("prop_outerSeg_LP_GE11", &prop_outerSeg_LP_GE11, "prop_outerSeg_LP_GE11[3] (x,y,z)/F");
+  t->Branch("prop_outerSeg_GP_startingPoint", &prop_outerSeg_GP_startingPoint, "prop_outerSeg_GP_startingPoint[3] (x,y,z)/F");
   t->Branch("prop_outerSeg_y_adjusted_GE11", &prop_outerSeg_y_adjusted_GE11);
   t->Branch("prop_outerSeg_localphi_rad_GE11", &prop_outerSeg_localphi_rad_GE11);
   t->Branch("prop_outerSeg_localphi_deg_GE11", &prop_outerSeg_localphi_deg_GE11);
 
 //Reconstructed
   t->Branch("has_rechit_CSC_GE11", &has_rechit_CSC_GE11);
-  t->Branch("rechit_location_CSC", &rechit_location_CSC, "rechit_location_CSC[5] (reg, sta, cha, lay, rol)");
-  t->Branch("rechit_CSC_GP", &rechit_CSC_GP, "rechit_CSC_GP[3] (x,y,z)");
-  t->Branch("rechit_CSC_LP", &rechit_CSC_LP, "rechit_CSC_LP[3] (x,y,z)");
+  t->Branch("rechit_location_CSC", &rechit_location_CSC, "rechit_location_CSC[5] (reg, sta, cha, lay, rol)/I");
+  t->Branch("rechit_CSC_GP", &rechit_CSC_GP, "rechit_CSC_GP[3] (x,y,z)/F");
+  t->Branch("rechit_CSC_LP", &rechit_CSC_LP, "rechit_CSC_LP[3] (x,y,z)/F");
   t->Branch("recHit_first_strip_CSC", &recHit_first_strip_CSC);
   t->Branch("recHit_CLS_CSC", &recHit_CLS_CSC);
   t->Branch("rechit_y_adjusted_CSC_GE11", &rechit_y_adjusted_CSC_GE11);
@@ -394,9 +390,9 @@ TTree* MuonData::book(TTree *t){
   t->Branch("rechit_localphi_deg_CSC_GE11", &rechit_localphi_deg_CSC_GE11);
 
   t->Branch("has_rechit_inner_GE11", &has_rechit_inner_GE11);
-  t->Branch("rechit_location_inner", &rechit_location_inner, "rechit_location_inner[5] (reg, sta, cha, lay, rol)");
-  t->Branch("rechit_inner_GP", &rechit_inner_GP, "rechit_inner_GP[3] (x,y,z)");
-  t->Branch("rechit_inner_LP", &rechit_inner_LP, "rechit_inner_LP[3] (x,y,z)");
+  t->Branch("rechit_location_inner", &rechit_location_inner, "rechit_location_inner[5] (reg, sta, cha, lay, rol)/F");
+  t->Branch("rechit_inner_GP", &rechit_inner_GP, "rechit_inner_GP[3] (x,y,z)/F");
+  t->Branch("rechit_inner_LP", &rechit_inner_LP, "rechit_inner_LP[3] (x,y,z)/F");
   t->Branch("recHit_first_strip_inner", &recHit_first_strip_inner);
   t->Branch("recHit_CLS_inner", &recHit_CLS_inner);
   t->Branch("rechit_y_adjusted_inner_GE11", &rechit_y_adjusted_inner_GE11);
@@ -442,7 +438,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("RdPhi_innerSeg_GE11", &RdPhi_innerSeg_GE11);
 
   t->Branch("closest_ME11", &closest_ME11);
-  t->Branch("ME11_startingPoint", &ME11_startingPoint, "ME11_startingPoint[3] (x,y,z)");
+  t->Branch("ME11_startingPoint", &ME11_startingPoint, "ME11_startingPoint[3] (x,y,z)/F");
 
   t->Branch("has_prop_inner", &has_prop_inner);
   t->Branch("has_prop_CSC", &has_prop_CSC);
@@ -451,12 +447,8 @@ TTree* MuonData::book(TTree *t){
 
 
   //Sim info for MC
-  t->Branch("sim_r", &sim_r);
-  t->Branch("sim_x", &sim_x);
-  t->Branch("sim_y", &sim_y);
-  t->Branch("sim_z", &sim_z);
-  t->Branch("sim_localx", &sim_localx);
-  t->Branch("sim_localy", &sim_localy);
+  t->Branch("sim_GP", &sim_GP, "sim_GP[3] (x,y,z)/F");
+  t->Branch("sim_LP", &sim_LP, "sim_LP[3] (x,y,z)/F");
   t->Branch("sim_localy_adjusted", &sim_localy_adjusted);
   t->Branch("nSim", &nSim);
 
@@ -764,6 +756,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       data_.muon_charge = mu->charge();
       data_.muon_pt = mu->pt();
       data_.muon_eta = mu->eta();
+      data_.muon_momentum = mu->momentum().mag2();
 
       count++;
 
@@ -883,13 +876,13 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
             float dx = pos_global_ch_CSC.x() - etaPart->toGlobal(simHit.localPosition()).x();
             if (dy < tmpDy) tmpDy = dy;
             if (pow(pow(dy, 2) + pow(dx, 2), 0.5) < tmpDr){
-              data_.sim_x = etaPart->toGlobal(simHit.localPosition()).x();
-              data_.sim_y = etaPart->toGlobal(simHit.localPosition()).y();
-              data_.sim_z = etaPart->toGlobal(simHit.localPosition()).z();
-              data_.sim_r = pow(pow(data_.sim_x, 2) + pow(data_.sim_y, 2), 0.5);
-              data_.sim_localx = simHit.localPosition().x();
-              data_.sim_localy = simHit.localPosition().y();
-              data_.sim_localy_adjusted = data_.sim_localy + etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp();
+              data_.sim_GP[0] = etaPart->toGlobal(simHit.localPosition()).x();
+              data_.sim_GP[1] = etaPart->toGlobal(simHit.localPosition()).y();
+              data_.sim_GP[2] = etaPart->toGlobal(simHit.localPosition()).z();
+              data_.sim_LP[0] = simHit.localPosition().x();
+              data_.sim_LP[1] = simHit.localPosition().y();
+              data_.sim_LP[2] = simHit.localPosition().z();
+              data_.sim_localy_adjusted = data_.sim_LP[1] + etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp();
               tmpDr = pow(pow(dy, 2) + pow(dx, 2), 0.5);
             }
           }
@@ -898,7 +891,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         data_.nSim = tmpSimCounter;
       }
 
-      std::cout << "Sim point was " << data_.sim_localx << ", " << data_.sim_localy << std::endl;
+      std::cout << "Sim point was " << data_.sim_LP[0] << ", " << data_.sim_LP[1] << std::endl;
 
       if (debug)std::cout << "Num of rechits = " << rechit_counter << std::endl;
       if (debug)std::cout << "Num of matches = " << rechit_matches << std::endl;
