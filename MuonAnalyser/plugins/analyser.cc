@@ -986,12 +986,8 @@ bool fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch){
   const float cut_angle = 5.0 - fidcut_angle;
   auto& parameters(ch->specs()->parameters());
   float height(parameters[2]);
-  if ((abs(localphi_deg) < cut_angle && local_y < (height - cut_chamber) && ch->id().roll() == 1) || (abs(localphi_deg) < cut_angle && local_y > (height - cut_chamber) && ch->id().roll() == 8)){
-    return 1;
-  }
-  else{
-    return 0;
-  }
+  if ((abs(localphi_deg) < cut_angle) && ((local_y < (height - cut_chamber) && ch->id().roll() == 1) || (local_y > -1.0*(height - cut_chamber) && ch->id().roll() == 8) || (ch->id().roll() != 1 && ch->id().roll() != 8))){return 1;}
+  else{return 0;}
 }
 
 
