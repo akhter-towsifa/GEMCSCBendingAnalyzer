@@ -814,8 +814,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.rechit_localphi_deg_CSC_GE11 = rechit_localphi_deg;
                 data_.RdPhi_CSC_GE11 = RdPhi(stripAngle, hit, data_.prop_CSC_LP_GE11[0], data_.prop_CSC_LP_GE11[1], GEMGeometry_, ch);
                 data_.RdPhi_CSC_Corrected = data_.RdPhi_CSC_GE11;
-                if ((data_.rechit_location_CSC[0] == 1 && data_.rechit_location_CSC[2]%2 == 1) || (data_.rechit_location_CSC[0] == -1 && data_.rechit_location_CSC[2]%2 == 0)){
+                if ((gemid.region() == 1 && gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)){
                   data_.RdPhi_CSC_Corrected = -1.0*data_.RdPhi_CSC_Corrected;
+                  std::cout << "CORRECTING THE RDPHI" << std::endl;
                 }
               }
               //inner matcher
@@ -835,7 +836,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.rechit_localphi_deg_inner_GE11 = rechit_localphi_deg;
                 data_.RdPhi_inner_GE11 = RdPhi(stripAngle, hit, data_.prop_inner_LP_GE11[0], data_.prop_inner_LP_GE11[1], GEMGeometry_, ch);
                 data_.RdPhi_inner_Corrected = data_.RdPhi_CSC_GE11;
-                if ((data_.rechit_location_inner[0] == 1 && data_.rechit_location_inner[2]%2 == 1) || (data_.rechit_location_inner[0] == -1 && data_.rechit_location_inner[2]%2 == 0)){
+                if ((gemid.region() == 1 && gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)){
+                  std::cout << "CORRECTING THE RDPHI" << std::endl;
                   data_.RdPhi_inner_Corrected = -1.0*data_.RdPhi_inner_Corrected;
                 }
               }
