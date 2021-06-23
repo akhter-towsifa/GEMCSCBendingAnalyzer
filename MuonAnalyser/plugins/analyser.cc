@@ -79,7 +79,7 @@ struct MuonData
   float prop_inner_GP_GE11[3];
   float prop_inner_LP_GE11[3];
   float prop_inner_GP_startingPoint[3];
-  float prop_inner_y_adjusted_GE11;
+  float prop_inner_y_roll_GE11;
   float prop_inner_localphi_rad_GE11;
   float prop_inner_localphi_deg_GE11;
   float prop_inner_chi2_GE11;
@@ -89,7 +89,7 @@ struct MuonData
   float prop_CSC_GP_GE11[3];
   float prop_CSC_LP_GE11[3];
   float prop_CSC_GP_startingPoint[3];
-  float prop_CSC_y_adjusted_GE11;
+  float prop_CSC_y_roll_GE11;
   float prop_CSC_localphi_rad_GE11;
   float prop_CSC_localphi_deg_GE11;
   float prop_CSC_chi2_GE11;
@@ -99,7 +99,7 @@ struct MuonData
   float prop_innerSeg_GP_GE11[3];
   float prop_innerSeg_LP_GE11[3];
   float prop_innerSeg_GP_startingPoint[3];
-  float prop_innerSeg_y_adjusted_GE11;
+  float prop_innerSeg_y_roll_GE11;
   float prop_innerSeg_localphi_rad_GE11;
   float prop_innerSeg_localphi_deg_GE11;
 
@@ -109,7 +109,7 @@ struct MuonData
   float prop_outerSeg_GP_startingPoint[3];
   float prop_outerSeg_localx_GE11;
   float prop_outerSeg_localy_GE11;
-  float prop_outerSeg_y_adjusted_GE11;
+  float prop_outerSeg_y_roll_GE11;
   float prop_outerSeg_localphi_rad_GE11;
   float prop_outerSeg_localphi_deg_GE11;
 
@@ -120,7 +120,7 @@ struct MuonData
   float rechit_CSC_LP[3];
   int recHit_first_strip_CSC;
   int recHit_CLS_CSC;
-  float rechit_y_adjusted_CSC_GE11;
+  float rechit_y_roll_CSC_GE11;
   float rechit_localphi_rad_CSC_GE11;
   float rechit_localphi_deg_CSC_GE11;
 
@@ -130,7 +130,7 @@ struct MuonData
   float rechit_inner_LP[3];
   int recHit_first_strip_inner;
   int recHit_CLS_inner;
-  float rechit_y_adjusted_inner_GE11;
+  float rechit_y_roll_inner_GE11;
   float rechit_localphi_rad_inner_GE11;
   float rechit_localphi_deg_inner_GE11;
 
@@ -154,6 +154,7 @@ struct MuonData
 
   unsigned long long  evtNum;
   unsigned long long  lumiBlock;
+  int muonIdx;
 
   int nCSCSeg;
   int nDTSeg;
@@ -184,7 +185,7 @@ struct MuonData
   //Sim info for MC
   float sim_GP[3];
   float sim_LP[3];
-  float sim_localy_adjusted;
+  float sim_localy_roll;
   int nSim;
 
 };
@@ -206,7 +207,7 @@ void MuonData::init()
     prop_inner_LP_GE11[i] = 99999;
     prop_inner_GP_startingPoint[i] = 99999;
   }
-  prop_inner_y_adjusted_GE11 = 99999;
+  prop_inner_y_roll_GE11 = 99999;
   prop_inner_localphi_rad_GE11 = 99999;
   prop_inner_localphi_deg_GE11 = 99999;
   prop_inner_chi2_GE11 = 99999;
@@ -218,7 +219,7 @@ void MuonData::init()
     prop_CSC_LP_GE11[i] = 99999;
     prop_CSC_GP_startingPoint[i] = 99999;
   }
-  prop_CSC_y_adjusted_GE11 = 99999;
+  prop_CSC_y_roll_GE11 = 99999;
   prop_CSC_localphi_rad_GE11 = 99999;
   prop_CSC_localphi_deg_GE11 = 99999;
   prop_CSC_chi2_GE11 = 99999;
@@ -230,7 +231,7 @@ void MuonData::init()
     prop_outerSeg_LP_GE11[i] = 9999999;
     prop_outerSeg_GP_startingPoint[i] = 9999999;
   }
-  prop_outerSeg_y_adjusted_GE11 = 9999999;
+  prop_outerSeg_y_roll_GE11 = 9999999;
   prop_outerSeg_localphi_rad_GE11 = 9999999;
   prop_outerSeg_localphi_deg_GE11 = 9999999;
 
@@ -240,7 +241,7 @@ void MuonData::init()
     prop_innerSeg_LP_GE11[i] = 9999999;
     prop_innerSeg_GP_startingPoint[i] = 9999999;
   }
-  prop_innerSeg_y_adjusted_GE11 = 9999999;
+  prop_innerSeg_y_roll_GE11 = 9999999;
   prop_innerSeg_localphi_rad_GE11 = 9999999;
   prop_innerSeg_localphi_deg_GE11 = 9999999;
 
@@ -257,7 +258,7 @@ void MuonData::init()
   }
   recHit_first_strip_CSC = 999999;
   recHit_CLS_CSC = 999999;
-  rechit_y_adjusted_CSC_GE11 = 999999;
+  rechit_y_roll_CSC_GE11 = 999999;
   rechit_localphi_rad_CSC_GE11 = 999999;
   rechit_localphi_deg_CSC_GE11 = 999999;
 
@@ -271,7 +272,7 @@ void MuonData::init()
   }
   recHit_first_strip_inner = 999999;
   recHit_CLS_inner = 999999;
-  rechit_y_adjusted_inner_GE11 = 999999;
+  rechit_y_roll_inner_GE11 = 999999;
   rechit_localphi_rad_inner_GE11 = 999999;
   rechit_localphi_deg_inner_GE11 = 999999;
 
@@ -293,6 +294,7 @@ void MuonData::init()
 
   evtNum = 0;
   lumiBlock = 0;
+  muonIdx = 0;
 
   nCSCSeg = 0;
   nDTSeg = 0;
@@ -325,7 +327,7 @@ void MuonData::init()
     sim_GP[i] = 99999999;
     sim_LP[i] = 99999999;
   }
-  sim_localy_adjusted = 99999999;
+  sim_localy_roll = 99999999;
   nSim = 99999999;
 }
 
@@ -346,7 +348,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("prop_inner_GP_GE11", &prop_inner_GP_GE11, "prop_inner_GP_GE11[3] (x,y,z)/F");
   t->Branch("prop_inner_LP_GE11", &prop_inner_LP_GE11, "prop_inner_LP_GE11[3] (x,y,z)/F");
   t->Branch("prop_inner_GP_startingPoint", &prop_inner_GP_startingPoint, "prop_inner_GP_startingPoint[3] (x,y,z)/F");
-  t->Branch("prop_inner_y_adjusted_GE11", &prop_inner_y_adjusted_GE11);
+  t->Branch("prop_inner_y_roll_GE11", &prop_inner_y_roll_GE11);
   t->Branch("prop_inner_localphi_rad_GE11", &prop_inner_localphi_rad_GE11);
   t->Branch("prop_inner_localphi_deg_GE11", &prop_inner_localphi_deg_GE11);
   t->Branch("prop_inner_chi2_GE11", &prop_inner_chi2_GE11);
@@ -356,7 +358,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("prop_CSC_GP_GE11", &prop_CSC_GP_GE11, "prop_CSC_GP_GE11[3] (x,y,z)/F");
   t->Branch("prop_CSC_LP_GE11", &prop_CSC_LP_GE11, "prop_CSC_LP_GE11[3] (x,y,z)/F");
   t->Branch("prop_CSC_GP_startingPoint", &prop_CSC_GP_startingPoint, "prop_CSC_GP_startingPoint[3] (x,y,z)/F");
-  t->Branch("prop_CSC_y_adjusted_GE11", &prop_CSC_y_adjusted_GE11);
+  t->Branch("prop_CSC_y_roll_GE11", &prop_CSC_y_roll_GE11);
   t->Branch("prop_CSC_localphi_rad_GE11", &prop_CSC_localphi_rad_GE11);
   t->Branch("prop_CSC_localphi_deg_GE11", &prop_CSC_localphi_deg_GE11);
   t->Branch("prop_CSC_chi2_GE11", &prop_CSC_chi2_GE11);
@@ -366,7 +368,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("prop_innerSeg_GP_GE11", &prop_innerSeg_GP_GE11, "prop_innerSeg_GP_GE11[3] (x,y,z)/F");
   t->Branch("prop_innerSeg_LP_GE11", &prop_innerSeg_LP_GE11, "prop_innerSeg_LP_GE11[3] (x,y,z)/F");
   t->Branch("prop_innerSeg_GP_startingPoint", &prop_innerSeg_GP_startingPoint, "prop_innerSeg_GP_startingPoint[3] (x,y,z)/F");
-  t->Branch("prop_innerSeg_y_adjusted_GE11", &prop_innerSeg_y_adjusted_GE11);
+  t->Branch("prop_innerSeg_y_roll_GE11", &prop_innerSeg_y_roll_GE11);
   t->Branch("prop_innerSeg_localphi_rad_GE11", &prop_innerSeg_localphi_rad_GE11);
   t->Branch("prop_innerSeg_localphi_deg_GE11", &prop_innerSeg_localphi_deg_GE11);
 
@@ -374,7 +376,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("prop_outerSeg_GP_GE11", &prop_outerSeg_GP_GE11, "prop_outerSeg_GP_GE11[3] (x,y,z)/F");
   t->Branch("prop_outerSeg_LP_GE11", &prop_outerSeg_LP_GE11, "prop_outerSeg_LP_GE11[3] (x,y,z)/F");
   t->Branch("prop_outerSeg_GP_startingPoint", &prop_outerSeg_GP_startingPoint, "prop_outerSeg_GP_startingPoint[3] (x,y,z)/F");
-  t->Branch("prop_outerSeg_y_adjusted_GE11", &prop_outerSeg_y_adjusted_GE11);
+  t->Branch("prop_outerSeg_y_roll_GE11", &prop_outerSeg_y_roll_GE11);
   t->Branch("prop_outerSeg_localphi_rad_GE11", &prop_outerSeg_localphi_rad_GE11);
   t->Branch("prop_outerSeg_localphi_deg_GE11", &prop_outerSeg_localphi_deg_GE11);
 
@@ -385,7 +387,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("rechit_CSC_LP", &rechit_CSC_LP, "rechit_CSC_LP[3] (x,y,z)/F");
   t->Branch("recHit_first_strip_CSC", &recHit_first_strip_CSC);
   t->Branch("recHit_CLS_CSC", &recHit_CLS_CSC);
-  t->Branch("rechit_y_adjusted_CSC_GE11", &rechit_y_adjusted_CSC_GE11);
+  t->Branch("rechit_y_roll_CSC_GE11", &rechit_y_roll_CSC_GE11);
   t->Branch("rechit_localphi_rad_CSC_GE11", &rechit_localphi_rad_CSC_GE11);
   t->Branch("rechit_localphi_deg_CSC_GE11", &rechit_localphi_deg_CSC_GE11);
 
@@ -395,7 +397,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("rechit_inner_LP", &rechit_inner_LP, "rechit_inner_LP[3] (x,y,z)/F");
   t->Branch("recHit_first_strip_inner", &recHit_first_strip_inner);
   t->Branch("recHit_CLS_inner", &recHit_CLS_inner);
-  t->Branch("rechit_y_adjusted_inner_GE11", &rechit_y_adjusted_inner_GE11);
+  t->Branch("rechit_y_roll_inner_GE11", &rechit_y_roll_inner_GE11);
   t->Branch("rechit_localphi_rad_inner_GE11", &rechit_localphi_rad_inner_GE11);
   t->Branch("rechit_localphi_deg_inner_GE11", &rechit_localphi_deg_inner_GE11);
 
@@ -419,6 +421,7 @@ TTree* MuonData::book(TTree *t){
 
   t->Branch("evtNum", &evtNum);
   t->Branch("lumiBlock", &lumiBlock);
+  t->Branch("muonIdx", &muonIdx);
 
   t->Branch("nCSCSeg", &nCSCSeg); 
   t->Branch("nDTSeg", &nDTSeg); 
@@ -449,7 +452,7 @@ TTree* MuonData::book(TTree *t){
   //Sim info for MC
   t->Branch("sim_GP", &sim_GP, "sim_GP[3] (x,y,z)/F");
   t->Branch("sim_LP", &sim_LP, "sim_LP[3] (x,y,z)/F");
-  t->Branch("sim_localy_adjusted", &sim_localy_adjusted);
+  t->Branch("sim_localy_roll", &sim_localy_roll);
   t->Branch("nSim", &nSim);
 
   return t;
@@ -544,6 +547,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   int muons_with_cscSeg = 0;
   cout << "new evt numb is " << iEvent.eventAuxiliary().event() << endl;
   for (size_t i = 0; i < muons->size(); ++i){
+    data_.init();
     cout << "new muon" << endl;
     //cout << "evt number is " << iEvent.eventAuxiliary().event() << endl;
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
@@ -552,7 +556,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     //if (mu->pt() < 2.0) continue;  //can apply a pt cut later
     if (not mu->standAloneMuon()) continue;
     cout << "is standalone" << endl;
-    data_.init();
+    //data_.init();
     data_.isGEMmuon = mu->isGEMMuon();
     data_.nCSCSeg = mu->numberOfSegments(1,2) + mu->numberOfSegments(2,2) + mu->numberOfSegments(3,2) + mu->numberOfSegments(4,2);
     data_.nDTSeg = mu->numberOfSegments(1,1) + mu->numberOfSegments(2,1) + mu->numberOfSegments(3,1) + mu->numberOfSegments(4,1);
@@ -602,7 +606,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     
     data_.evtNum = iEvent.eventAuxiliary().event();
     data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock();
-
+    data_.muonIdx = data_.evtNum*100 + i;
 
     //Get the tracks
     if (debug)std::cout << "Getting tracks" << std::endl;
@@ -616,6 +620,42 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     if ( mu->track().isNonnull() ){ innerTrack = mu->track().get(); ttTrack_tracker = ttrackBuilder_->build(innerTrack);}
     if ( mu->outerTrack().isNonnull() ){ outerTrack = mu->outerTrack().get(); ttTrack_CSC = ttrackBuilder_->build(outerTrack);}
 
+    //The plan
+    //I want to loop over all rechits in the track to count the number of SEGMENTS and save the ME1/1 segment
+    
+    //for (auto CSChit_iter = outerTrack->recHitsBegin(); CSChit_iter != outerTrack->recHitsEnd(); CSChit_iter++){
+    int my_CSCseg_counter = 0;
+    int my_DTseg_counter = 0;
+    std::cout << "Total number of hits to loop over = " << outerTrack->recHitsSize() << std::endl;
+    for (size_t RecHit_iter = 0; RecHit_iter != outerTrack->recHitsSize(); RecHit_iter++){
+      //std::cout << "Looping the track hits?" << std::endl;
+      //TrackingRecHitRef CSChit = outerTrack->recHit(CSChit_iter).Get();
+      const TrackingRecHit* RecHit = (outerTrack->recHit(RecHit_iter)).get();
+      DetId RecHitId = RecHit->geographicalId();
+      uint16_t RecHitDetId = RecHitId.det();
+      if (RecHitDetId == DetId::Muon){
+        uint16_t RecHitSubDet = RecHitId.subdetId();
+        if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
+          std::cout << "CSC hit found: Dimmensions = " << RecHit->dimension() << " and DetID " << CSCDetId(RecHitId) << std::endl;
+          if (RecHit->dimension() == 4){
+            std::cout << "CSC Segment! DetID " << CSCDetId(RecHitId) << std::endl;
+            my_CSCseg_counter++;
+          }
+        }
+        if (RecHitDetId == (uint16_t)MuonSubdetId::DT){
+          if (RecHit->dimension() > 1){
+            std::cout << "DT Segment! DetID " << DTLayerId(RecHitId) << std::endl;
+            my_DTseg_counter++;
+          }
+        }
+      }
+    }
+    std::cout << "Hyunyong's CSC counter = " << data_.nCSCSeg << std::endl;
+    std::cout << "My CSC counter         = " << my_CSCseg_counter << std::endl;
+    std::cout << "Hyunyong's DT counter  = " << data_.nDTSeg << std::endl;
+    std::cout << "My DT counter          = " << my_DTseg_counter << std::endl;
+    data_.nCSCSeg = my_CSCseg_counter;
+    data_.nDTSeg = my_DTseg_counter;
 
     //Start the propagations
     float count = 0;
@@ -624,6 +664,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       if (ch->id().station() != 1) continue; //Only takes GE1/1
       const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
       const float prop_y_to_center = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp(); //y distance to the current eta part
+      const float prop_y_to_chamber = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2))).y();
 
       //Props from ME11 segment
       data_.has_prop_innerSeg = 0;
@@ -654,9 +695,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
             const float prop_innerSeg_ch_localphi_deg = prop_innerSeg_ch_localphi_rad*180/3.14169265;
 
             data_.prop_innerSeg_GP_GE11[0] = pos_global_ch_innerSeg.x(); data_.prop_innerSeg_GP_GE11[1] = pos_global_ch_innerSeg.y(); data_.prop_innerSeg_GP_GE11[2] = pos_global_ch_innerSeg.z();
-            data_.prop_innerSeg_LP_GE11[0] = pos_local_ch_innerSeg.x(); data_.prop_innerSeg_LP_GE11[1] = pos_local_ch_innerSeg.y(); data_.prop_innerSeg_LP_GE11[2] = pos_local_ch_innerSeg.z();
+            data_.prop_innerSeg_LP_GE11[0] = pos_local_ch_innerSeg.x(); data_.prop_innerSeg_LP_GE11[1] = prop_y_to_chamber + pos_local_ch_innerSeg.y(); data_.prop_innerSeg_LP_GE11[2] = pos_local_ch_innerSeg.z();
             data_.prop_innerSeg_GP_startingPoint[0] = pos_global_start_innerSeg.x(); data_.prop_innerSeg_GP_startingPoint[1] = pos_global_start_innerSeg.y(); data_.prop_innerSeg_GP_startingPoint[2] = pos_global_start_innerSeg.z();
-            data_.prop_innerSeg_y_adjusted_GE11 = prop_y_to_center + pos_local_ch_innerSeg.y();
+            data_.prop_innerSeg_y_roll_GE11 = pos_local_ch_innerSeg.y();
             data_.prop_innerSeg_localphi_rad_GE11 = prop_innerSeg_ch_localphi_rad;
             data_.prop_innerSeg_localphi_deg_GE11 = prop_innerSeg_ch_localphi_deg;
           }
@@ -676,9 +717,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
             const float prop_outerSeg_ch_localphi_deg = prop_outerSeg_ch_localphi_rad*180/3.14169265;
 
             data_.prop_outerSeg_GP_GE11[0] = pos_global_ch_outerSeg.x(); data_.prop_outerSeg_GP_GE11[1] = pos_global_ch_outerSeg.y(); data_.prop_outerSeg_GP_GE11[2] = pos_global_ch_outerSeg.z();
-            data_.prop_outerSeg_LP_GE11[0] = pos_local_ch_outerSeg.x(); data_.prop_outerSeg_LP_GE11[1] = pos_local_ch_outerSeg.y(); data_.prop_outerSeg_LP_GE11[2] = pos_local_ch_outerSeg.z();
+            data_.prop_outerSeg_LP_GE11[0] = pos_local_ch_outerSeg.x(); data_.prop_outerSeg_LP_GE11[1] = prop_y_to_chamber + pos_local_ch_outerSeg.y(); data_.prop_outerSeg_LP_GE11[2] = pos_local_ch_outerSeg.z();
             data_.prop_outerSeg_GP_startingPoint[0] = pos_global_start_outerSeg.x(); data_.prop_outerSeg_GP_startingPoint[1] = pos_global_start_outerSeg.y(); data_.prop_outerSeg_GP_startingPoint[2] = pos_global_start_outerSeg.z();
-            data_.prop_outerSeg_y_adjusted_GE11 = prop_y_to_center + pos_local_ch_outerSeg.y();
+            data_.prop_outerSeg_y_roll_GE11 = pos_local_ch_outerSeg.y();
             data_.prop_outerSeg_localphi_rad_GE11 = prop_outerSeg_ch_localphi_rad;
             data_.prop_outerSeg_localphi_deg_GE11 = prop_outerSeg_ch_localphi_deg;
           }
@@ -711,9 +752,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
           const float prop_inner_localphi_deg = prop_inner_localphi_rad*180/3.14169265;
 
           data_.prop_inner_GP_GE11[0] = pos_global_ch_inner.x(); data_.prop_inner_GP_GE11[1] = pos_global_ch_inner.y(); data_.prop_inner_GP_GE11[2] = pos_global_ch_inner.z();
-          data_.prop_inner_LP_GE11[0] = pos_local_ch_inner.x(); data_.prop_inner_LP_GE11[1] = pos_local_ch_inner.y(); data_.prop_inner_LP_GE11[2] = pos_local_ch_inner.z();
+          data_.prop_inner_LP_GE11[0] = pos_local_ch_inner.x(); data_.prop_inner_LP_GE11[1] = prop_y_to_chamber + pos_local_ch_inner.y(); data_.prop_inner_LP_GE11[2] = pos_local_ch_inner.z();
           data_.prop_inner_GP_startingPoint[0] = pos_global_start_inner.x(); data_.prop_inner_GP_startingPoint[1] = pos_global_start_inner.y(); data_.prop_inner_GP_startingPoint[2] = pos_global_start_inner.z();
-          data_.prop_inner_y_adjusted_GE11 = prop_y_to_center + pos_local_ch_inner.y();
+          data_.prop_inner_y_roll_GE11 = pos_local_ch_inner.y();
           data_.prop_inner_localphi_rad_GE11 = prop_inner_localphi_rad;
           data_.prop_inner_localphi_deg_GE11 = prop_inner_localphi_deg;
           data_.prop_inner_chi2_GE11 = innerTrack->chi2();
@@ -737,9 +778,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
           const float prop_CSC_localphi_deg = prop_CSC_localphi_rad*180/3.14169265;
 
           data_.prop_CSC_GP_GE11[0] = pos_global_ch_CSC.x(); data_.prop_CSC_GP_GE11[1] = pos_global_ch_CSC.y(); data_.prop_CSC_GP_GE11[2] = pos_global_ch_CSC.z();
-          data_.prop_CSC_LP_GE11[0] = pos_local_ch_CSC.x(); data_.prop_CSC_LP_GE11[1] = pos_local_ch_CSC.y(); data_.prop_CSC_LP_GE11[2] = pos_local_ch_CSC.z();
+          data_.prop_CSC_LP_GE11[0] = pos_local_ch_CSC.x(); data_.prop_CSC_LP_GE11[1] = prop_y_to_chamber + pos_local_ch_CSC.y(); data_.prop_CSC_LP_GE11[2] = pos_local_ch_CSC.z();
           data_.prop_CSC_GP_startingPoint[0] = pos_global_start_CSC.x(); data_.prop_CSC_GP_startingPoint[1] = pos_global_start_CSC.y(); data_.prop_CSC_GP_startingPoint[2] = pos_global_start_CSC.z();
-          data_.prop_CSC_y_adjusted_GE11 = prop_y_to_center + pos_local_ch_CSC.y();
+          data_.prop_CSC_y_roll_GE11 = pos_local_ch_CSC.y();
           data_.prop_CSC_localphi_rad_GE11 = prop_CSC_localphi_rad;
           data_.prop_CSC_localphi_deg_GE11 = prop_CSC_localphi_deg;
           data_.prop_CSC_chi2_GE11 = outerTrack->chi2();
@@ -787,6 +828,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
             float stripAngle = etaPart->specificTopology().stripAngle(strip);
 
             float rechit_y_to_center = etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp();
+            float rechit_y_to_chamber = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2))).y();
             LocalPoint local_to_center((hit)->localPosition().x(), rechit_y_to_center + (hit)->localPosition().y(), 0);
             float rechit_localphi_rad = (3.14159265/2.) - local_to_center.phi();
             float rechit_localphi_deg = rechit_localphi_rad*180/3.14159265;
@@ -805,11 +847,11 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.has_rechit_CSC_GE11 = true;
                 data_.rechit_location_CSC[0] = gemid.region(); data_.rechit_location_CSC[1] = gemid.station(); data_.rechit_location_CSC[2] = gemid.chamber(); data_.rechit_location_CSC[3] = gemid.layer(); data_.rechit_location_CSC[4] = gemid.roll();
                 data_.rechit_CSC_GP[0] = etaPart->toGlobal((hit)->localPosition()).x(); data_.rechit_CSC_GP[1] = etaPart->toGlobal((hit)->localPosition()).y(); data_.rechit_CSC_GP[2] = etaPart->toGlobal((hit)->localPosition()).z();
-                data_.rechit_CSC_LP[0] = (hit)->localPosition().x(); data_.rechit_CSC_LP[1] = (hit)->localPosition().y(); data_.rechit_CSC_LP[2] = (hit)->localPosition().z();
+                data_.rechit_CSC_LP[0] = (hit)->localPosition().x(); data_.rechit_CSC_LP[1] = rechit_y_to_chamber + (hit)->localPosition().y(); data_.rechit_CSC_LP[2] = (hit)->localPosition().z();
 
                 data_.recHit_first_strip_CSC = (hit)->firstClusterStrip();
                 data_.recHit_CLS_CSC = (hit)->clusterSize();
-                data_.rechit_y_adjusted_CSC_GE11 = rechit_y_to_center + (hit)->localPosition().y();
+                data_.rechit_y_roll_CSC_GE11 = (hit)->localPosition().y();
                 data_.rechit_localphi_rad_CSC_GE11 = rechit_localphi_rad;
                 data_.rechit_localphi_deg_CSC_GE11 = rechit_localphi_deg;
                 data_.RdPhi_CSC_GE11 = RdPhi(stripAngle, hit, data_.prop_CSC_LP_GE11[0], data_.prop_CSC_LP_GE11[1], GEMGeometry_, ch);
@@ -827,11 +869,11 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.has_rechit_inner_GE11 = true;
                 data_.rechit_location_inner[0] = gemid.region(); data_.rechit_location_inner[1] = gemid.station(); data_.rechit_location_inner[2] = gemid.chamber(); data_.rechit_location_inner[3] = gemid.layer(); data_.rechit_location_inner[4] = gemid.roll();
                 data_.rechit_inner_GP[0] = etaPart->toGlobal((hit)->localPosition()).x(); data_.rechit_inner_GP[1] = etaPart->toGlobal((hit)->localPosition()).y(); data_.rechit_inner_GP[2] = etaPart->toGlobal((hit)->localPosition()).z();
-                data_.rechit_inner_LP[0] = (hit)->localPosition().x(); data_.rechit_inner_LP[1] = (hit)->localPosition().y(); data_.rechit_inner_LP[2] = (hit)->localPosition().z();
+                data_.rechit_inner_LP[0] = (hit)->localPosition().x(); data_.rechit_inner_LP[1] = rechit_y_to_chamber + (hit)->localPosition().y(); data_.rechit_inner_LP[2] = (hit)->localPosition().z();
 
                 data_.recHit_first_strip_inner = (hit)->firstClusterStrip();
                 data_.recHit_CLS_inner = (hit)->clusterSize();
-                data_.rechit_y_adjusted_inner_GE11 = rechit_y_to_center + (hit)->localPosition().y();
+                data_.rechit_y_roll_inner_GE11 = (hit)->localPosition().y();
                 data_.rechit_localphi_rad_inner_GE11 = rechit_localphi_rad;
                 data_.rechit_localphi_deg_inner_GE11 = rechit_localphi_deg;
                 data_.RdPhi_inner_GE11 = RdPhi(stripAngle, hit, data_.prop_inner_LP_GE11[0], data_.prop_inner_LP_GE11[1], GEMGeometry_, ch);
@@ -882,9 +924,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
               data_.sim_GP[1] = etaPart->toGlobal(simHit.localPosition()).y();
               data_.sim_GP[2] = etaPart->toGlobal(simHit.localPosition()).z();
               data_.sim_LP[0] = simHit.localPosition().x();
-              data_.sim_LP[1] = simHit.localPosition().y();
+              data_.sim_LP[1] = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2))).y() + simHit.localPosition().y();
               data_.sim_LP[2] = simHit.localPosition().z();
-              data_.sim_localy_adjusted = data_.sim_LP[1] + etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp();
+              data_.sim_localy_roll = simHit.localPosition().y();
               tmpDr = pow(pow(dy, 2) + pow(dx, 2), 0.5);
             }
           }
