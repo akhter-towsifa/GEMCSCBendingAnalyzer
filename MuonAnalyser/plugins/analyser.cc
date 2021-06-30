@@ -118,8 +118,9 @@ struct MuonData
   int rechit_location_CSC[5];
   float rechit_CSC_GP[3];
   float rechit_CSC_LP[3];
-  int recHit_first_strip_CSC;
-  int recHit_CLS_CSC;
+  int rechit_first_strip_CSC;
+  int rechit_CLS_CSC;
+  int rechit_BunchX_CSC;
   float rechit_y_roll_CSC_GE11;
   float rechit_localphi_rad_CSC_GE11;
   float rechit_localphi_deg_CSC_GE11;
@@ -128,8 +129,9 @@ struct MuonData
   int rechit_location_inner[5];
   float rechit_inner_GP[3];
   float rechit_inner_LP[3];
-  int recHit_first_strip_inner;
-  int recHit_CLS_inner;
+  int rechit_first_strip_inner;
+  int rechit_CLS_inner;
+  int rechit_BunchX_inner;
   float rechit_y_roll_inner_GE11;
   float rechit_localphi_rad_inner_GE11;
   float rechit_localphi_deg_inner_GE11;
@@ -256,8 +258,9 @@ void MuonData::init()
     rechit_CSC_GP[i] = 999999;
     rechit_CSC_LP[i] = 999999;
   }
-  recHit_first_strip_CSC = 999999;
-  recHit_CLS_CSC = 999999;
+  rechit_first_strip_CSC = 999999;
+  rechit_CLS_CSC = 999999;
+  rechit_BunchX_CSC = 999999;
   rechit_y_roll_CSC_GE11 = 999999;
   rechit_localphi_rad_CSC_GE11 = 999999;
   rechit_localphi_deg_CSC_GE11 = 999999;
@@ -270,8 +273,9 @@ void MuonData::init()
     rechit_inner_GP[i] = 999999;
     rechit_inner_LP[i] = 999999;
   }
-  recHit_first_strip_inner = 999999;
-  recHit_CLS_inner = 999999;
+  rechit_first_strip_inner = 999999;
+  rechit_CLS_inner = 999999;
+  rechit_BunchX_inner = 999999;
   rechit_y_roll_inner_GE11 = 999999;
   rechit_localphi_rad_inner_GE11 = 999999;
   rechit_localphi_deg_inner_GE11 = 999999;
@@ -385,8 +389,9 @@ TTree* MuonData::book(TTree *t){
   t->Branch("rechit_location_CSC", &rechit_location_CSC, "rechit_location_CSC[5] (reg, sta, cha, lay, rol)/I");
   t->Branch("rechit_CSC_GP", &rechit_CSC_GP, "rechit_CSC_GP[3] (x,y,z)/F");
   t->Branch("rechit_CSC_LP", &rechit_CSC_LP, "rechit_CSC_LP[3] (x,y,z)/F");
-  t->Branch("recHit_first_strip_CSC", &recHit_first_strip_CSC);
-  t->Branch("recHit_CLS_CSC", &recHit_CLS_CSC);
+  t->Branch("rechit_first_strip_CSC", &rechit_first_strip_CSC);
+  t->Branch("rechit_CLS_CSC", &rechit_CLS_CSC);
+  t->Branch("rechit_BunchX_CSC", &rechit_BunchX_CSC);
   t->Branch("rechit_y_roll_CSC_GE11", &rechit_y_roll_CSC_GE11);
   t->Branch("rechit_localphi_rad_CSC_GE11", &rechit_localphi_rad_CSC_GE11);
   t->Branch("rechit_localphi_deg_CSC_GE11", &rechit_localphi_deg_CSC_GE11);
@@ -395,8 +400,9 @@ TTree* MuonData::book(TTree *t){
   t->Branch("rechit_location_inner", &rechit_location_inner, "rechit_location_inner[5] (reg, sta, cha, lay, rol)/F");
   t->Branch("rechit_inner_GP", &rechit_inner_GP, "rechit_inner_GP[3] (x,y,z)/F");
   t->Branch("rechit_inner_LP", &rechit_inner_LP, "rechit_inner_LP[3] (x,y,z)/F");
-  t->Branch("recHit_first_strip_inner", &recHit_first_strip_inner);
-  t->Branch("recHit_CLS_inner", &recHit_CLS_inner);
+  t->Branch("rechit_first_strip_inner", &rechit_first_strip_inner);
+  t->Branch("rechit_CLS_inner", &rechit_CLS_inner);
+  t->Branch("rechit_BunchX_inner", &rechit_BunchX_inner);
   t->Branch("rechit_y_roll_inner_GE11", &rechit_y_roll_inner_GE11);
   t->Branch("rechit_localphi_rad_inner_GE11", &rechit_localphi_rad_inner_GE11);
   t->Branch("rechit_localphi_deg_inner_GE11", &rechit_localphi_deg_inner_GE11);
@@ -608,6 +614,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock();
     data_.muonIdx = data_.evtNum*100 + i;
 
+    std::cout << "Event number = " << data_.evtNum << " lumiBLock = " << data_.lumiBlock << std::endl;
     //Get the tracks
     if (debug)std::cout << "Getting tracks" << std::endl;
     const reco::Track* globalTrack = 0;
@@ -636,13 +643,14 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       if (RecHitDetId == DetId::Muon){
         uint16_t RecHitSubDet = RecHitId.subdetId();
         if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
-          std::cout << "CSC hit found: Dimmensions = " << RecHit->dimension() << " and DetID " << CSCDetId(RecHitId) << std::endl;
+          std::cout << "CSC hit found: Dimensions = " << RecHit->dimension() << " and DetID " << CSCDetId(RecHitId) << std::endl;
           if (RecHit->dimension() == 4){
             std::cout << "CSC Segment! DetID " << CSCDetId(RecHitId) << std::endl;
             my_CSCseg_counter++;
           }
         }
-        if (RecHitDetId == (uint16_t)MuonSubdetId::DT){
+        if (RecHitSubDet == (uint16_t)MuonSubdetId::DT){
+          std::cout << "DT hit found: Dimensions = " << RecHit->dimension() << " and DetID " << DTLayerId(RecHitId) << std::endl;
           if (RecHit->dimension() > 1){
             std::cout << "DT Segment! DetID " << DTLayerId(RecHitId) << std::endl;
             my_DTseg_counter++;
@@ -849,8 +857,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.rechit_CSC_GP[0] = etaPart->toGlobal((hit)->localPosition()).x(); data_.rechit_CSC_GP[1] = etaPart->toGlobal((hit)->localPosition()).y(); data_.rechit_CSC_GP[2] = etaPart->toGlobal((hit)->localPosition()).z();
                 data_.rechit_CSC_LP[0] = (hit)->localPosition().x(); data_.rechit_CSC_LP[1] = rechit_y_to_chamber + (hit)->localPosition().y(); data_.rechit_CSC_LP[2] = (hit)->localPosition().z();
 
-                data_.recHit_first_strip_CSC = (hit)->firstClusterStrip();
-                data_.recHit_CLS_CSC = (hit)->clusterSize();
+                data_.rechit_first_strip_CSC = (hit)->firstClusterStrip();
+                data_.rechit_CLS_CSC = (hit)->clusterSize();
+                data_.rechit_BunchX_CSC = (hit)->BunchX();
                 data_.rechit_y_roll_CSC_GE11 = (hit)->localPosition().y();
                 data_.rechit_localphi_rad_CSC_GE11 = rechit_localphi_rad;
                 data_.rechit_localphi_deg_CSC_GE11 = rechit_localphi_deg;
@@ -871,8 +880,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.rechit_inner_GP[0] = etaPart->toGlobal((hit)->localPosition()).x(); data_.rechit_inner_GP[1] = etaPart->toGlobal((hit)->localPosition()).y(); data_.rechit_inner_GP[2] = etaPart->toGlobal((hit)->localPosition()).z();
                 data_.rechit_inner_LP[0] = (hit)->localPosition().x(); data_.rechit_inner_LP[1] = rechit_y_to_chamber + (hit)->localPosition().y(); data_.rechit_inner_LP[2] = (hit)->localPosition().z();
 
-                data_.recHit_first_strip_inner = (hit)->firstClusterStrip();
-                data_.recHit_CLS_inner = (hit)->clusterSize();
+                data_.rechit_first_strip_inner = (hit)->firstClusterStrip();
+                data_.rechit_CLS_inner = (hit)->clusterSize();
+                data_.rechit_BunchX_inner = (hit)->BunchX();
                 data_.rechit_y_roll_inner_GE11 = (hit)->localPosition().y();
                 data_.rechit_localphi_rad_inner_GE11 = rechit_localphi_rad;
                 data_.rechit_localphi_deg_inner_GE11 = rechit_localphi_deg;
