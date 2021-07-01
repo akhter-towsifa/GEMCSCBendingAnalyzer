@@ -643,25 +643,27 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       if (RecHitDetId == DetId::Muon){
         uint16_t RecHitSubDet = RecHitId.subdetId();
         if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
-          std::cout << "CSC hit found: Dimensions = " << RecHit->dimension() << " and DetID " << CSCDetId(RecHitId) << std::endl;
+          if (debug){std::cout << "CSC hit found: Dimensions = " << RecHit->dimension() << " and DetID " << CSCDetId(RecHitId) << std::endl;}
           if (RecHit->dimension() == 4){
-            std::cout << "CSC Segment! DetID " << CSCDetId(RecHitId) << std::endl;
+            if(debug){std::cout << "CSC Segment! DetID " << CSCDetId(RecHitId) << std::endl;}
             my_CSCseg_counter++;
           }
         }
         if (RecHitSubDet == (uint16_t)MuonSubdetId::DT){
-          std::cout << "DT hit found: Dimensions = " << RecHit->dimension() << " and DetID " << DTLayerId(RecHitId) << std::endl;
+          if (debug){std::cout << "DT hit found: Dimensions = " << RecHit->dimension() << " and DetID " << DTLayerId(RecHitId) << std::endl;}
           if (RecHit->dimension() > 1){
-            std::cout << "DT Segment! DetID " << DTLayerId(RecHitId) << std::endl;
+            if (debug){std::cout << "DT Segment! DetID " << DTLayerId(RecHitId) << std::endl;}
             my_DTseg_counter++;
           }
         }
       }
     }
-    std::cout << "Hyunyong's CSC counter = " << data_.nCSCSeg << std::endl;
-    std::cout << "My CSC counter         = " << my_CSCseg_counter << std::endl;
-    std::cout << "Hyunyong's DT counter  = " << data_.nDTSeg << std::endl;
-    std::cout << "My DT counter          = " << my_DTseg_counter << std::endl;
+    if (debug){
+      std::cout << "Hyunyong's CSC counter = " << data_.nCSCSeg << std::endl;
+      std::cout << "My CSC counter         = " << my_CSCseg_counter << std::endl;
+      std::cout << "Hyunyong's DT counter  = " << data_.nDTSeg << std::endl;
+      std::cout << "My DT counter          = " << my_DTseg_counter << std::endl;
+    }
     data_.nCSCSeg = my_CSCseg_counter;
     data_.nDTSeg = my_DTseg_counter;
 
@@ -889,7 +891,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.RdPhi_inner_GE11 = RdPhi(stripAngle, hit, data_.prop_inner_LP_GE11[0], data_.prop_inner_LP_GE11[1], GEMGeometry_, ch);
                 data_.RdPhi_inner_Corrected = data_.RdPhi_CSC_GE11;
                 if ((gemid.region() == 1 && gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)){
-                  std::cout << "CORRECTING THE RDPHI" << std::endl;
+                  if (debug){std::cout << "CORRECTING THE RDPHI" << std::endl;}
                   data_.RdPhi_inner_Corrected = -1.0*data_.RdPhi_inner_Corrected;
                 }
               }
