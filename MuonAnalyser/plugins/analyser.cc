@@ -397,7 +397,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("rechit_localphi_deg_CSC_GE11", &rechit_localphi_deg_CSC_GE11);
 
   t->Branch("has_rechit_inner_GE11", &has_rechit_inner_GE11);
-  t->Branch("rechit_location_inner", &rechit_location_inner, "rechit_location_inner[5] (reg, sta, cha, lay, rol)/F");
+  t->Branch("rechit_location_inner", &rechit_location_inner, "rechit_location_inner[5] (reg, sta, cha, lay, rol)/I");
   t->Branch("rechit_inner_GP", &rechit_inner_GP, "rechit_inner_GP[3] (x,y,z)/F");
   t->Branch("rechit_inner_LP", &rechit_inner_LP, "rechit_inner_LP[3] (x,y,z)/F");
   t->Branch("rechit_first_strip_inner", &rechit_first_strip_inner);
@@ -409,6 +409,7 @@ TTree* MuonData::book(TTree *t){
 
 //Residual
   t->Branch("RdPhi_inner_GE11", &RdPhi_inner_GE11);
+  t->Branch("RdPhi_inner_Corrected", &RdPhi_inner_Corrected);
   t->Branch("RdPhi_CSC_GE11", &RdPhi_CSC_GE11);
   t->Branch("RdPhi_CSC_Corrected", &RdPhi_CSC_Corrected);
   t->Branch("det_id", &det_id);
@@ -551,18 +552,16 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   int num_props_noME11 = 0;
   int num_props = 0;
   int muons_with_cscSeg = 0;
-  cout << "new evt numb is " << iEvent.eventAuxiliary().event() << endl;
+  cout << "new evt numb is " << iEvent.eventAuxiliary().event() << " and new lumiblock is " << iEvent.eventAuxiliary().luminosityBlock() << endl;
   for (size_t i = 0; i < muons->size(); ++i){
     data_.init();
     cout << "new muon" << endl;
-    //cout << "evt number is " << iEvent.eventAuxiliary().event() << endl;
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
     const reco::Muon* mu = muRef.get();
 
     //if (mu->pt() < 2.0) continue;  //can apply a pt cut later
     if (not mu->standAloneMuon()) continue;
     cout << "is standalone" << endl;
-    //data_.init();
     data_.isGEMmuon = mu->isGEMMuon();
     data_.nCSCSeg = mu->numberOfSegments(1,2) + mu->numberOfSegments(2,2) + mu->numberOfSegments(3,2) + mu->numberOfSegments(4,2);
     data_.nDTSeg = mu->numberOfSegments(1,1) + mu->numberOfSegments(2,1) + mu->numberOfSegments(3,1) + mu->numberOfSegments(4,1);
@@ -575,14 +574,14 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     for ( auto MCM : matches){
       if (MCM.detector() != 2) continue;
       for( auto MSM : MCM.segmentMatches){
-        if (debug)std::cout << "Looping over segments" << std::endl;
+        if (debug){std::cout << "Looping over segments" << std::endl;}
         auto cscSegRef = MSM.cscSegmentRef;
         auto cscDetID = cscSegRef->cscDetId();
         data_.CSCSeg_region = cscDetID.endcap();
         if (cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
-          if (debug && data_.hasME11 == 1) std::cout << "Already has an ME11 seg" << std::endl;
+          if (debug && data_.hasME11 == 1) {std::cout << "Already has an ME11 seg" << std::endl;}
           data_.hasME11 = 1;
-          if (debug)std::cout << "has ME11 segment" << std::endl;
+          if (debug){std::cout << "has ME11 segment" << std::endl;}
           tmp_ME11_seg = cscSegRef.get();
           for ( auto rh : cscSegRef->specificRecHits()){
             if (rh.cscDetId().ring() == 1) data_.hasME11RecHit = 1;
@@ -603,7 +602,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 	}
 
 	data_.closest = std::stoi(std::to_string(tmp_station)+std::to_string(tmp_ring));
-	if (debug)std::cout << "Closest now says " << data_.closest << std::endl;
+	if (debug){std::cout << "Closest now says " << data_.closest << std::endl;}
 
 
         if (cscDetID.station() == 1 and cscDetID.ring() == 4) data_.hasME11A = 1;
@@ -614,9 +613,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock();
     data_.muonIdx = data_.evtNum*100 + i;
 
-    std::cout << "Event number = " << data_.evtNum << " lumiBLock = " << data_.lumiBlock << std::endl;
     //Get the tracks
-    if (debug)std::cout << "Getting tracks" << std::endl;
+    if (debug){std::cout << "Getting tracks" << std::endl;}
     const reco::Track* globalTrack = 0;
     const reco::Track* innerTrack = 0;
     const reco::Track* outerTrack = 0;
@@ -633,7 +631,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     //for (auto CSChit_iter = outerTrack->recHitsBegin(); CSChit_iter != outerTrack->recHitsEnd(); CSChit_iter++){
     int my_CSCseg_counter = 0;
     int my_DTseg_counter = 0;
-    std::cout << "Total number of hits to loop over = " << outerTrack->recHitsSize() << std::endl;
+    if (debug){std::cout << "Total number of hits to loop over = " << outerTrack->recHitsSize() << std::endl;}
     for (size_t RecHit_iter = 0; RecHit_iter != outerTrack->recHitsSize(); RecHit_iter++){
       //std::cout << "Looping the track hits?" << std::endl;
       //TrackingRecHitRef CSChit = outerTrack->recHit(CSChit_iter).Get();
@@ -669,7 +667,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
     //Start the propagations
     float count = 0;
-    if (debug)std::cout << "Starting chamber loop" << std::endl;
+    if (debug){std::cout << "Starting chamber loop" << std::endl;}
     for (const auto& ch : GEMGeometry_->etaPartitions()) {
       if (ch->id().station() != 1) continue; //Only takes GE1/1
       const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
@@ -685,11 +683,11 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       GlobalPoint pos_global_start_innerSeg;
 
       if (data_.hasME11 == 1 and ch->id().station() == 1 and ch->id().ring() == 1){
-        if (debug)std::cout << "Doing segment propagations" << std::endl; 
+        if (debug){std::cout << "Doing segment propagations" << std::endl;}
         DetId segDetId = tmp_ME11_seg->geographicalId();
         const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
         data_.ME11_startingPoint[0] = segDet->toGlobal(tmp_ME11_seg->localPosition()).x(); data_.ME11_startingPoint[1] = segDet->toGlobal(tmp_ME11_seg->localPosition()).y(); data_.ME11_startingPoint[2] = segDet->toGlobal(tmp_ME11_seg->localPosition()).z();
-        if (debug)std::cout << "Got segment starting position" << std::endl;
+        if (debug){std::cout << "Got segment starting position" << std::endl;}
      
         //Track propagation starting at ME11 segment location
         if (tracker_prop and ttTrack_tracker.isValid()){
@@ -802,7 +800,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       //Skip chambers with no props
       if (!(data_.has_prop_CSC or data_.has_prop_inner or data_.has_prop_outerSeg or data_.has_prop_innerSeg)) continue;
 
-      if(debug)cout << "charge is " << mu->charge() << endl;
+      if(debug){cout << "charge is " << mu->charge() << endl;}
       data_.num_props++;
       data_.muon_charge = mu->charge();
       data_.muon_pt = mu->pt();
@@ -845,12 +843,12 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
 
             if (ch->id().station() == 1 and ch->id().ring() == 1 and fabs((hit)->localPosition().x() - data_.prop_CSC_LP_GE11[0]) < 999.0){
-              if (abs(RdPhi(stripAngle, hit, data_.prop_CSC_LP_GE11[0], data_.prop_CSC_LP_GE11[1], GEMGeometry_, ch)) < 5) tmpNRH5++;
-              if (abs(RdPhi(stripAngle, hit, data_.prop_CSC_LP_GE11[0], data_.prop_CSC_LP_GE11[1], GEMGeometry_, ch)) < 2) tmpNRH2++;
+              if (abs(RdPhi(stripAngle, hit, data_.prop_CSC_LP_GE11[0], data_.prop_CSC_y_roll_GE11, GEMGeometry_, ch)) < 5) tmpNRH5++;
+              if (abs(RdPhi(stripAngle, hit, data_.prop_CSC_LP_GE11[0], data_.prop_CSC_y_roll_GE11, GEMGeometry_, ch)) < 2) tmpNRH2++;
               data_.det_id = gemid.region()*(gemid.station()*100 + gemid.chamber());
 
               //CSC matcher
-              if (data_.has_prop_CSC and abs(data_.RdPhi_CSC_GE11) > abs(RdPhi(stripAngle, hit, data_.prop_CSC_LP_GE11[0], data_.prop_CSC_LP_GE11[1], GEMGeometry_, ch))){
+              if (data_.has_prop_CSC and abs(data_.RdPhi_CSC_GE11) > abs(RdPhi(stripAngle, hit, data_.prop_CSC_LP_GE11[0], data_.prop_CSC_y_roll_GE11, GEMGeometry_, ch))){
                 rechit_matches++;
                 if (debug){std::cout << "Overwrite CSC rechit" << std::endl;}
 
@@ -865,15 +863,15 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.rechit_y_roll_CSC_GE11 = (hit)->localPosition().y();
                 data_.rechit_localphi_rad_CSC_GE11 = rechit_localphi_rad;
                 data_.rechit_localphi_deg_CSC_GE11 = rechit_localphi_deg;
-                data_.RdPhi_CSC_GE11 = RdPhi(stripAngle, hit, data_.prop_CSC_LP_GE11[0], data_.prop_CSC_LP_GE11[1], GEMGeometry_, ch);
+                data_.RdPhi_CSC_GE11 = RdPhi(stripAngle, hit, data_.prop_CSC_LP_GE11[0], data_.prop_CSC_y_roll_GE11, GEMGeometry_, ch);
                 data_.RdPhi_CSC_Corrected = data_.RdPhi_CSC_GE11;
                 if ((gemid.region() == 1 && gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)){
                   data_.RdPhi_CSC_Corrected = -1.0*data_.RdPhi_CSC_Corrected;
-                  std::cout << "CORRECTING THE RDPHI" << std::endl;
+                  if (debug){std::cout << "CORRECTING THE RDPHI" << std::endl;}
                 }
               }
               //inner matcher
-              if (data_.has_prop_inner and abs(data_.RdPhi_inner_GE11) > abs(RdPhi(stripAngle, hit, data_.prop_inner_LP_GE11[0], data_.prop_inner_LP_GE11[1], GEMGeometry_, ch))){
+              if (data_.has_prop_inner and abs(data_.RdPhi_inner_GE11) > abs(RdPhi(stripAngle, hit, data_.prop_inner_LP_GE11[0], data_.prop_inner_y_roll_GE11, GEMGeometry_, ch))){
                 rechit_matches++;
                 if (debug){std::cout << "Overwrite CSC rechit" << std::endl;}
 
@@ -888,23 +886,23 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
                 data_.rechit_y_roll_inner_GE11 = (hit)->localPosition().y();
                 data_.rechit_localphi_rad_inner_GE11 = rechit_localphi_rad;
                 data_.rechit_localphi_deg_inner_GE11 = rechit_localphi_deg;
-                data_.RdPhi_inner_GE11 = RdPhi(stripAngle, hit, data_.prop_inner_LP_GE11[0], data_.prop_inner_LP_GE11[1], GEMGeometry_, ch);
+                data_.RdPhi_inner_GE11 = RdPhi(stripAngle, hit, data_.prop_inner_LP_GE11[0], data_.prop_inner_y_roll_GE11, GEMGeometry_, ch);
                 data_.RdPhi_inner_Corrected = data_.RdPhi_CSC_GE11;
                 if ((gemid.region() == 1 && gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)){
                   if (debug){std::cout << "CORRECTING THE RDPHI" << std::endl;}
                   data_.RdPhi_inner_Corrected = -1.0*data_.RdPhi_inner_Corrected;
                 }
               }
-              if(debug)cout << "Starting ME11 rechit match" << endl;
+              if(debug){cout << "Starting ME11 rechit match" << endl;}
               //ME11 seg matcher
               if (data_.has_prop_outerSeg){
-                if (abs(data_.RdPhi_outerSeg_GE11) > abs(RdPhi(stripAngle, hit, data_.prop_outerSeg_LP_GE11[0], data_.prop_outerSeg_LP_GE11[1], GEMGeometry_, ch))){
-                  data_.RdPhi_outerSeg_GE11 = RdPhi(stripAngle, hit, data_.prop_outerSeg_LP_GE11[0], data_.prop_outerSeg_LP_GE11[1], GEMGeometry_, ch);
+                if (abs(data_.RdPhi_outerSeg_GE11) > abs(RdPhi(stripAngle, hit, data_.prop_outerSeg_LP_GE11[0], data_.prop_outerSeg_y_roll_GE11, GEMGeometry_, ch))){
+                  data_.RdPhi_outerSeg_GE11 = RdPhi(stripAngle, hit, data_.prop_outerSeg_LP_GE11[0], data_.prop_outerSeg_y_roll_GE11, GEMGeometry_, ch);
                 }
               }
               if (data_.has_prop_innerSeg){
-                if (abs(data_.RdPhi_innerSeg_GE11) > abs(RdPhi(stripAngle, hit, data_.prop_innerSeg_LP_GE11[0], data_.prop_innerSeg_LP_GE11[1], GEMGeometry_, ch))){
-                  data_.RdPhi_innerSeg_GE11 = RdPhi(stripAngle, hit, data_.prop_innerSeg_LP_GE11[0], data_.prop_innerSeg_LP_GE11[1], GEMGeometry_, ch);
+                if (abs(data_.RdPhi_innerSeg_GE11) > abs(RdPhi(stripAngle, hit, data_.prop_innerSeg_LP_GE11[0], data_.prop_innerSeg_y_roll_GE11, GEMGeometry_, ch))){
+                  data_.RdPhi_innerSeg_GE11 = RdPhi(stripAngle, hit, data_.prop_innerSeg_LP_GE11[0], data_.prop_innerSeg_y_roll_GE11, GEMGeometry_, ch);
                 }
               }
             }
@@ -915,7 +913,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       data_.nRecHits2 = tmpNRH2;
       data_.nRecHitsTot = tmpNRHT;
       if (isMC and data_.has_prop_CSC) {
-        if(debug)cout << "Starting sim info" << endl;
+        if(debug){cout << "Starting sim info" << endl;}
         data_.nSim = 99999999;
         data_.simDy = 999.;
         float tmpDy = 999.;
@@ -924,7 +922,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         for (const auto& simHit:*gemSimHits.product()) {
           GEMDetId gemid((simHit).detUnitId());
           if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()){
-            if(debug)cout << "Found a match simhit" << endl;
+            if(debug){cout << "Found a match simhit" << endl;}
             tmpSimCounter ++;
             const auto& etaPart = GEMGeometry_->etaPartition(gemid);
             //GlobalPoint pGlobal = pos_global_ch_CSC;
@@ -949,8 +947,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
       std::cout << "Sim point was " << data_.sim_LP[0] << ", " << data_.sim_LP[1] << std::endl;
 
-      if (debug)std::cout << "Num of rechits = " << rechit_counter << std::endl;
-      if (debug)std::cout << "Num of matches = " << rechit_matches << std::endl;
+      if (debug){std::cout << "Num of rechits = " << rechit_counter << std::endl;}
+      if (debug){std::cout << "Num of matches = " << rechit_matches << std::endl;}
       cout << "Filling!" << endl;
       if (data_.hasME11 == 1){num_props_ME11++;}
       if (data_.hasME11 != 1){num_props_noME11 ++;}
