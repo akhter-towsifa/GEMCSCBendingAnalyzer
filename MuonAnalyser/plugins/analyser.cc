@@ -212,6 +212,7 @@ struct MuonData
   float sim_localy_roll;
   int nSim;
 
+  int ME11SegCounter;
 };
 
 void MuonData::init()
@@ -381,6 +382,8 @@ void MuonData::init()
   }
   sim_localy_roll = 99999999;
   nSim = 99999999;
+
+  ME11SegCounter = 99999999;
 }
 
 TTree* MuonData::book(TTree *t){
@@ -531,6 +534,7 @@ TTree* MuonData::book(TTree *t){
   t->Branch("sim_localy_roll", &sim_localy_roll);
   t->Branch("nSim", &nSim);
 
+  t->Branch("ME11SegCounter", &ME11SegCounter);
   return t;
 }
 
@@ -626,19 +630,20 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   cout << "new evt numb is " << iEvent.eventAuxiliary().event() << " and new lumiblock is " << iEvent.eventAuxiliary().luminosityBlock() << endl;
   for (size_t i = 0; i < muons->size(); ++i){
     data_.init();
-    cout << "new muon" << endl;
+    //cout << "new muon" << endl;
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
     const reco::Muon* mu = muRef.get();
 
     //if (mu->pt() < 2.0) continue;  //can apply a pt cut later
     if (not mu->standAloneMuon()) continue;
-    cout << "is standalone" << endl;
+    cout << "new standalone" << endl;
     data_.isGEMmuon = mu->isGEMMuon();
     data_.nCSCSeg = mu->numberOfSegments(1,2) + mu->numberOfSegments(2,2) + mu->numberOfSegments(3,2) + mu->numberOfSegments(4,2);
     data_.nDTSeg = mu->numberOfSegments(1,1) + mu->numberOfSegments(2,1) + mu->numberOfSegments(3,1) + mu->numberOfSegments(4,1);
     if (data_.nCSCSeg > 0){
       muons_with_cscSeg++;
     }
+    int ME11SegCounter = 0;
     auto matches = mu->matches();
     int tmp_station = 99;
     int tmp_ring = 99;
@@ -652,6 +657,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         if (cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
           if (debug && data_.hasME11 == 1) {std::cout << "Already has an ME11 seg" << std::endl;}
           data_.hasME11 = 1;
+          ME11SegCounter++;
           if (debug){std::cout << "has ME11 segment" << std::endl;}
           tmp_ME11_seg = cscSegRef.get();
           for ( auto rh : cscSegRef->specificRecHits()){
@@ -679,7 +685,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         if (cscDetID.station() == 1 and cscDetID.ring() == 4) data_.hasME11A = 1;
       }
     }
-    
+    data_.ME11SegCounter = ME11SegCounter;
     data_.evtNum = iEvent.eventAuxiliary().event();
     data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock();
     data_.muonIdx = data_.evtNum*100 + i;
@@ -740,6 +746,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     float count = 0;
     if (debug){std::cout << "Starting chamber loop" << std::endl;}
     for (const auto& ch : GEMGeometry_->etaPartitions()) {
+
       if (ch->id().station() != 1) continue; //Only takes GE1/1
       const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
       const float prop_y_to_center = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp(); //y distance to the current eta part
@@ -891,7 +898,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       }
 
       //Skip chambers with no props
-      if (!(data_.has_prop_CSC or data_.has_prop_inner or data_.has_prop_outerSeg or data_.has_prop_innerSeg)) continue;
+      if (!(data_.has_prop_CSC or data_.has_prop_inner or data_.has_prop_outerSeg or data_.has_prop_innerSeg or data_.has_prop_Seg)) continue;
 
       if(debug){cout << "charge is " << mu->charge() << endl;}
       data_.num_props++;
@@ -916,6 +923,9 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       int tmpNRH5 = 0;
       int tmpNRH2 = 0;
       int tmpNRHT = 0;
+
+      if(debug && data_.hasME11 && data_.has_prop_CSC && !data_.has_prop_Seg){cout << "BAD EVENT! Fail Seg but Pass CSC" << endl;}
+      if(debug && data_.hasME11 && data_.has_prop_Seg && !data_.has_prop_CSC){cout << "BAD EVENT! Fail CSC but Pass Seg" << endl;}
 
       for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++){
         rechit_counter++;
@@ -1059,7 +1069,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         data_.nSim = tmpSimCounter;
       }
 
-      std::cout << "Sim point was " << data_.sim_LP[0] << ", " << data_.sim_LP[1] << std::endl;
+      //std::cout << "Sim point was " << data_.sim_LP[0] << ", " << data_.sim_LP[1] << std::endl;
 
       if (debug){std::cout << "Num of rechits = " << rechit_counter << std::endl;}
       if (debug){std::cout << "Num of matches = " << rechit_matches << std::endl;}
@@ -1089,12 +1099,16 @@ float RdPhi(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<G
 void propagate_segment(const CSCSegment* ME11_segment, const reco::Track* innerTrack, const GEMEtaPartition* ch, const reco::Muon* mu, MuonServiceProxy* theService_, const GeomDet* segDet, GlobalPoint &pos_global_ch, GlobalPoint &pos_global_seg, bool &has_prop, bool debug){
   const BoundPlane& bps(ch->surface());
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
+
   LocalVector momentum_at_surface = ME11_segment->localDirection(); //No momentum for segments
+
   if (innerTrack != 0){
-    std::cout << "Segment using inner momentum! Wow success" << std::endl;
+    //std::cout << "Segment using inner momentum! Wow success" << std::endl;
     momentum_at_surface = momentum_at_surface*(innerTrack->outerP()); //If innerTrack exists, use momentum
   }
+
   LocalTrajectoryParameters param(ME11_segment->localPosition(), momentum_at_surface, mu->charge());
+  //LocalTrajectoryParameters param(ME11_segment->localPosition(), ME11_segment->localDirection(), mu->charge());
   AlgebraicSymMatrix mat(5,0);
   mat = ME11_segment->parametersError().similarityT( ME11_segment->projectionMatrix() );
   LocalTrajectoryError error(asSMatrix<5>(mat));
