@@ -46,13 +46,13 @@ process.source = cms.Source("PoolSource",
 			)
 				)
 
-process.source.fileNames.append('file:step2_223.root')
+process.source.fileNames.append('file:step2.root')
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                         )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("out_MCsegfault_test3.root"))
+process.TFileService = cms.Service("TFileService", fileName = cms.string("out_MCsample.root"))
 
 process.analyser = cms.EDAnalyzer('analyser', 
 	process.MuonServiceProxy, 
@@ -62,7 +62,9 @@ process.analyser = cms.EDAnalyzer('analyser',
 	vertexCollection = cms.InputTag("offlinePrimaryVerticies"),
 	tracker_prop = cms.bool(True),
 	CSC_prop = cms.bool(True),
-        debug = cms.bool(False)
+        Segment_prop = cms.bool(True),
+        debug = cms.bool(False),
+        isCosmic = cms.bool(False)
 )
 
 #process.p = cms.EndPath(process.analyser)

@@ -70,29 +70,25 @@ struct MuonData
   int muon_charge; float muon_pt; float muon_eta; float muon_momentum;
   unsigned long long  evtNum; unsigned long long  lumiBlock; int muonIdx;
   //Propagation Info//////////////////////////////////////////////////////
-  std::vector<float> prop_GP_x; std::vector<float> prop_GP_y; std::vector<float> prop_GP_z;
-  std::vector<float> prop_LP_x; std::vector<float> prop_LP_y; std::vector<float> prop_LP_z;
-  std::vector<float> prop_startingPoint_GP_x; std::vector<float> prop_startingPoint_GP_y; std::vector<float> prop_startingPoint_GP_z;
-  std::vector<float> prop_yroll; std::vector<float> prop_localphi_rad; std::vector<float> prop_localphi_deg;
-  std::vector<bool> has_prop; std::vector<bool> has_fidcut;
-  std::vector<int> prop_region; std::vector<int> prop_station; std::vector<int> prop_chamber; std::vector<int> prop_layer; std::vector<int> prop_roll;
+  float prop_GP[3]; float prop_LP[3]; float prop_startingPoint_GP[3];
+  float prop_yroll; float prop_localphi_rad; float prop_localphi_deg;
+  bool has_prop; bool has_fidcut;
+  int prop_location[5];
   //Track Info//////////////////////////////////////////////////////
   float track_chi2; float track_ndof; int n_ME11_segment; int which_track;
   int hasME11; int hasME11RecHit; int hasME11A; int hasME11ARecHit;
   int nCSCSeg; int nDTSeg;
   //Rechit Info//////////////////////////////////////////////////////
-  std::vector<float> rechit_GP_x; std::vector<float> rechit_GP_y; std::vector<float> rechit_GP_z;
-  std::vector<float> rechit_LP_x; std::vector<float> rechit_LP_y; std::vector<float> rechit_LP_z;
-  std::vector<float> rechit_yroll; std::vector<float> rechit_localphi_rad; std::vector<float> rechit_localphi_deg;
-  std::vector<bool> has_rechit;
-  std::vector<int> rechit_first_strip; std::vector<int> rechit_CLS; std::vector<int> rechit_BunchX;
-  std::vector<float> RdPhi; std::vector<float> RdPhi_Corrected; std::vector<int> rechit_detId;
-  std::vector<int> nRecHitsTot; std::vector<int> nRecHits5; std::vector<int> nRecHits2;
-  std::vector<int> rechit_region; std::vector<int> rechit_station; std::vector<int> rechit_chamber; std::vector<int> rechit_layer; std::vector<int> rechit_roll;
+  float rechit_GP[3]; float rechit_LP[3];
+  float rechit_yroll; float rechit_localphi_rad; float rechit_localphi_deg;
+  bool has_rechit;
+  int rechit_first_strip; int rechit_CLS; int rechit_BunchX;
+  float RdPhi; float RdPhi_Corrected; int rechit_detId;
+  int nRecHitsTot; int nRecHits5; int nRecHits2;
+  int rechit_location[5];
   //Sim info for MC
-  std::vector<float> sim_GP_x; std::vector<float> sim_GP_y; std::vector<float> sim_GP_z;
-  std::vector<float> sim_LP_x; std::vector<float> sim_LP_y; std::vector<float> sim_LP_z;
-  std::vector<float> simDy; std::vector<float> sim_localy_roll; std::vector<int> nSim;
+  float sim_GP[3]; float sim_LP[3];
+  float simDy; float sim_yroll; int nSim;
 };
 
 void MuonData::init()
@@ -101,29 +97,35 @@ void MuonData::init()
   muon_charge = 9999; muon_pt = 9999; muon_eta = 9999; muon_momentum = 9999;
   evtNum = 99999999; lumiBlock = 99999999; muonIdx = 99999999;
   //Propagation Info//////////////////////////////////////////////////////
-  prop_GP_x.clear(); prop_GP_y.clear(); prop_GP_z.clear();
-  prop_LP_x.clear(); prop_LP_y.clear(); prop_LP_z.clear();
-  prop_startingPoint_GP_x.clear(); prop_startingPoint_GP_y.clear(); prop_startingPoint_GP_z.clear();
-  prop_yroll.clear(); prop_localphi_rad.clear(); prop_localphi_deg.clear();
-  has_prop.clear(); has_fidcut.clear();
-  prop_region.clear(); prop_station.clear(); prop_chamber.clear(); prop_layer.clear(); prop_roll.clear();
+  for(int i=0; i<3; ++i){
+    prop_GP[i] = 99999; prop_LP[i] = 99999; prop_startingPoint_GP[i] = 99999;
+  }
+  prop_yroll = 99999; prop_localphi_rad = 99999; prop_localphi_deg = 99999;
+  has_prop = false; has_fidcut = false;
+  for(int i=0; i<5; ++i){
+    prop_location[i] = 99999;
+  }
   //Track Info//////////////////////////////////////////////////////
   track_chi2 = 999999; track_ndof = 999999; n_ME11_segment = 999999; which_track = 999999;
   hasME11 = 999999; hasME11RecHit = 999999; hasME11A = 999999; hasME11ARecHit = 999999;
   nCSCSeg = 999999; nDTSeg = 999999;
   //Rechit Info//////////////////////////////////////////////////////
-  rechit_GP_x.clear(); rechit_GP_y.clear(); rechit_GP_z.clear();
-  rechit_LP_x.clear(); rechit_LP_y.clear(); rechit_LP_z.clear();
-  rechit_yroll.clear(); rechit_localphi_rad.clear(); rechit_localphi_deg.clear();
-  has_rechit.clear();
-  rechit_first_strip.clear(); rechit_CLS.clear(); rechit_BunchX.clear();
-  RdPhi.clear(); RdPhi_Corrected.clear(); rechit_detId.clear();
-  nRecHitsTot.clear(); nRecHits5.clear(); nRecHits2.clear();
-  rechit_region.clear(); rechit_station.clear(); rechit_chamber.clear(); rechit_layer.clear(); rechit_roll.clear();
+  for(int i=0; i<3; ++i){
+    rechit_GP[i] = 999999; rechit_LP[i] = 999999;
+  }
+  rechit_yroll = 999999; rechit_localphi_rad = 999999; rechit_localphi_deg = 999999;
+  has_rechit = false;
+  rechit_first_strip = 999999; rechit_CLS = 999999; rechit_BunchX = 999999;
+  RdPhi = 999999; RdPhi_Corrected = 999999; rechit_detId = 999999;
+  nRecHitsTot = 999999; nRecHits5 = 999999; nRecHits2 = 999999;
+  for(int i=0; i<5; ++i){
+    rechit_location[i] = 999999;
+  }
   //Sim info for MC
-  sim_GP_x.clear(); sim_GP_y.clear(); sim_GP_z.clear();
-  sim_LP_x.clear(); sim_LP_y.clear(); sim_LP_z.clear();
-  simDy.clear(); sim_localy_roll.clear(); nSim.clear();
+  for(int i=0; i<3; ++i){
+    sim_GP[i] = 9999999; sim_LP[i] = 9999999;
+  }
+  simDy = 9999999; sim_yroll = 9999999; nSim = 9999999;
 }
 
 TTree* MuonData::book(TTree *t, int prop_type){
@@ -145,17 +147,15 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("muon_eta", &muon_eta); t->Branch("muon_momentum", &muon_momentum);
   t->Branch("evtNum", &evtNum); t->Branch("lumiBlock", &lumiBlock); t->Branch("muonIdx", &muonIdx);
   //Propagation Info//////////////////////////////////////////////////////
-  t->Branch("prop_GP_x", &prop_GP_x); t->Branch("prop_GP_y", &prop_GP_y); t->Branch("prop_GP_z", &prop_GP_z);
-  t->Branch("prop_LP_x", &prop_LP_x); t->Branch("prop_LP_y", &prop_LP_y); t->Branch("prop_LP_z", &prop_LP_z);
-  t->Branch("prop_startingPoint_GP_x", &prop_startingPoint_GP_x);
-  t->Branch("prop_startingPoint_GP_y", &prop_startingPoint_GP_y);
-  t->Branch("prop_startingPoint_GP_z", &prop_startingPoint_GP_z);
+  t->Branch("prop_GP", &prop_GP, "prop_GP[3] (x,y,z)/F");
+  t->Branch("prop_LP", &prop_LP, "prop_LP[3] (x,y,z)/F");
+  t->Branch("prop_startingPoint_GP", &prop_startingPoint_GP, "prop_startingPoint_GP[3] (x,y,z)/F");
   t->Branch("prop_yroll", &prop_yroll);
   t->Branch("prop_localphi_rad", &prop_localphi_rad);
   t->Branch("prop_localphi_deg", &prop_localphi_deg);
   t->Branch("has_prop", &has_prop);
   t->Branch("has_fidcut", &has_fidcut);
-  t->Branch("prop_region", &prop_region); t->Branch("prop_station", &prop_station); t->Branch("prop_chamber", &prop_chamber); t->Branch("prop_layer", &prop_layer); t->Branch("prop_roll", &prop_roll);
+  t->Branch("prop_location", &prop_location, "prop_location[5] (reg, sta, cha, lay, rol)/I");
   //Track Info//////////////////////////////////////////////////////
   t->Branch("track_chi2", &track_chi2); t->Branch("track_ndof", &track_ndof);
   t->Branch("n_ME11_segment", &n_ME11_segment); t->Branch("which_track", &which_track);
@@ -163,8 +163,8 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("hasME11A", &hasME11A); t->Branch("hasME11ARecHit", &hasME11ARecHit);
   t->Branch("nCSCSeg", &nCSCSeg); t->Branch("nDTSeg", &nDTSeg);
   //Rechit Info//////////////////////////////////////////////////////
-  t->Branch("rechit_GP_x", &rechit_GP_x); t->Branch("rechit_GP_y", &rechit_GP_y); t->Branch("rechit_GP_z", &rechit_GP_z);
-  t->Branch("rechit_LP_x", &rechit_LP_x); t->Branch("rechit_LP_y", &rechit_LP_y); t->Branch("rechit_LP_z", &rechit_LP_z);
+  t->Branch("rechit_GP", &rechit_GP, "rechit_GP[3] (x,y,z)/F");
+  t->Branch("rechit_LP", &rechit_LP, "rechit_LP[3] (x,y,z)/F");
   t->Branch("rechit_yroll", &rechit_yroll);
   t->Branch("rechit_localphi_rad", &rechit_localphi_rad);
   t->Branch("rechit_localphi_deg", &rechit_localphi_deg);
@@ -178,16 +178,12 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("nRecHitsTot", &nRecHitsTot);
   t->Branch("nRecHits2", &nRecHits2);
   t->Branch("nRecHits5", &nRecHits5);
-  t->Branch("rechit_region", &rechit_region); t->Branch("rechit_station", &rechit_station); t->Branch("rechit_chamber", &rechit_chamber); t->Branch("rechit_layer", &rechit_layer); t->Branch("rechit_roll", &rechit_roll);
+  t->Branch("rechit_location", &rechit_location, "rechit_location[5] (reg, sta, cha, lay, rol)/I");
   //Sim info for MC
-  t->Branch("sim_GP_x", &sim_GP_x);
-  t->Branch("sim_GP_y", &sim_GP_y);
-  t->Branch("sim_GP_z", &sim_GP_z);
-  t->Branch("sim_LP_x", &sim_LP_x);
-  t->Branch("sim_LP_y", &sim_LP_y);
-  t->Branch("sim_LP_z", &sim_LP_z);
+  t->Branch("sim_GP", &sim_GP, "sim_GP[3] (x,y,z)/F");
+  t->Branch("sim_LP", &sim_LP, "sim_LP[3] (x,y,z)/F");
   t->Branch("simDy", &simDy);
-  t->Branch("sim_localy_roll", &sim_localy_roll);
+  t->Branch("sim_yroll", &sim_yroll);
   t->Branch("nSim", &nSim);
   return t;
 }
@@ -230,6 +226,7 @@ private:
   bool CSC_prop; bool tracker_prop; bool Segment_prop;
   vector<int> prop_list;
   bool debug;
+  bool isCosmic;
 
   MuonData data_;
   TTree* CSC_tree; TTree* Tracker_tree; TTree* Segment_tree;
@@ -251,6 +248,7 @@ analyser::analyser(const edm::ParameterSet& iConfig)
   CSC_prop = iConfig.getParameter<bool>("CSC_prop");
   Segment_prop = iConfig.getParameter<bool>("Segment_prop");
   debug = iConfig.getParameter<bool>("debug");
+  isCosmic = iConfig.getParameter<bool>("isCosmic");
   cout << "tracker_prop " << tracker_prop << " CSC_prop " << CSC_prop << " debug " << debug << std::endl;
 
   if(CSC_prop){CSC_tree = data_.book(CSC_tree, 1); prop_list.push_back(1);}
@@ -308,28 +306,45 @@ float analyser::RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm
 void analyser::CSCSegmentCounter(const reco::Muon* mu, int& n_ME11_segment, int& nCSCSeg, int& nDTSeg){
   const reco::Track* Track = mu->outerTrack().get();
   int tmp_CSC_counter = 0; int tmp_DT_counter = 0; int tmp_ME11_counter = 0;
-  for (size_t RecHit_iter = 0; RecHit_iter != Track->recHitsSize(); RecHit_iter++){
-    const TrackingRecHit* RecHit = (Track->recHit(RecHit_iter)).get();
-    DetId RecHitId = RecHit->geographicalId();
-    uint16_t RecHitDetId = RecHitId.det();
-    if (RecHitDetId == DetId::Muon){
-      uint16_t RecHitSubDet = RecHitId.subdetId();
-      if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
-        if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1 and RecHit->dimension() == 4){
-          tmp_ME11_counter++; 
-          RecSegment* Rec_segment = (RecSegment*)RecHit;
-          ME11_segment = (CSCSegment*)Rec_segment;
+  if(isCosmic){
+    tmp_CSC_counter = mu->numberOfSegments(1,2) + mu->numberOfSegments(2,2) + mu->numberOfSegments(3,2) + mu->numberOfSegments(4,2);
+    tmp_DT_counter = mu->numberOfSegments(1,1) + mu->numberOfSegments(2,1) + mu->numberOfSegments(3,1) + mu->numberOfSegments(4,1);
+    auto matches = mu->matches();
+    for (auto MCM : matches){
+      if(MCM.detector() != 2) continue;
+      for(auto MSM : MCM.segmentMatches){
+        auto cscSegRef = MSM.cscSegmentRef;
+        auto cscDetID = cscSegRef->cscDetId();
+        if(cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
+          tmp_ME11_counter++;
+          ME11_segment = cscSegRef.get();
         }
-        if (RecHit->dimension() == 4){tmp_CSC_counter++;}
       }
-      if (RecHitSubDet == (uint16_t)MuonSubdetId::DT){
-        if (RecHit->dimension() > 1){tmp_DT_counter++;}
+    }
+  }
+  else{
+    for (size_t RecHit_iter = 0; RecHit_iter != Track->recHitsSize(); RecHit_iter++){
+      const TrackingRecHit* RecHit = (Track->recHit(RecHit_iter)).get();
+      DetId RecHitId = RecHit->geographicalId();
+      uint16_t RecHitDetId = RecHitId.det();
+      if (RecHitDetId == DetId::Muon){
+        uint16_t RecHitSubDet = RecHitId.subdetId();
+        if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
+          if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1 and RecHit->dimension() == 4){
+            tmp_ME11_counter++; 
+            RecSegment* Rec_segment = (RecSegment*)RecHit;
+            ME11_segment = (CSCSegment*)Rec_segment;
+          }
+          if (RecHit->dimension() == 4){tmp_CSC_counter++;}
+        }
+        if (RecHitSubDet == (uint16_t)MuonSubdetId::DT){
+          if (RecHit->dimension() > 1){tmp_DT_counter++;}
+        }
       }
     }
   }
   nCSCSeg = tmp_CSC_counter; nDTSeg = tmp_DT_counter;
   n_ME11_segment = tmp_ME11_counter;
-  std::cout << "Counted nSeg = " << nCSCSeg << std::endl;
 }
 void analyser::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){
   const reco::Track* Track;
@@ -400,18 +415,18 @@ void analyser::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
     const float prop_y_to_center = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp(); //y distance to the current eta part
     const float prop_y_to_chamber = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2))).y();
-    data_.prop_GP_x.push_back(pos_GP.x()); data_.prop_GP_y.push_back(pos_GP.y()); data_.prop_GP_z.push_back(pos_GP.z());
     LocalPoint tmp_prop_LP = ch->toLocal(pos_GP);
-    data_.prop_LP_x.push_back(tmp_prop_LP.x()); data_.prop_LP_y.push_back(tmp_prop_LP.y() + prop_y_to_chamber); data_.prop_LP_z.push_back(tmp_prop_LP.z());
-    data_.prop_startingPoint_GP_x.push_back(pos_startingPoint_GP.x()); data_.prop_startingPoint_GP_y.push_back(pos_startingPoint_GP.y()); data_.prop_startingPoint_GP_z.push_back(pos_startingPoint_GP.z());
-    data_.prop_yroll.push_back(tmp_prop_LP.y());
+    data_.prop_GP[0] = pos_GP.x(); data_.prop_GP[1] = pos_GP.y(); data_.prop_GP[2] = pos_GP.z();
+    data_.prop_LP[0] = tmp_prop_LP.x(); data_.prop_LP[1] = tmp_prop_LP.y() + prop_y_to_chamber; data_.prop_LP[2] = tmp_prop_LP.z();
+    data_.prop_startingPoint_GP[0] = pos_startingPoint_GP.x(); data_.prop_startingPoint_GP[1] = pos_startingPoint_GP.y(); data_.prop_startingPoint_GP[2] = pos_startingPoint_GP.z();
+    data_.prop_yroll = tmp_prop_LP.y();
     LocalPoint local_to_center(tmp_prop_LP.x(), tmp_prop_LP.y() + prop_y_to_center, 0);
     float local_phi = local_to_center.phi();
-    data_.prop_localphi_rad.push_back((3.14159265/2.) - local_phi);
-    data_.prop_localphi_deg.push_back(((3.14159265/2.) - local_phi)*(180./3.14159265));
-    data_.has_prop.push_back(tmp_has_prop);
-    data_.has_fidcut.push_back(fidcutCheck(tmp_prop_LP.y(), ((3.14159265/2.) - local_phi)*(180./3.14159265), ch));
-    data_.prop_region.push_back(ch->id().region()); data_.prop_station.push_back(ch->id().station()); data_.prop_chamber.push_back(ch->id().chamber()); data_.prop_layer.push_back(ch->id().layer()); data_.prop_roll.push_back(ch->id().roll());
+    data_.prop_localphi_rad = (3.14159265/2.) - local_phi;
+    data_.prop_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
+    data_.has_prop = tmp_has_prop;
+    data_.has_fidcut = fidcutCheck(tmp_prop_LP.y(), ((3.14159265/2.) - local_phi)*(180./3.14159265), ch);
+    data_.prop_location[0] = ch->id().region(); data_.prop_location[1] = ch->id().station(); data_.prop_location[2] = ch->id().chamber(); data_.prop_location[3] = ch->id().layer(); data_.prop_location[4] = ch->id().roll();
   }
 }
 void analyser::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP, MuonData& data_){
@@ -461,26 +476,27 @@ void analyser::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
     }
   }
   if(tmp_has_rechit){
-    data_.rechit_GP_x.push_back(tmp_rechit_GP_x); data_.rechit_GP_y.push_back(tmp_rechit_GP_y); data_.rechit_GP_z.push_back(tmp_rechit_GP_z);
-    data_.rechit_LP_x.push_back(tmp_rechit_LP_x); data_.rechit_LP_y.push_back(tmp_rechit_LP_y); data_.rechit_LP_z.push_back(tmp_rechit_LP_z);
-    data_.rechit_yroll.push_back(tmp_rechit_yroll);
-    data_.rechit_localphi_rad.push_back(tmp_rechit_localphi_rad);
-    data_.rechit_localphi_deg.push_back(tmp_rechit_localphi_deg);
-    data_.has_rechit.push_back(tmp_has_rechit);
-    data_.rechit_first_strip.push_back(tmp_rechit_first_strip);
-    data_.rechit_CLS.push_back(tmp_rechit_CLS);
-    data_.rechit_BunchX.push_back(tmp_rechit_BunchX);
-    data_.RdPhi.push_back(tmp_RdPhi);
-    data_.RdPhi_Corrected.push_back(tmp_RdPhi_Corrected);
-    data_.rechit_detId.push_back(tmp_rechit_detId);
-    data_.nRecHitsTot.push_back(tmp_nRecHitsTot); data_.nRecHits5.push_back(tmp_nRecHits5); data_.nRecHits2.push_back(tmp_nRecHits2);
-    data_.rechit_region.push_back(tmp_rechit_region); data_.rechit_station.push_back(tmp_rechit_station); data_.rechit_chamber.push_back(tmp_rechit_chamber); data_.rechit_layer.push_back(tmp_rechit_layer); data_.rechit_roll.push_back(tmp_rechit_roll);
+    data_.rechit_GP[0] = tmp_rechit_GP_x; data_.rechit_GP[1] = tmp_rechit_GP_y; data_.rechit_GP[2] = tmp_rechit_GP_z;
+    data_.rechit_LP[0] = tmp_rechit_LP_x; data_.rechit_LP[1] = tmp_rechit_LP_y; data_.rechit_LP[2] = tmp_rechit_LP_z;
+    data_.rechit_yroll = tmp_rechit_yroll;
+    data_.rechit_localphi_rad = tmp_rechit_localphi_rad;
+    data_.rechit_localphi_deg = tmp_rechit_localphi_deg;
+    data_.has_rechit = tmp_has_rechit;
+    data_.rechit_first_strip = tmp_rechit_first_strip;
+    data_.rechit_CLS = tmp_rechit_CLS;
+    data_.rechit_BunchX = tmp_rechit_BunchX;
+    data_.RdPhi = tmp_RdPhi;
+    data_.RdPhi_Corrected = tmp_RdPhi_Corrected;
+    data_.rechit_detId = tmp_rechit_detId;
+    data_.nRecHitsTot = tmp_nRecHitsTot; data_.nRecHits5 = tmp_nRecHits5; data_.nRecHits2 = tmp_nRecHits2;
+    data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
   }
 }
 void analyser::GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_){
   float tmpDy = 999.; float tmpDr = 999.; int tmpSimCounter = 0;
   float tmp_sim_GP_x; float tmp_sim_GP_y; float tmp_sim_GP_z;
   float tmp_sim_LP_x; float tmp_sim_LP_y; float tmp_sim_LP_z;
+  bool has_tmp = false;
   for (const auto& simHit:*gemSimHits.product()){
     GEMDetId gemid((simHit).detUnitId());
     if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()){
@@ -497,17 +513,16 @@ void analyser::GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP
         tmp_sim_LP_y = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2))).y() + simHit.localPosition().y();
         tmp_sim_LP_z = simHit.localPosition().z();
         tmpDr = pow(pow(dy, 2) + pow(dx, 2), 0.5);
+        has_tmp = true;
       }
     }
   }
-  data_.sim_GP_x.push_back(tmp_sim_GP_x);
-  data_.sim_GP_y.push_back(tmp_sim_GP_y);
-  data_.sim_GP_z.push_back(tmp_sim_GP_z);
-  data_.sim_LP_x.push_back(tmp_sim_LP_x);
-  data_.sim_LP_y.push_back(tmp_sim_LP_y);
-  data_.sim_LP_z.push_back(tmp_sim_LP_z);
-  data_.simDy.push_back(tmpDy);
-  data_.nSim.push_back(tmpSimCounter);
+  if(has_tmp){
+    data_.sim_GP[0] = tmp_sim_GP_x; data_.sim_GP[1] = tmp_sim_GP_y; data_.sim_GP[2] = tmp_sim_GP_z;
+    data_.sim_LP[0] = tmp_sim_LP_x; data_.sim_LP[1] = tmp_sim_LP_y; data_.sim_LP[2] = tmp_sim_LP_z;
+    data_.simDy = (tmpDy);
+    data_.nSim = (tmpSimCounter);
+  }
 }
 void analyser::propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i){
   std::cout << "Starting prop" << std::endl;
@@ -556,9 +571,10 @@ void analyser::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
       //Rechit Info//////////////////////////////////////////////////////
       GEM_rechit_matcher(ch, tmp_prop_LP, data_);
       GEM_simhit_matcher(ch, tmp_prop_GP, data_);
+      tree->Fill();
     }
   }
-  tree->Fill();
+  //tree->Fill();
 }
 
 
