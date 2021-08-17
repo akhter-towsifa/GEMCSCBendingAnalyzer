@@ -231,6 +231,7 @@ private:
   MuonData data_;
   TTree* CSC_tree; TTree* Tracker_tree; TTree* Segment_tree;
 
+  bool isMC;
   const CSCSegment *ME11_segment;
 };
 
@@ -268,7 +269,7 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   theService_->update(iSetup);
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
 
-  bool isMC = false;
+  isMC = false;
   if (! iEvent.eventAuxiliary().isRealData()) isMC = true;
   iEvent.getByToken(gemRecHits_, gemRecHits);
   if (isMC) {
@@ -551,6 +552,7 @@ void analyser::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     std::cout << "Bad prop type, failure." << std::endl; return;
   }
   if(!ttTrack.isValid()){std::cout << "BAD EVENT! NO TRACK" << std::endl;}
+  std::cout << "Starting data init()" << std::endl;
   data_.init();
   //Muon Info//////////////////////////////////////////////////////
   data_.muon_charge = mu->charge(); data_.muon_pt = mu->pt(); data_.muon_eta = mu->eta(); data_.muon_momentum = mu->momentum().mag2();
@@ -565,12 +567,17 @@ void analyser::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   for (const auto& ch : GEMGeometry_->etaPartitions()) {
     if (ch->id().station() != 1) continue; //Only takes GE1/1
     GlobalPoint tmp_prop_GP; bool tmp_has_prop = 0;
+    std::cout << "Attempting prop" << std::endl;
     propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_);
     if(tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
       //Rechit Info//////////////////////////////////////////////////////
+      std::cout << "Matching" << std::endl;
       GEM_rechit_matcher(ch, tmp_prop_LP, data_);
-      GEM_simhit_matcher(ch, tmp_prop_GP, data_);
+      std::cout << "Sim matcher" << std::endl;
+      if(isMC){
+        GEM_simhit_matcher(ch, tmp_prop_GP, data_);
+      }
       tree->Fill();
     }
   }
