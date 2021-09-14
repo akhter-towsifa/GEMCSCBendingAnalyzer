@@ -6,7 +6,9 @@ from Configuration.Eras.Era_Run3_cff import Run3
 process = cms.Process('analyser',Run3)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+#process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+process.load('Configuration.StandardSequences.MagneticField_0T_cff') #0T for cruzet runs
+
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
@@ -15,9 +17,10 @@ process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
+process.CSCGeometryESModule.applyAlignment = cms.bool(False)
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_promptlike', '')
 
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
@@ -52,7 +55,7 @@ process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                         )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("out_MCsample.root"))
+process.TFileService = cms.Service("TFileService", fileName = cms.string("out_ana.root"))
 
 process.analyser = cms.EDAnalyzer('analyser', 
 	process.MuonServiceProxy, 
@@ -60,11 +63,11 @@ process.analyser = cms.EDAnalyzer('analyser',
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("muons"),
 	vertexCollection = cms.InputTag("offlinePrimaryVerticies"),
-	tracker_prop = cms.bool(True),
+	tracker_prop = cms.bool(False),
 	CSC_prop = cms.bool(True),
         Segment_prop = cms.bool(True),
         debug = cms.bool(False),
-        isCosmic = cms.bool(False)
+        isCosmic = cms.bool(True)
 )
 
 #process.p = cms.EndPath(process.analyser)

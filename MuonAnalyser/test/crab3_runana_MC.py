@@ -4,7 +4,7 @@ config = config()
 ###2018runA  314472-318876
 #section general
 config.General.requestName = 'analyser'
-config.General.workArea = 'pp_4prop_NewSegmentTSOSwithTrack_ErrorsAreWrong_apr08_2021'#working dir 
+config.General.workArea = 'CRUZET_Allruns_TP_ideal_sep2'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
@@ -22,11 +22,14 @@ config.JobType.allowUndistributedCMSSW = True
 #config.JobType.inputFiles = ['/uscms/home/daebi/nobackup/analyser/CMSSW_11_0_0/src/GEMCSCBendingAnalyzer/MuonAnalyser/test/test.db']
 
 #section Data
-config.Data.inputDataset = '/singleMuonGun_MuAl_pT-30to200_1102_phase1_2021_realistic/hyunyong-crab_singleMuonGun_pT-30to200_1102_phase1_2021_realistic_RAW2DIGI_FullRECOv4-1b4eba2dcd577d6bb642bb3e45609e5f/USER'
+#config.Data.inputDataset = '/singleMuonGun_MuAl_pT-30to200_1102_phase1_2021_realistic/hyunyong-crab_singleMuonGun_pT-30to200_1102_phase1_2021_realistic_RAW2DIGI_FullRECOv4-1b4eba2dcd577d6bb642bb3e45609e5f/USER'
+#config.Data.inputDataset = '/Cosmics/Commissioning2021-CosmicSP-PromptReco-v1/RAW-RECO'
+config.Data.inputDataset = '/Cosmics/Commissioning2021-CosmicTP-PromptReco-v1/RAW-RECO'
+#config.Data.runRange = '342810,342966,343034,343082,343171,343266,343387,344134,344186,344266,344366'
 
 
-config.Data.inputDBS = 'phys03'
-#config.Data.inputDBS = 'global'
+#config.Data.inputDBS = 'phys03'
+config.Data.inputDBS = 'global'
 config.Data.splitting = 'FileBased'
 #config.Data.splitting = 'LumiBased'
 #config.Data.splitting = 'Automatic'

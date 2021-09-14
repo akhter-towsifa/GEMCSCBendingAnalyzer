@@ -6,7 +6,8 @@ from Configuration.Eras.Era_Run3_cff import Run3
 process = cms.Process('analyser',Run3)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+#process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+process.load('Configuration.StandardSequences.MagneticField_0T_cff') #0T for cruzet runs
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
@@ -17,21 +18,21 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_promptlike', '')
 
 
 
 ### This is the misalignment part
 process.GlobalTag.toGet = cms.VPSet(
     cms.PSet(
-        connect = cms.string('sqlite_file:Alignments.db'),
+        connect = cms.string('sqlite_file:ME11Seg_CRUZET_allruns_chamber_after_endcaps_sep9.db'),
         record = cms.string('GEMAlignmentRcd'),
-        tag = cms.string('GEM')
+        tag = cms.string('GEMAlignmentRcd')
     ),
     cms.PSet(
-        connect = cms.string('sqlite_file:Alignments.db'),
+        connect = cms.string('sqlite_file:ME11Seg_CRUZET_allruns_chamber_after_endcaps_sep9.db'),
         record = cms.string('GEMAlignmentErrorExtendedRcd'),
-        tag = cms.string('test')
+        tag = cms.string('GEMAlignmentErrorExtendedRcd')
     ),
     cms.PSet(record=cms.string('GlobalPositionRcd'), tag = cms.string('IdealGeometry'))
 )
@@ -41,7 +42,7 @@ process.GEMGeometryESModule.applyAlignment = cms.bool(True)
 
 
 
-process.GEMGeometryESModule.applyAlignment = cms.bool(True)
+process.CSCGeometryESModule.applyAlignment = cms.bool(False)
 
 
 
@@ -87,7 +88,12 @@ process.analyser = cms.EDAnalyzer('analyser',
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("muons"),
-	vertexCollection = cms.InputTag("offlinePrimaryVerticies")
+	vertexCollection = cms.InputTag("offlinePrimaryVerticies"),
+        tracker_prop = cms.bool(False),
+        CSC_prop = cms.bool(True),
+        Segment_prop = cms.bool(True),
+        debug = cms.bool(False),
+        isCosmic = cms.bool(True)
 )
 
 #process.p = cms.EndPath(process.analyser)
