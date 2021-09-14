@@ -69,6 +69,7 @@ struct MuonData
   //Muon Info//////////////////////////////////////////////////////
   int muon_charge; float muon_pt; float muon_eta; float muon_momentum;
   unsigned long long  evtNum; unsigned long long  lumiBlock; int muonIdx;
+  int runNum;
   //Propagation Info//////////////////////////////////////////////////////
   float prop_GP[3]; float prop_LP[3]; float prop_startingPoint_GP[3];
   float prop_yroll; float prop_localphi_rad; float prop_localphi_deg;
@@ -77,7 +78,7 @@ struct MuonData
   //Track Info//////////////////////////////////////////////////////
   float track_chi2; float track_ndof; int n_ME11_segment; int which_track;
   int hasME11; int hasME11RecHit; int hasME11A; int hasME11ARecHit;
-  int nCSCSeg; int nDTSeg;
+  int nCSCSeg; int nDTSeg; int nME11RecHits; float ME11_BunchX;
   //Rechit Info//////////////////////////////////////////////////////
   float rechit_GP[3]; float rechit_LP[3];
   float rechit_yroll; float rechit_localphi_rad; float rechit_localphi_deg;
@@ -95,7 +96,7 @@ void MuonData::init()
 {
   //Muon Info//////////////////////////////////////////////////////
   muon_charge = 9999; muon_pt = 9999; muon_eta = 9999; muon_momentum = 9999;
-  evtNum = 99999999; lumiBlock = 99999999; muonIdx = 99999999;
+  evtNum = 99999999; lumiBlock = 99999999; muonIdx = 99999999; runNum = 99999999;
   //Propagation Info//////////////////////////////////////////////////////
   for(int i=0; i<3; ++i){
     prop_GP[i] = 99999; prop_LP[i] = 99999; prop_startingPoint_GP[i] = 99999;
@@ -107,8 +108,8 @@ void MuonData::init()
   }
   //Track Info//////////////////////////////////////////////////////
   track_chi2 = 999999; track_ndof = 999999; n_ME11_segment = 999999; which_track = 999999;
-  hasME11 = 999999; hasME11RecHit = 999999; hasME11A = 999999; hasME11ARecHit = 999999;
-  nCSCSeg = 999999; nDTSeg = 999999;
+  hasME11 = 0; hasME11RecHit = 0; hasME11A = 0; hasME11ARecHit = 0;
+  nCSCSeg = 999999; nDTSeg = 999999; nME11RecHits = 999999; ME11_BunchX = 999999;
   //Rechit Info//////////////////////////////////////////////////////
   for(int i=0; i<3; ++i){
     rechit_GP[i] = 999999; rechit_LP[i] = 999999;
@@ -146,6 +147,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("muon_charge", &muon_charge); t->Branch("muon_pt", &muon_pt);
   t->Branch("muon_eta", &muon_eta); t->Branch("muon_momentum", &muon_momentum);
   t->Branch("evtNum", &evtNum); t->Branch("lumiBlock", &lumiBlock); t->Branch("muonIdx", &muonIdx);
+  t->Branch("runNum", &runNum);
   //Propagation Info//////////////////////////////////////////////////////
   t->Branch("prop_GP", &prop_GP, "prop_GP[3] (x,y,z)/F");
   t->Branch("prop_LP", &prop_LP, "prop_LP[3] (x,y,z)/F");
@@ -162,6 +164,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("hasME11", &hasME11); t->Branch("hasME11RecHit", &hasME11RecHit);
   t->Branch("hasME11A", &hasME11A); t->Branch("hasME11ARecHit", &hasME11ARecHit);
   t->Branch("nCSCSeg", &nCSCSeg); t->Branch("nDTSeg", &nDTSeg);
+  t->Branch("nME11RecHits", &nME11RecHits); t->Branch("ME11_BunchX", &ME11_BunchX);
   //Rechit Info//////////////////////////////////////////////////////
   t->Branch("rechit_GP", &rechit_GP, "rechit_GP[3] (x,y,z)/F");
   t->Branch("rechit_LP", &rechit_LP, "rechit_LP[3] (x,y,z)/F");
@@ -200,7 +203,7 @@ private:
   virtual void endJob() ;
 
   void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i);
-  void CSCSegmentCounter(const reco::Muon* mu, int& n_ME11_segment, int& nCSCSeg, int& nDTSeg);
+  void CSCSegmentCounter(const reco::Muon* mu, MuonData& data_);
   void propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_);
   void GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP, MuonData& data_);
   void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_);
@@ -280,6 +283,8 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (muons->size() == 0) return;
 
   cout << "new evt numb is " << iEvent.eventAuxiliary().event() << " and new lumiblock is " << iEvent.eventAuxiliary().luminosityBlock() << endl;
+
+  cout << "Run Number is " << iEvent.run() << std::endl;
   for (size_t i = 0; i < muons->size(); ++i){
     //cout << "new muon" << endl;
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
@@ -302,11 +307,11 @@ float analyser::RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm
   const auto& etaPart = GEMGeometry_->etaPartition(gemid);
   const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
   float deltay_roll =  etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp() - etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp();
-  return cos(stripAngle) * (prop_localx - (rechit)->localPosition().x()) + sin(stripAngle) * (prop_localy + deltay_roll);
+  return cos(stripAngle) * (prop_localx - (rechit)->localPosition().x()) - sin(stripAngle) * (prop_localy + deltay_roll);
 }
-void analyser::CSCSegmentCounter(const reco::Muon* mu, int& n_ME11_segment, int& nCSCSeg, int& nDTSeg){
+void analyser::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   const reco::Track* Track = mu->outerTrack().get();
-  int tmp_CSC_counter = 0; int tmp_DT_counter = 0; int tmp_ME11_counter = 0;
+  int tmp_CSC_counter = 0; int tmp_DT_counter = 0; int tmp_ME11_counter = 0; int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999;
   if(isCosmic){
     tmp_CSC_counter = mu->numberOfSegments(1,2) + mu->numberOfSegments(2,2) + mu->numberOfSegments(3,2) + mu->numberOfSegments(4,2);
     tmp_DT_counter = mu->numberOfSegments(1,1) + mu->numberOfSegments(2,1) + mu->numberOfSegments(3,1) + mu->numberOfSegments(4,1);
@@ -319,6 +324,8 @@ void analyser::CSCSegmentCounter(const reco::Muon* mu, int& n_ME11_segment, int&
         if(cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
           tmp_ME11_counter++;
           ME11_segment = cscSegRef.get();
+          tmp_ME11RecHit_counter = (cscSegRef.get())->nRecHits(); // Find the real function for this. Bad if multiple segments.
+          tmp_ME11_BunchX = ME11_segment->time();
         }
       }
     }
@@ -335,7 +342,9 @@ void analyser::CSCSegmentCounter(const reco::Muon* mu, int& n_ME11_segment, int&
             tmp_ME11_counter++; 
             RecSegment* Rec_segment = (RecSegment*)RecHit;
             ME11_segment = (CSCSegment*)Rec_segment;
+            tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
           }
+          if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1){tmp_ME11RecHit_counter++;}
           if (RecHit->dimension() == 4){tmp_CSC_counter++;}
         }
         if (RecHitSubDet == (uint16_t)MuonSubdetId::DT){
@@ -344,8 +353,11 @@ void analyser::CSCSegmentCounter(const reco::Muon* mu, int& n_ME11_segment, int&
       }
     }
   }
-  nCSCSeg = tmp_CSC_counter; nDTSeg = tmp_DT_counter;
-  n_ME11_segment = tmp_ME11_counter;
+  data_.nCSCSeg = tmp_CSC_counter; data_.nDTSeg = tmp_DT_counter;
+  data_.n_ME11_segment = tmp_ME11_counter;
+  data_.nME11RecHits = tmp_ME11RecHit_counter;
+  data_.ME11_BunchX = tmp_ME11_BunchX;
+  if(data_.n_ME11_segment >= 1 and data_.n_ME11_segment < 1000){data_.hasME11 = 1;}
 }
 void analyser::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){
   const reco::Track* Track;
@@ -543,9 +555,16 @@ void analyser::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   }
   else if (prop_type == 3){
     tree = Segment_tree;
-    if(!(mu->track().isNonnull())){return;}
-    Track = mu->track().get();
-    ttTrack = ttrackBuilder_->build(Track);
+    if(isCosmic){
+      if(!(mu->outerTrack().isNonnull())){return;}
+      Track = mu->outerTrack().get();
+      ttTrack = ttrackBuilder_->build(Track);
+    }
+    else{
+      if(!(mu->track().isNonnull())){return;}
+      Track = mu->track().get();
+      ttTrack = ttrackBuilder_->build(Track);
+    }
   }
   else{
     std::cout << "Bad prop type, failure." << std::endl; return;
@@ -555,10 +574,10 @@ void analyser::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   //Muon Info//////////////////////////////////////////////////////
   data_.muon_charge = mu->charge(); data_.muon_pt = mu->pt(); data_.muon_eta = mu->eta(); data_.muon_momentum = mu->momentum().mag2();
   data_.evtNum = iEvent.eventAuxiliary().event(); data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock(); data_.muonIdx = data_.evtNum*100 + i;
+  data_.runNum = iEvent.run();
   //Track Info//////////////////////////////////////////////////////
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
-  CSCSegmentCounter(mu, data_.n_ME11_segment, data_.nCSCSeg, data_.nDTSeg);
-  if(data_.n_ME11_segment >= 1 and data_.n_ME11_segment < 1000){data_.hasME11 = 1;}
+  CSCSegmentCounter(mu, data_);
   if(prop_type == 3 and data_.hasME11 != 1){return;}
   //which_track
   //Propagation Info//////////////////////////////////////////////////////
