@@ -17,11 +17,11 @@ process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.CSCGeometryESModule.applyAlignment = cms.bool(False)
+#process.CSCGeometryESModule.applyAlignment = cms.bool(False)
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_promptlike', '')
-
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
