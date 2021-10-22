@@ -79,6 +79,7 @@ struct MuonData
   float track_chi2; float track_ndof; int n_ME11_segment; int which_track;
   int hasME11; int hasME11RecHit; int hasME11A; int hasME11ARecHit;
   int nCSCSeg; int nDTSeg; int nME11RecHits; float ME11_BunchX; int ME11_strip;
+  int ME11_location[5];
   //Rechit Info//////////////////////////////////////////////////////
   float rechit_GP[3]; float rechit_LP[3];
   float rechit_yroll; float rechit_localphi_rad; float rechit_localphi_deg;
@@ -110,6 +111,9 @@ void MuonData::init()
   track_chi2 = 999999; track_ndof = 999999; n_ME11_segment = 999999; which_track = 999999;
   hasME11 = 0; hasME11RecHit = 0; hasME11A = 0; hasME11ARecHit = 0;
   nCSCSeg = 999999; nDTSeg = 999999; nME11RecHits = 999999; ME11_BunchX = 999999; ME11_strip = 999999;
+  for(int i=0; i<5; ++i){
+    ME11_location[i] = 999999;
+  }
   //Rechit Info//////////////////////////////////////////////////////
   for(int i=0; i<3; ++i){
     rechit_GP[i] = 999999; rechit_LP[i] = 999999;
@@ -166,6 +170,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("nCSCSeg", &nCSCSeg); t->Branch("nDTSeg", &nDTSeg);
   t->Branch("nME11RecHits", &nME11RecHits); t->Branch("ME11_BunchX", &ME11_BunchX);
   t->Branch("ME11_strip", &ME11_strip);
+  t->Branch("ME11_location", &ME11_location, "ME11_location[5] (end, sta, ring, cha, lay)/I");
   //Rechit Info//////////////////////////////////////////////////////
   t->Branch("rechit_GP", &rechit_GP, "rechit_GP[3] (x,y,z)/F");
   t->Branch("rechit_LP", &rechit_LP, "rechit_LP[3] (x,y,z)/F");
@@ -314,7 +319,7 @@ float analyser::RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm
 }
 void analyser::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   const reco::Track* Track = mu->outerTrack().get();
-  int tmp_CSC_counter = 0; int tmp_DT_counter = 0; int tmp_ME11_counter = 0; int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999; int tmp_ME11_strip = 99999;
+  int tmp_CSC_counter = 0; int tmp_DT_counter = 0; int tmp_ME11_counter = 0; int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999; int tmp_ME11_strip = 99999; bool tmp_hasME11A = 0;
   if(isCosmic){
     tmp_CSC_counter = mu->numberOfSegments(1,2) + mu->numberOfSegments(2,2) + mu->numberOfSegments(3,2) + mu->numberOfSegments(4,2);
     tmp_DT_counter = mu->numberOfSegments(1,1) + mu->numberOfSegments(2,1) + mu->numberOfSegments(3,1) + mu->numberOfSegments(4,1);
@@ -325,6 +330,7 @@ void analyser::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
         auto cscSegRef = MSM.cscSegmentRef;
         auto cscDetID = cscSegRef->cscDetId();
         if(cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
+          if(cscDetID.ring() == 4){tmp_hasME11A = 1;}
           tmp_ME11_counter++;
           ME11_segment = cscSegRef.get();
           tmp_ME11RecHit_counter = (cscSegRef.get())->nRecHits(); // Find the real function for this. Bad if multiple segments.
@@ -333,6 +339,7 @@ void analyser::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
           const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
           const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
           tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(ME11_segment->localPosition());
+          data_.ME11_location[0] = cscDetID.endcap(); data_.ME11_location[1] = cscDetID.station(); data_.ME11_location[2] = cscDetID.ring(); data_.ME11_location[3] = cscDetID.chamber(); data_.ME11_location[4] = cscDetID.layer();
         }
       }
     }
@@ -354,6 +361,7 @@ void analyser::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
             const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
             const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
             tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(ME11_segment->localPosition());
+            data_.ME11_location[0] = CSCDetId(RecHitId).endcap(); data_.ME11_location[1] = CSCDetId(RecHitId).station(); data_.ME11_location[2] = CSCDetId(RecHitId).ring(); data_.ME11_location[3] = CSCDetId(RecHitId).chamber(); data_.ME11_location[4] = CSCDetId(RecHitId).layer();
           }
           if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1){tmp_ME11RecHit_counter++;}
           if (RecHit->dimension() == 4){tmp_CSC_counter++;}
@@ -369,6 +377,7 @@ void analyser::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   data_.nME11RecHits = tmp_ME11RecHit_counter;
   data_.ME11_BunchX = tmp_ME11_BunchX;
   data_.ME11_strip = tmp_ME11_strip;
+  data_.hasME11A =  tmp_hasME11A;
   if(data_.n_ME11_segment >= 1 and data_.n_ME11_segment < 1000){data_.hasME11 = 1;}
 }
 void analyser::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){
