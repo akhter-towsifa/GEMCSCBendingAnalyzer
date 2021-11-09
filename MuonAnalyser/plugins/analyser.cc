@@ -395,7 +395,8 @@ void analyser::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       track = ttrackBuilder_->build(Track);
     }
     if(prop_type == 2){
-      Track = mu->outerTrack().get();
+      Track = mu->track().get();
+      //Track = mu->outerTrack().get();
       track = ttrackBuilder_->build(Track);
     }
     float inner_delta = abs(track.innermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
@@ -415,6 +416,7 @@ void analyser::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
       if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1){
         tmp_has_prop = true;
+        std::cout << "Delta to GEM!!! = " << used_delta << " prop " << prop_type << std::endl;
         pos_GP = tsos_ch.globalPosition();
         pos_startingPoint_GP = tsos_seg.globalPosition();
       }
