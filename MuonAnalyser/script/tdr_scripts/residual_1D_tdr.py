@@ -19,8 +19,8 @@ R = 0.08*W_ref
 
 xbins = 100
 ybins = 100
-xlow = -5
-xhigh = 5
+xlow = -2
+xhigh = 2
 ylow = -300
 yhigh = 300
 zlow = -2
