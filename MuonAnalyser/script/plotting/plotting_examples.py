@@ -3,9 +3,9 @@ from make_plot import *
 
 f = ROOT.TFile("out_file.root")
 
-event = f.Get("analyser/CSC_Prop")
-event = f.Get("analyser/Inner_Prop")
-event = f.Get("analyser/ME11Seg_Prop")
+event = f.Get("analyzer/CSC_Prop")
+event = f.Get("analyzer/Inner_Prop")
+event = f.Get("analyzer/ME11Seg_Prop")
 
 if os.path.exists("plots") == False:
   os.mkdir("plots/")
