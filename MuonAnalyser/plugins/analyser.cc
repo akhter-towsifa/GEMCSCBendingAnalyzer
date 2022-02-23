@@ -88,6 +88,8 @@ struct MuonData
   float RdPhi; float RdPhi_Corrected; int rechit_detId;
   int nRecHitsTot; int nRecHits5; int nRecHits2;
   int rechit_location[5];
+  int nRecHitsRpos1L1; int nRecHitsRpos1L2;
+  int nRecHitsRneg1L1; int nRecHitsRneg1L2;
   //Sim info for MC
   float sim_GP[3]; float sim_LP[3];
   float simDy; float sim_yroll; int nSim;
@@ -126,6 +128,8 @@ void MuonData::init()
   for(int i=0; i<5; ++i){
     rechit_location[i] = 999999;
   }
+  nRecHitsRpos1L1 = 999999; nRecHitsRpos1L2 = 999999;
+  nRecHitsRneg1L1 = 999999; nRecHitsRneg1L2 = 999999;
   //Sim info for MC
   for(int i=0; i<3; ++i){
     sim_GP[i] = 9999999; sim_LP[i] = 9999999;
@@ -188,6 +192,10 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("nRecHits2", &nRecHits2);
   t->Branch("nRecHits5", &nRecHits5);
   t->Branch("rechit_location", &rechit_location, "rechit_location[5] (reg, sta, cha, lay, rol)/I");
+  t->Branch("nRecHitsRpos1L1", &nRecHitsRpos1L1);
+  t->Branch("nRecHitsRpos1L2", &nRecHitsRpos1L2);
+  t->Branch("nRecHitsRneg1L1", &nRecHitsRneg1L1);
+  t->Branch("nRecHitsRneg1L2", &nRecHitsRneg1L2);
   //Sim info for MC
   t->Branch("sim_GP", &sim_GP, "sim_GP[3] (x,y,z)/F");
   t->Branch("sim_LP", &sim_LP, "sim_LP[3] (x,y,z)/F");
@@ -221,6 +229,7 @@ private:
   edm::EDGetTokenT<vector<PSimHit> > gemSimHits_;
   edm::Handle<vector<PSimHit> > gemSimHits;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
+  edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
 
   edm::Service<TFileService> fs;
 
@@ -240,10 +249,12 @@ private:
 
   MuonData data_;
   TTree* CSC_tree; TTree* Tracker_tree; TTree* Segment_tree;
+  TH2D* nME11_col_vs_matches = new TH2D("nME11_test", "nME11_test", 5, 0, 5, 5, 0, 5);
 
   bool isMC;
   const CSCSegment *ME11_segment;
 };
+
 
 analyser::analyser(const edm::ParameterSet& iConfig)
 {
@@ -254,6 +265,8 @@ analyser::analyser(const edm::ParameterSet& iConfig)
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
+  cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
+
 
   tracker_prop = iConfig.getParameter<bool>("tracker_prop");
   CSC_prop = iConfig.getParameter<bool>("CSC_prop");
@@ -290,14 +303,11 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
-  cout << "new evt numb is " << iEvent.eventAuxiliary().event() << " and new lumiblock is " << iEvent.eventAuxiliary().luminosityBlock() << endl;
+  cout << "New! EvtNumber = " << iEvent.eventAuxiliary().event() << " LumiBlock = " << iEvent.eventAuxiliary().luminosityBlock() << " RunNumber = " << iEvent.run() << endl;
 
-  cout << "Run Number is " << iEvent.run() << std::endl;
   for (size_t i = 0; i < muons->size(); ++i){
-    //cout << "new muon" << endl;
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
     const reco::Muon* mu = muRef.get();
-
     //if (mu->pt() < 2.0) continue;  //can apply a pt cut later
     if (not mu->standAloneMuon()) continue;
     cout << "new standalone" << endl;
@@ -306,6 +316,77 @@ analyser::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       int prop_type = *it;
       propagate(mu, prop_type, iEvent, i);
     }
+  }
+
+  if (debug){
+    edm::Handle<CSCSegmentCollection> cscSegments;
+    int muon_size = muons->size();
+    int CSCSegments_size = cscSegments->size();
+    int muon_STA_counter = 0;
+    int ME11_counter = 0;
+    int Matches_counter_norepeat = 0;
+    int ME11_counter_norepeat = 0;
+    int tot_muon_ME11_counter = 0;
+
+    cout << "Starting loop over all gemRecHits " << gemRecHits->size() << std::endl;
+    for(GEMRecHitCollection::const_iterator gemRecHit = gemRecHits->begin(); gemRecHit != gemRecHits->end(); gemRecHit++){
+      cout << gemRecHit->gemId() << endl;
+    }
+
+    std::cout << "MUON MATCHES" << std::endl;
+    std::vector<int> list_of_matches = {};
+    for (size_t i = 0; i < muons->size(); ++i){
+      edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
+      const reco::Muon* mu = muRef.get();
+      if (mu->isStandAloneMuon()){
+        muon_STA_counter ++;
+        int muon_ME11_counter_tmp = 0;
+        auto matches = mu->matches();
+        for (auto MCM : matches){
+          if(MCM.detector() != 2) continue;
+          for(auto MSM : MCM.segmentMatches){
+            auto cscSegRef = MSM.cscSegmentRef;
+            auto cscDetID = cscSegRef->cscDetId();
+            std::cout << cscDetID.endcap() << cscDetID.station() << cscDetID.ring() << cscDetID.chamber() << std::endl;
+            if(cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
+              muon_ME11_counter_tmp++;
+              int tmp_ID = cscDetID.endcap()*10000+cscDetID.station()*1000+cscDetID.ring()*100+cscDetID.chamber();
+              if (std::find(list_of_matches.begin(), list_of_matches.end(), tmp_ID) == list_of_matches.end()){
+                list_of_matches.push_back(tmp_ID);
+                std::cout << "New Det Triggered " << tmp_ID << std::endl;
+                Matches_counter_norepeat++;
+              }
+            }
+          }
+        }
+        std::cout << "Muon had " << muon_ME11_counter_tmp << " segments" << std::endl;
+        tot_muon_ME11_counter += muon_ME11_counter_tmp;
+      }
+    }
+
+    std::cout << "SEGMENT COLLECTION" << std::endl;
+    std::vector<int> list_of_collection = {};
+    for(CSCSegmentCollection::const_iterator segmentCSC = cscSegments->begin(); segmentCSC != cscSegments->end(); segmentCSC++){  
+      auto cscDetID = (segmentCSC)->cscDetId();
+      std::cout << cscDetID.endcap() << cscDetID.station() << cscDetID.ring() << cscDetID.chamber() << std::endl;
+      if(cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
+        ME11_counter++;
+        int tmp_ID = cscDetID.endcap()*10000+cscDetID.station()*1000+cscDetID.ring()*100+cscDetID.chamber();
+        if (std::find(list_of_collection.begin(), list_of_collection.end(), tmp_ID) == list_of_collection.end()){
+          list_of_collection.push_back(tmp_ID);
+          std::cout << "New Det Triggered " << tmp_ID << std::endl;
+          ME11_counter_norepeat++;
+        }
+      }
+    }
+  std::cout << "Muon size           = " << muon_size << std::endl;
+  std::cout << "Segment Size        = " << CSCSegments_size << std::endl;
+  std::cout << "muon STA  counter   = " << muon_STA_counter << std::endl;
+  std::cout << "Muon Matches ME11   = " << tot_muon_ME11_counter << std::endl;
+  std::cout << "Seg Collection ME11 = " << ME11_counter << std::endl;
+  std::cout << "Muon Matches no rep = " << Matches_counter_norepeat << std::endl;
+  std::cout << "Coll Matches no rep = " << ME11_counter_norepeat << std::endl;
+  nME11_col_vs_matches->Fill(Matches_counter_norepeat, ME11_counter_norepeat);
   }
 }
 
@@ -332,6 +413,7 @@ void analyser::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
         if(cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
           if(cscDetID.ring() == 4){tmp_hasME11A = 1;}
           tmp_ME11_counter++;
+          if (debug){std::cout << "isCosmic = True! Getting ME11 Segment" << std::endl;}
           ME11_segment = cscSegRef.get();
           tmp_ME11RecHit_counter = (cscSegRef.get())->nRecHits(); // Find the real function for this. Bad if multiple segments.
           tmp_ME11_BunchX = ME11_segment->time();
@@ -354,6 +436,7 @@ void analyser::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
         if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
           if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1 and RecHit->dimension() == 4){
             tmp_ME11_counter++; 
+            if (debug){std::cout << "isCosmic = False! Getting ME11 Segment" << std::endl;}
             RecSegment* Rec_segment = (RecSegment*)RecHit;
             ME11_segment = (CSCSegment*)Rec_segment;
             tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
@@ -396,19 +479,18 @@ void analyser::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     }
     if(prop_type == 2){
       Track = mu->track().get();
-      //Track = mu->outerTrack().get();
       track = ttrackBuilder_->build(Track);
     }
     float inner_delta = abs(track.innermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
     float outer_delta = abs(track.outermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
     float used_delta = 0;
     if (inner_delta < outer_delta){
-      tsos_seg = track.innermostMeasurementState(); tsos_ch = propagator->propagate(tsos_seg, ch->surface());
+      tsos_seg = track.innermostMeasurementState(); tsos_ch = propagator->propagate(tsos_seg, ch->surface()); used_delta = inner_delta;
       if(prop_type == 1){data_.which_track = 1;}
       else{data_.which_track = 0;}
     }
     else{
-      tsos_seg = track.outermostMeasurementState(); tsos_ch = propagator->propagate(tsos_seg, ch->surface());
+      tsos_seg = track.outermostMeasurementState(); tsos_ch = propagator->propagate(tsos_seg, ch->surface()); used_delta = outer_delta;
       if(prop_type == 1){data_.which_track = 0;}
       else{data_.which_track = 1;}
     }
@@ -417,7 +499,7 @@ void analyser::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
       if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1){
         tmp_has_prop = true;
-        std::cout << "Delta to GEM!!! = " << used_delta << " prop " << prop_type << std::endl;
+        if(debug){std::cout << "Delta to GEM!!! = " << used_delta << " prop " << prop_type << std::endl;}
         pos_GP = tsos_ch.globalPosition();
         pos_startingPoint_GP = tsos_seg.globalPosition();
       }
@@ -437,7 +519,6 @@ void analyser::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     LocalTrajectoryError error(asSMatrix<5>(mat));
     TrajectoryStateOnSurface tsos_seg(param, error, segDet->surface(), &*theService_->magneticField());
     TrajectoryStateOnSurface tsos_ch = propagator->propagate(tsos_seg, ch->surface());
-    //tsos_ch = propagator->propagate(tsos_seg, ch->surface());
     if (tsos_ch.isValid()){
       const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
       const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
@@ -475,9 +556,18 @@ void analyser::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
   float tmp_RdPhi = 9999.; float tmp_RdPhi_Corrected; int tmp_rechit_detId;
   int tmp_nRecHitsTot = 0; int tmp_nRecHits5 = 0; int tmp_nRecHits2 = 0;
   int tmp_rechit_region; int tmp_rechit_station; int tmp_rechit_chamber; int tmp_rechit_layer; int tmp_rechit_roll;
+  int tmp_nRecHitsRpos1L1 = 0; int tmp_nRecHitsRpos1L2 = 0; int tmp_nRecHitsRneg1L1 = 0; int tmp_nRecHitsRneg1L2 = 0;
   for(auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++){
     if((hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM){
       GEMDetId gemid((hit)->geographicalId());
+      if(gemid.region() == 1){
+        if(gemid.layer() == 1){tmp_nRecHitsRpos1L1++;}
+        if(gemid.layer() == 2){tmp_nRecHitsRpos1L2++;}
+      }
+      if(gemid.region() == -1){
+        if(gemid.layer() == 1){tmp_nRecHitsRneg1L1++;}
+        if(gemid.layer() == 2){tmp_nRecHitsRneg1L2++;}
+      }
       if(gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()){
         const auto& etaPart = GEMGeometry_->etaPartition(gemid);
         float strip = etaPart->strip(hit->localPosition());
@@ -527,6 +617,7 @@ void analyser::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
     data_.rechit_detId = tmp_rechit_detId;
     data_.nRecHitsTot = tmp_nRecHitsTot; data_.nRecHits5 = tmp_nRecHits5; data_.nRecHits2 = tmp_nRecHits2;
     data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
+    data_.nRecHitsRpos1L1 = tmp_nRecHitsRpos1L1; data_.nRecHitsRpos1L2 = tmp_nRecHitsRpos1L2; data_.nRecHitsRneg1L1 = tmp_nRecHitsRneg1L1; data_.nRecHitsRneg1L2 = tmp_nRecHitsRneg1L2;
   }
 }
 void analyser::GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_){
@@ -637,6 +728,6 @@ bool analyser::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartit
 
 
 void analyser::beginJob(){}
-void analyser::endJob(){}
+void analyser::endJob(){nME11_col_vs_matches->Write();}
 
 DEFINE_FWK_MODULE(analyser);
