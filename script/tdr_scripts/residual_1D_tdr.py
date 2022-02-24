@@ -3,7 +3,7 @@ import ROOT, tdrstyle, sys, os, array
 # ARGUMENTS ************ file, shift (-.1cm), direction (X), Zlow, Zhigh
 
 f = ROOT.TFile("{}".format(sys.argv[1]))
-event = f.Get("analyser/ME11Seg_Prop")
+event = f.Get("analyzer/ME11Seg_Prop")
 ROOT.gROOT.SetBatch(1)
 tdrstyle.setTDRStyle()
 

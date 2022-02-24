@@ -101,7 +101,7 @@ void doFit(bool doDx, bool doDy, bool doDphiz) {
 
 int main() {
   TFile *tf = new TFile("input.root");							//Name of input root file
-  TTree *tmpTr = (TTree*)tf->Get("analyser/ME11Seg_Prop");				//TTree directory in the ntuple
+  TTree *tmpTr = (TTree*)tf->Get("analyzer/ME11Seg_Prop");				//TTree directory in the ntuple MAKE SURE TO USE CORRECT PROPAGATION TREE
 
   TFile* tmpTF = new TFile("tmp1.root","recreate");					//tmp files created to stop memory errors
   std::cout << "Copying Tree" << std::endl;

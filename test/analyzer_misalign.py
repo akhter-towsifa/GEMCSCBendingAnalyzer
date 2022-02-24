@@ -2,8 +2,8 @@ import FWCore.ParameterSet.Config as cms
 #from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
 from Configuration.Eras.Era_Run3_cff import Run3
 
-#process = cms.Process('analyser',Phase2C9)
-process = cms.Process('analyser',Run3)
+#process = cms.Process('analyzer',Phase2C9)
+process = cms.Process('analyzer',Run3)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
@@ -82,9 +82,9 @@ process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                         )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("out_analyser.root"))
+process.TFileService = cms.Service("TFileService", fileName = cms.string("out_analyzer.root"))
 
-process.analyser = cms.EDAnalyzer('analyser', 
+process.analyser = cms.EDAnalyzer('analyzer', 
 	process.MuonServiceProxy, 
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
@@ -97,5 +97,5 @@ process.analyser = cms.EDAnalyzer('analyser',
         isCosmic = cms.bool(False)
 )
 
-#process.p = cms.EndPath(process.analyser)
-process.p = cms.Path(process.analyser)
+#process.p = cms.EndPath(process.analyzer)
+process.p = cms.Path(process.analyzer)

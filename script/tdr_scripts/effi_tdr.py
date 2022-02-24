@@ -7,7 +7,7 @@ proplist = ["ME11Seg_Prop", "CSC_Prop"]
 for prop in proplist:
   for layer in [1, 2]:
     for region in [-1, 1]:
-      event = f.Get("analyser/"+prop)
+      event = f.Get("analyzer/"+prop)
       ROOT.gROOT.SetBatch(1)
       tdrstyle.setTDRStyle()
 

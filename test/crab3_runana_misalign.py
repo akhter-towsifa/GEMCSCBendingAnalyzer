@@ -4,14 +4,14 @@ import os
 config = config()
 ###2018runA  314472-318876
 #section general
-config.General.requestName = 'analyser_misalign'
+config.General.requestName = 'analyzer_misalign'
 config.General.workArea = '3dof_1134GT2021design_bigger_initial/3dof_first_10keach_bigger_1134GT2021design_1203_feb21'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
 #section JobType
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'analyser_misalign.py'
+config.JobType.psetName = 'analyzer_misalign.py'
 config.JobType.maxMemoryMB = 2000
 config.JobType.maxJobRuntimeMin = 1440 # 1440min = 24hours
 config.JobType.numCores = 1

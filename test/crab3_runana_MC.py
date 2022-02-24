@@ -3,14 +3,14 @@ from CRABClient.UserUtilities import config
 config = config()
 ###2018runA  314472-318876
 #section general
-config.General.requestName = 'analyser'
+config.General.requestName = 'analyzer'
 config.General.workArea = 'AntonelloComparison_isCosmic_False'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
 #section JobType
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'analyser.py'
+config.JobType.psetName = 'analyzer.py'
 config.JobType.maxMemoryMB = 2000
 config.JobType.maxJobRuntimeMin = 1440 # 1440min = 24hours
 config.JobType.numCores = 1
