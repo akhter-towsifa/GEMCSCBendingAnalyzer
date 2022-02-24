@@ -100,10 +100,10 @@ void doFit(bool doDx, bool doDy, bool doDphiz) {
 }
 
 int main() {
-  TFile *tf = new TFile("input.root");
+  TFile *tf = new TFile("input.root");							//Name of input root file
   TTree *tmpTr = (TTree*)tf->Get("analyser/ME11Seg_Prop");				//TTree directory in the ntuple
 
-  TFile* tmpTF = new TFile("tmp1.root","recreate");
+  TFile* tmpTF = new TFile("tmp1.root","recreate");					//tmp files created to stop memory errors
   std::cout << "Copying Tree" << std::endl;
   TTree *cutEn = tmpTr->CopyTree(Form("n_ME11_segment == 1 && muon_pt > 5 && abs(RdPhi) < 100 && has_fidcut"));                 //Basic cut on full tree
   std::cout << "Copied" << std::endl;
@@ -174,8 +174,8 @@ int main() {
         dy = mResult[1];
         dphiz = mResult[2];
         myfile << detNum << ", " <<dx << ", " << dy << ", " << dz << ", " << dphix << ", " << dphiy << ", " << dphiz << ", " << mEvents << "\n";
-        //delete tt_tmp;
-        //delete tmpTF;
+        delete tt_tmp;
+        delete tmpTF;
       }
     }
     myfile.close();
