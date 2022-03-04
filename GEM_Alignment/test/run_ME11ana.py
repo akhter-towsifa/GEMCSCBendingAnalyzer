@@ -64,13 +64,14 @@ process.options = cms.untracked.PSet(
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(outfile)) #variable name set above
 
-process.analyzer = cms.EDAnalyzer('analyzer', 
-	process.MuonServiceProxy, 
+process.ME11ana = cms.EDAnalyzer('ME11ana', 
+	process.MuonServiceProxy,
+        csc2DRecHits = cms.InputTag("csc2DRecHits"), 
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("muons"),
 	vertexCollection = cms.InputTag("offlinePrimaryVerticies"),
-        debug = cms.bool(True),
+        debug = cms.bool(False),
         isCosmic = cms.bool(False)
 )
 
