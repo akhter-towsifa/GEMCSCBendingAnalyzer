@@ -189,9 +189,8 @@ private:
   void CSCSegmentCounter(const reco::Muon* mu, ME11Data& data_);
   void propagate_to_ME11(const reco::Muon* mu, const CSCLayer* ch, bool &tmp_has_prop, GlobalPoint &pos_GP, ME11Data& data_);
   void ME11_rechit_matcher(const CSCLayer* ch, LocalPoint prop_LP, ME11Data& data_);
-  void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, ME11Data& data_);
   float RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<GEMRecHit> >::const_iterator rechit, float prop_localx, float prop_localy, const GEMEtaPartition* ch);
-  bool fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch);
+  bool fidcutCheck(float local_y, float localphi_deg);
 
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
   edm::Handle<GEMRecHitCollection> gemRecHits;
@@ -437,38 +436,6 @@ void ME11ana::CSCSegmentCounter(const reco::Muon* mu, ME11Data& data_){
   if(data_.n_ME11_segment >= 1 and data_.n_ME11_segment < 1000){data_.hasME11 = 1;}
 }
 
-void ME11ana::GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, ME11Data& data_){
-  float tmpDy = 999.; float tmpDr = 999.; int tmpSimCounter = 0;
-  float tmp_sim_GP_x; float tmp_sim_GP_y; float tmp_sim_GP_z;
-  float tmp_sim_LP_x; float tmp_sim_LP_y; float tmp_sim_LP_z;
-  bool has_tmp = false;
-  for (const auto& simHit:*gemSimHits.product()){
-    GEMDetId gemid((simHit).detUnitId());
-    if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()){
-      tmpSimCounter++;
-      const auto& etaPart = GEMGeometry_->etaPartition(gemid);
-      float dy = prop_GP.y() - etaPart->toGlobal(simHit.localPosition()).y();
-      float dx = prop_GP.x() - etaPart->toGlobal(simHit.localPosition()).x();
-      if (dy < tmpDy) tmpDy = dy;
-      if (pow(pow(dy, 2) + pow(dx, 2), 0.5) < tmpDr){
-        tmp_sim_GP_x = etaPart->toGlobal(simHit.localPosition()).x();
-        tmp_sim_GP_y = etaPart->toGlobal(simHit.localPosition()).y();
-        tmp_sim_GP_z = etaPart->toGlobal(simHit.localPosition()).z();
-        tmp_sim_LP_x = simHit.localPosition().x();
-        tmp_sim_LP_y = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2))).y() + simHit.localPosition().y();
-        tmp_sim_LP_z = simHit.localPosition().z();
-        tmpDr = pow(pow(dy, 2) + pow(dx, 2), 0.5);
-        has_tmp = true;
-      }
-    }
-  }
-  if(has_tmp){
-    data_.sim_GP[0] = tmp_sim_GP_x; data_.sim_GP[1] = tmp_sim_GP_y; data_.sim_GP[2] = tmp_sim_GP_z;
-    data_.sim_LP[0] = tmp_sim_LP_x; data_.sim_LP[1] = tmp_sim_LP_y; data_.sim_LP[2] = tmp_sim_LP_z;
-    data_.simDy = (tmpDy);
-    data_.nSim = (tmpSimCounter);
-  }
-}
 void ME11ana::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
   const reco::Track* Track;
   reco::TransientTrack ttTrack;
@@ -501,7 +468,7 @@ void ME11ana::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
 }
 
 
-
+/*
 bool ME11ana::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch){
   const float fidcut_angle = 1.0;
   const float cut_chamber = 5.0;
@@ -511,7 +478,19 @@ bool ME11ana::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartiti
   if ((abs(localphi_deg) < cut_angle) && ((local_y < (height - cut_chamber) && ch->id().roll() == 1) || (local_y > -1.0*(height - cut_chamber) && ch->id().roll() == 8) || (ch->id().roll() != 1 && ch->id().roll() != 8))){return 1;}
   else{return 0;}
 }
+*/
 
+bool ME11ana::fidcutCheck(float local_y, float localphi_deg){
+  const float fidcut_angle = 1.0;
+  const float ymin = -65.0;
+  const float ymax =  65.0;
+  const float cut_angle = 5.0 - fidcut_angle;
+  std::cout << "Checking fidcut" << std::endl;
+  std::cout << "Local y = " << local_y << " min/max = " << ymin << ymax << std::endl;
+  std::cout << "Local phi = " << localphi_deg << " max = " << cut_angle << std::endl;
+  if ((abs(localphi_deg) < cut_angle) && (ymin < local_y && local_y < ymax)){return 1;}
+  else{return 0;}
+}
 
 void ME11ana::propagate_to_ME11(const reco::Muon* mu, const CSCLayer* ch, bool &tmp_has_prop, GlobalPoint &pos_GP, ME11Data& data_){
   const reco::Track* Track;
@@ -551,10 +530,29 @@ void ME11ana::propagate_to_ME11(const reco::Muon* mu, const CSCLayer* ch, bool &
     data_.prop_GP[0] = pos_GP.x(); data_.prop_GP[1] = pos_GP.y(); data_.prop_GP[2] = pos_GP.z();
     data_.prop_LP[0] = tmp_prop_LP.x(); data_.prop_LP[1] = tmp_prop_LP.y(); data_.prop_LP[2] = tmp_prop_LP.z();
     data_.prop_startingPoint_GP[0] = pos_startingPoint_GP.x(); data_.prop_startingPoint_GP[1] = pos_startingPoint_GP.y(); data_.prop_startingPoint_GP[2] = pos_startingPoint_GP.z();
-    float local_phi = tmp_prop_LP.phi();
+    //std::cout << "GP     = " << pos_GP << std::endl;
+    //std::cout << "mag    = " << pos_GP.mag() << std::endl;
+    //std::cout << "mag2   = " << pos_GP.mag2() << std::endl;
+    //std::cout << "perp2  = " << pos_GP.perp2() << std::endl;
+    //std::cout << "perp   = " << pos_GP.perp() << std::endl;
+    float radius = pos_GP.perp();
+    LocalPoint local_to_center(tmp_prop_LP.x(), tmp_prop_LP.y() + radius, 0); //tmp_prop_LP is from center of chamber, not center of endcap
+    float local_phi = local_to_center.phi();
+    std::cout << "Local nofix = " << tmp_prop_LP << std::endl;
+    std::cout << "Local point = " << local_to_center << std::endl;
+    std::cout << "Local phi   = " << ((3.14159265/2.) - local_phi)*(180./3.14159265) << std::endl;
+
+
+    //int strip = ch->geometry()->nearestStrip(tmp_prop_LP);
+    //double stripAngle = ch->geometry()->stripAngle(strip) - M_PI/2.;
+
+
+    //std::cout << "Strip angle = " << stripAngle << std::endl;
+    //std::cout << "Local point = " << local_to_center << std::endl;
     data_.prop_localphi_rad = (3.14159265/2.) - local_phi;
     data_.prop_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
     data_.has_prop = tmp_has_prop;
+    data_.has_fidcut = fidcutCheck(tmp_prop_LP.y(), ((3.14159265/2.) - local_phi)*(180./3.14159265));
     data_.prop_location[0] = ch->id().zendcap(); data_.prop_location[1] = ch->id().station(); data_.prop_location[2] = ch->id().ring(); data_.prop_location[3] = ch->id().chamber(); data_.prop_location[4] = ch->id().layer();
   }
 }
