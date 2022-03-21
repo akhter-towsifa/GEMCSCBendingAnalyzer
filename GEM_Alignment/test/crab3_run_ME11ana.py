@@ -3,8 +3,8 @@ from CRABClient.UserUtilities import config
 config = config()
 ###2018runA  314472-318876
 #section general
-config.General.requestName = 'ME11ana'
-config.General.workArea = 'ME11_aligner_test_2021design_mar3'#working dir 
+config.General.requestName = 'ME11ana_iter1_from_Hyunyong_xml'
+config.General.workArea = 'ME11_aligner_iter1_from_Hyunyong_xml'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
@@ -19,7 +19,11 @@ config.JobType.allowUndistributedCMSSW = True
 #config.JobType.pyCfgParams
 #config.JobType.inputFiles
 
-#config.JobType.inputFiles = ['/uscms/home/daebi/nobackup/analyser/CMSSW_11_0_0/src/GEMCSCBendingAnalyzer/MuonAnalyser/test/test.db']
+misalign = True
+if misalign:
+  #config.JobType.inputFiles = ['./UL2018IOV3_RE_CSC_03.db']
+  #config.JobType.inputFiles = ['./ME11_UL2018IOV_iter1.csv.db']
+  config.JobType.inputFiles = ['./ME11_UL2018IOV_iter1_fixedFromXML.csv.db']
 
 #section Data
 config.Data.inputDataset = '/singleMuonGun_MuAl_pT-30to200_1102_phase1_2021_realistic/hyunyong-crab_singleMuonGun_pT-30to200_1102_phase1_2021_realistic_RAW2DIGI_FullRECOv4-1b4eba2dcd577d6bb642bb3e45609e5f/USER'

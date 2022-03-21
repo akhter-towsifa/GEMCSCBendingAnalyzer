@@ -17,7 +17,31 @@ process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
-#process.CSCGeometryESModule.applyAlignment = cms.bool(False)
+
+
+### This is the misalignment part
+misalign = False
+if misalign:
+  process.GlobalTag.toGet = cms.VPSet(
+    cms.PSet(
+        connect = cms.string('sqlite_file:ME11_UL2018IOV_iter1_fixedFromXML.csv.db'),
+        record = cms.string('CSCAlignmentRcd'),
+        tag = cms.string('CSCAlignmentRcd')
+    ),
+    cms.PSet(
+        connect = cms.string('sqlite_file:ME11_UL2018IOV_iter1_fixedFromXML.csv.db'),
+        record = cms.string('CSCAlignmentErrorExtendedRcd'),
+        tag = cms.string('CSCAlignmentErrorExtendedRcd')
+    ),
+    cms.PSet(record=cms.string('GlobalPositionRcd'), tag = cms.string('IdealGeometry'))
+  )
+
+  #process.GEMGeometryESModule.applyAlignment = cms.bool(True)
+  process.CSCGeometryESModule.applyAlignment = cms.bool(True)
+################################
+
+
+
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
