@@ -84,7 +84,7 @@ struct ME11Data
   float rechit_GP[3]; float rechit_LP[3];
   float rechit_localphi_rad; float rechit_localphi_deg;
   bool has_rechit;
-  float RdPhi; float RdPhi_Corrected; int rechit_detId;
+  float RdPhi; int rechit_detId;
   int rechit_location[5];
   //Sim info for MC
   float sim_GP[3]; float sim_LP[3];
@@ -118,7 +118,7 @@ void ME11Data::init()
   }
   rechit_localphi_rad = 999999; rechit_localphi_deg = 999999;
   has_rechit = false;
-  RdPhi = 999999; RdPhi_Corrected = 999999; rechit_detId = 999999;
+  RdPhi = 999999; rechit_detId = 999999;
   for(int i=0; i<5; ++i){
     rechit_location[i] = 999999;
   }
@@ -162,7 +162,6 @@ TTree* ME11Data::book(TTree *t){
   t->Branch("rechit_localphi_deg", &rechit_localphi_deg);
   t->Branch("has_rechit", &has_rechit);
   t->Branch("RdPhi", &RdPhi);
-  t->Branch("RdPhi_Corrected", &RdPhi_Corrected);
   t->Branch("rechit_detId", &rechit_detId);
   t->Branch("rechit_location", &rechit_location, "rechit_location[5] (reg, sta, ring, cha, lay)/I");
   //Sim info for MC
@@ -565,7 +564,7 @@ void ME11ana::ME11_rechit_matcher(const CSCLayer* ch, LocalPoint prop_LP, ME11Da
   float tmp_rechit_LP_x; float tmp_rechit_LP_y; float tmp_rechit_LP_z;
   float tmp_rechit_localphi_rad; float tmp_rechit_localphi_deg;
   bool tmp_has_rechit = false;
-  float tmp_RdPhi = 9999.; float tmp_RdPhi_Corrected; int tmp_rechit_detId;
+  float tmp_RdPhi = 9999.; int tmp_rechit_detId;
   int tmp_rechit_region; int tmp_rechit_station; int tmp_rechit_ring; int tmp_rechit_chamber; int tmp_rechit_layer;
   for (auto hit = csc2DRecHits->begin(); hit != csc2DRecHits->end(); hit++){ 
     CSCDetId cscid((hit)->geographicalId());
@@ -582,10 +581,6 @@ void ME11ana::ME11_rechit_matcher(const CSCLayer* ch, LocalPoint prop_LP, ME11Da
     tmp_rechit_localphi_rad = (3.14159265/2.) - local_phi;
     tmp_rechit_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
     tmp_has_rechit = true;
-    //tmp_RdPhi_Corrected = tmp_RdPhi;
-    //if((gemid.region() == 1 and gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)){
-    //  tmp_RdPhi_Corrected = -1.0*tmp_RdPhi_Corrected;
-    //}
     tmp_rechit_detId = cscid.zendcap()*(cscid.station()*100 + cscid.chamber());
     tmp_rechit_region = cscid.zendcap(); tmp_rechit_station = cscid.station(); tmp_rechit_ring = cscid.ring(); tmp_rechit_chamber = cscid.chamber(); tmp_rechit_layer = cscid.layer();
 
@@ -598,7 +593,6 @@ void ME11ana::ME11_rechit_matcher(const CSCLayer* ch, LocalPoint prop_LP, ME11Da
     data_.rechit_localphi_deg = tmp_rechit_localphi_deg;
     data_.has_rechit = tmp_has_rechit;
     data_.RdPhi = tmp_RdPhi;
-    //data_.RdPhi_Corrected = tmp_RdPhi_Corrected;
     data_.rechit_detId = tmp_rechit_detId;
     data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_ring; data_.rechit_location[3] = tmp_rechit_chamber; data_.rechit_location[4] = tmp_rechit_layer;
   }

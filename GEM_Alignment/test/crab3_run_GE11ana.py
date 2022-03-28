@@ -3,14 +3,14 @@ from CRABClient.UserUtilities import config
 config = config()
 ###2018runA  314472-318876
 #section general
-config.General.requestName = 'ME11ana_CRAFT2022_250322_ExpressCosmics_ME11Iter2_Align'
-config.General.workArea = 'ME11ana_CRAFT2022_ExpressCosmics'#working dir
+config.General.requestName = 'GE11ana_CRAFT2022_250322_ExpressCosmics_ME11Iter2_Align'
+config.General.workArea = 'GEMana_CRAFT2022_ExpressCosmics'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
 #section JobType
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'run_ME11ana.py'
+config.JobType.psetName = 'run_GE11ana.py'
 config.JobType.maxMemoryMB = 2000
 config.JobType.maxJobRuntimeMin = 1440 # 1440min = 24hours
 config.JobType.numCores = 1
@@ -19,7 +19,7 @@ config.JobType.allowUndistributedCMSSW = True
 #config.JobType.pyCfgParams
 #config.JobType.inputFiles
 
-misalign = True
+misalign = True  #Make sure to change the run_GE11ana.py too!!!
 if misalign:
   #config.JobType.inputFiles = ['./UL2018IOV3_RE_CSC_03.db']
   #config.JobType.inputFiles = ['./ME11_UL2018IOV_iter1.csv.db']
