@@ -8,7 +8,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -206,7 +206,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
 }
 
 
-class analyzer : public edm::EDAnalyzer {
+class analyzer : public edm::one::EDAnalyzer<> {
 public:
   explicit analyzer(const edm::ParameterSet&);
   ~analyzer(){};
@@ -253,11 +253,19 @@ private:
 
   bool isMC;
   const CSCSegment *ME11_segment;
+
+  const edm::ESGetToken<GEMGeometry, MuonGeometryRecord> gemGeomToken_;
+  const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeomToken_;
+  const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttkToken_;
+  const edm::ESGetToken<GlobalTrackingGeometry, GlobalTrackingGeometryRecord> geomToken_;
 };
 
 
 analyzer::analyzer(const edm::ParameterSet& iConfig)
-{
+  : gemGeomToken_(esConsumes()),
+    cscGeomToken_(esConsumes()),
+    ttkToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
+    geomToken_(esConsumes()) {
   cout << "Begin analyzer" << endl;
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
   theService_ = new MuonServiceProxy(serviceParameters, consumesCollector());
@@ -283,12 +291,17 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
 
 void
 analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-  iSetup.get<MuonGeometryRecord>().get(GEMGeometry_);
-  iSetup.get<MuonGeometryRecord>().get(CSCGeometry_);
+  //iSetup.get<MuonGeometryRecord>().get(GEMGeometry_);
+  //iSetup.get<MuonGeometryRecord>().get(CSCGeometry_);
 
-  iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",ttrackBuilder_);
+  //iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",ttrackBuilder_);
  
-  iSetup.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry);
+  //iSetup.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry);
+
+  const auto *GEMGeometry_ = &iSetup.getData(gemGeomToken_);
+  const auto *CSCGeometry_ = &iSetup.getData(cscGeomToken_);
+  const auto *ttrackBuilder_ = &iSetup.getData(ttkToken_);
+  const auto *theTrackingGeometry = &iSetup.getData(geomToken_); 
 
   theService_->update(iSetup);
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
