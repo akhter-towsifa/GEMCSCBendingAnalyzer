@@ -8,7 +8,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -180,7 +180,7 @@ TTree* CSC_tbma_Data::book(TTree *t){
 }
 
 
-class CSC_tbma : public edm::EDAnalyzer {
+class CSC_tbma : public edm::one::EDAnalyzer<> {
 public:
   explicit CSC_tbma(const edm::ParameterSet&);
   ~CSC_tbma(){};
@@ -191,11 +191,9 @@ private:
   virtual void endJob() ;
 
   void propagate(const reco::Muon* mu, const edm::Event& iEvent, int i);
-  //void propagate_to_CSC(const reco::Muon* mu, const CSCLayer* ch, bool &tmp_has_prop, GlobalPoint &pos_GP, CSC_tbma_Data& data_, reco::TransientTrack track);
-  //void CSC_rechit_matcher(const CSCLayer* ch, LocalPoint prop_LP, CSC_tbma_Data& data_);
-  //bool fidcutCheck(float local_y, float localphi_deg);
 
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
+  edm::Handle<View<reco::Muon> > muons;
 
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
   edm::Handle<CSCSegmentCollection> cscSegments;
@@ -224,9 +222,16 @@ private:
   TTree* Tracker_tree_ChamberLevel;
 
   bool isMC;
+
+  const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeomToken_;
+  const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttkToken_;
+  const edm::ESGetToken<GlobalTrackingGeometry, GlobalTrackingGeometryRecord> geomToken_;
 };
 
 CSC_tbma::CSC_tbma(const edm::ParameterSet& iConfig)
+  : cscGeomToken_(esConsumes()),
+    ttkToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
+    geomToken_(esConsumes())
 {
   cout << "Begin analyzer" << endl;
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
@@ -246,18 +251,19 @@ CSC_tbma::CSC_tbma(const edm::ParameterSet& iConfig)
 
 
 void CSC_tbma::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-  iSetup.get<MuonGeometryRecord>().get(CSCGeometry_);
+  //iSetup.get<MuonGeometryRecord>().get(CSCGeometry_);
+  //iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",ttrackBuilder_);
+  //iSetup.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry);
 
-  iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",ttrackBuilder_);
-
-  iSetup.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry);
+  CSCGeometry_ = &iSetup.getData(cscGeomToken_);
+  ttrackBuilder_ = &iSetup.getData(ttkToken_);
+  theTrackingGeometry = &iSetup.getData(geomToken_);
 
   theService_->update(iSetup);
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
 
   isMC = false;
   if (! iEvent.eventAuxiliary().isRealData()) isMC = true;
-  edm::Handle<View<reco::Muon> > muons;
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
