@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from Configuration.Eras.Era_Run3_cff import Run3
 
 #process = cms.Process('analyzer',Phase2C9)
-process = cms.Process('ME11ana',Run3)
+process = cms.Process('GEMCSCanalyzer',Run3)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
@@ -20,9 +20,9 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 
 ### This is the misalignment part
-misalign = True
+misalign = False
 if misalign:
-  db_file = 'sqlite_file:CRAFT2022_ME11Only_Iter2.db'
+  db_file = 'sqlite_file:CRAFT_by_layer_GEMIter2.db'
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
     cms.PSet(
@@ -49,7 +49,7 @@ if misalign:
     cms.PSet(record=cms.string('GlobalPositionRcd'), tag = cms.string('IdealGeometry'))
   )
 
-  #process.GEMGeometryESModule.applyAlignment = cms.bool(True)
+  process.GEMGeometryESModule.applyAlignment = cms.bool(True)
   process.CSCGeometryESModule.applyAlignment = cms.bool(True)
 ################################
 
@@ -84,6 +84,8 @@ process.source = cms.Source("PoolSource",
 				)
 
 testfile = "/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/348/776/00000/475b2a2f-673c-4104-a360-72ddee06377f.root"
+testfile = 'root://eoscms.cern.ch//eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/349/347/00000/304f8f34-433f-4ea9-9df7-e32f769ad904.root'
+testfile = "/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/350/107/00000/180b850e-f936-4ae4-b305-da24855658b2.root" #One of teruki's listed runs for CRAFT
 outfile = "out_both_test.root"
 process.source.fileNames.append('file:'+testfile)
 

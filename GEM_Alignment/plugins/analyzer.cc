@@ -267,7 +267,8 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   : gemGeomToken_(esConsumes()),
     cscGeomToken_(esConsumes()),
     ttkToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
-    geomToken_(esConsumes()) {
+    geomToken_(esConsumes())
+{
   cout << "Begin analyzer" << endl;
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
   theService_ = new MuonServiceProxy(serviceParameters, consumesCollector());
@@ -295,11 +296,13 @@ void
 analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   //iSetup.get<MuonGeometryRecord>().get(GEMGeometry_);
   //iSetup.get<MuonGeometryRecord>().get(CSCGeometry_);
+  //iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",ttrackBuilder_);
+  //iSetup.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry);
 
-  const auto *GEMGeometry_ = &iSetup.getData(gemGeomToken_);
-  const auto *CSCGeometry_ = &iSetup.getData(cscGeomToken_);
-  const auto *ttrackBuilder_ = &iSetup.getData(ttkToken_);
-  const auto *theTrackingGeometry = &iSetup.getData(geomToken_); 
+  GEMGeometry_ = &iSetup.getData(gemGeomToken_);
+  CSCGeometry_ = &iSetup.getData(cscGeomToken_);
+  ttrackBuilder_ = &iSetup.getData(ttkToken_);
+  theTrackingGeometry = &iSetup.getData(geomToken_);
 
   theService_->update(iSetup);
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
@@ -684,6 +687,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   const reco::Track* Track;
   reco::TransientTrack ttTrack;
   TTree* tree;
+  if (debug) std::cout << "Getting tree, track, tttrack" << std::endl;
   if(prop_type == 1){ //If want to swith to global, use mu->globalTrack().get()
     tree = CSC_tree;
     if(!(mu->outerTrack().isNonnull())){return;}
@@ -713,6 +717,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     std::cout << "Bad prop type, failure." << std::endl; return;
   }
   if(!ttTrack.isValid()){std::cout << "BAD EVENT! NO TRACK" << std::endl;}
+  if (debug) std::cout << "Got track, init data" << std::endl;
   data_.init();
   //Muon Info//////////////////////////////////////////////////////
   data_.muon_charge = mu->charge(); data_.muon_pt = mu->pt(); data_.muon_eta = mu->eta(); data_.muon_momentum = mu->momentum().mag2();
@@ -720,10 +725,12 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   data_.runNum = iEvent.run();
   //Track Info//////////////////////////////////////////////////////
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
+  if (debug) std::cout << "Counting segments" << std::endl;
   CSCSegmentCounter(mu, data_);
   if(prop_type == 3 and data_.hasME11 != 1){return;}
   //which_track
   //Propagation Info//////////////////////////////////////////////////////
+  if (debug) std::cout << "Starting chamber loop" << std::endl;
   for (const auto& ch : GEMGeometry_->etaPartitions()) {
     if (ch->id().station() != 1) continue; //Only takes GE1/1
     GlobalPoint tmp_prop_GP; bool tmp_has_prop = 0;
