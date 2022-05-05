@@ -8,7 +8,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -174,7 +174,7 @@ TTree* ME11Data::book(TTree *t){
 }
 
 
-class ME11ana : public edm::EDAnalyzer {
+class ME11ana : public edm::one::EDAnalyzer<> {
 public:
   explicit ME11ana(const edm::ParameterSet&);
   ~ME11ana(){};
@@ -198,6 +198,7 @@ private:
   edm::Handle<vector<PSimHit> > gemSimHits;
 
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
+  edm::Handle<View<reco::Muon> > muons;
 
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
   edm::Handle<CSCSegmentCollection> cscSegments;
@@ -228,10 +229,19 @@ private:
 
   bool isMC;
   const CSCSegment *ME11_segment;
+
+  const edm::ESGetToken<GEMGeometry, MuonGeometryRecord> gemGeomToken_;
+  const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeomToken_;
+  const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttkToken_;
+  const edm::ESGetToken<GlobalTrackingGeometry, GlobalTrackingGeometryRecord> geomToken_;
 };
 
 
 ME11ana::ME11ana(const edm::ParameterSet& iConfig)
+  : gemGeomToken_(esConsumes()),
+    cscGeomToken_(esConsumes()),
+    ttkToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
+    geomToken_(esConsumes())
 {
   cout << "Begin analyzer" << endl;
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
@@ -253,12 +263,15 @@ ME11ana::ME11ana(const edm::ParameterSet& iConfig)
 
 
 void ME11ana::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-  iSetup.get<MuonGeometryRecord>().get(GEMGeometry_);
-  iSetup.get<MuonGeometryRecord>().get(CSCGeometry_);
+  //iSetup.get<MuonGeometryRecord>().get(GEMGeometry_);
+  //iSetup.get<MuonGeometryRecord>().get(CSCGeometry_);
+  //iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",ttrackBuilder_);
+  //iSetup.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry);
 
-  iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",ttrackBuilder_);
- 
-  iSetup.get<GlobalTrackingGeometryRecord>().get(theTrackingGeometry);
+  GEMGeometry_ = &iSetup.getData(gemGeomToken_);
+  CSCGeometry_ = &iSetup.getData(cscGeomToken_);
+  ttrackBuilder_ = &iSetup.getData(ttkToken_);
+  theTrackingGeometry = &iSetup.getData(geomToken_);
 
   theService_->update(iSetup);
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
@@ -269,7 +282,6 @@ void ME11ana::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (isMC) {
     iEvent.getByToken(gemSimHits_, gemSimHits); 
   }
-  edm::Handle<View<reco::Muon> > muons;
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
