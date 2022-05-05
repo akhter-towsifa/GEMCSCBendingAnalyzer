@@ -54,8 +54,8 @@ if misalign:
 ################################
 
 
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_design', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '') #Antonello Comparison
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_design', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '') #Antonello Comparison
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
@@ -87,7 +87,9 @@ testfile = "/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express
 testfile = 'root://eoscms.cern.ch//eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/349/347/00000/304f8f34-433f-4ea9-9df7-e32f769ad904.root'
 testfile = "013a0b3d-c139-4f5d-baaa-d7bc01ef886b.root"
 testfile = "step2_400.root"
+#testfile = "/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/350/107/00000/180b850e-f936-4ae4-b305-da24855658b2.root" #One of teruki's listed runs for CRAFT
 outfile = "CSC_tbma.root"
+#outfile = "CSC_tbma_COSMIC.root"
 process.source.fileNames.append('file:'+testfile)
 
 process.options = cms.untracked.PSet(
