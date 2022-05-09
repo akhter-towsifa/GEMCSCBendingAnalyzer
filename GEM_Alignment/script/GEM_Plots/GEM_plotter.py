@@ -11,11 +11,12 @@ if not os.path.exists("plots/"):
   os.makedirs("plots/")
 
 do_1D = True
-do_2D = False
+do_2D = True
 do_Region = True
 do_Chamber = True
 do_Layer = True
 do_Layer_Ratio = True
+do_Layer_Ratio_Fit = False
 
 if do_1D:
   #1D Residual by Region
@@ -23,8 +24,6 @@ if do_1D:
     plotdir = "plots/region_level/"
     if not os.path.exists(plotdir):
       os.makedirs(plotdir)
-    if not os.path.exists(plotdir+"each/"):
-      os.makedirs(plotdir+"each/")
 
     nX_plots = 2
     nY_plots = 1
@@ -108,8 +107,6 @@ if do_1D:
       frame = canvas.GetFrame()
       frame.Draw()
 
-      ROOT.gPad.SaveAs(plotdir+"each/res1D_R{R}.png".format(R = region))
-
     canvas.SaveAs(plotdir+"res1D.png")
 
 
@@ -118,8 +115,6 @@ if do_1D:
     plotdir = "plots/chamber_level/"
     if not os.path.exists(plotdir):
       os.makedirs(plotdir)
-    if not os.path.exists(plotdir+"each/"):
-      os.makedirs(plotdir+"each/")
 
     nX_plots = 9
     nY_plots = 4
@@ -206,8 +201,6 @@ if do_1D:
         frame = canvas.GetFrame()
         frame.Draw()
 
-        ROOT.gPad.SaveAs(plotdir+"each/res1D_R{R}_Ch{Ch}.png".format(R = region, Ch = chamber))
-
       canvas.SaveAs(plotdir+"res1D_Region{R}.png".format(R = region))
 
 
@@ -216,8 +209,6 @@ if do_1D:
     plotdir = "plots/layer_level/"
     if not os.path.exists(plotdir):
       os.makedirs(plotdir)
-    if not os.path.exists(plotdir+"each/"):
-      os.makedirs(plotdir+"each/")
 
     nX_plots = 9
     nY_plots = 4
@@ -306,8 +297,6 @@ if do_1D:
           frame = canvas.GetFrame()
           frame.Draw()
 
-          canvas.SaveAs(plotdir+"each/res1D_Region{R}_Ch{Ch}_Layer{lay}.png".format(R = region, Ch = chamber, lay = layer))
-
         canvas.SaveAs(plotdir+"res1D_Region{R}_Layer{lay}.png".format(R = region, lay = layer))
 
 
@@ -316,8 +305,6 @@ if do_1D:
     plotdir = "plots/layer_ratio_level/"
     if not os.path.exists(plotdir):
       os.makedirs(plotdir)
-    if not os.path.exists(plotdir+"each/"):
-      os.makedirs(plotdir+"each/")
 
     nX_plots = 9
     nY_plots = 4
@@ -382,11 +369,12 @@ if do_1D:
         hlist_l1[i].SetLineWidth(3)
         hlist_l1[i].Divide(hlist_l2[i])
         hlist_l1[i].Draw()
-        flist.append(ROOT.TF1("f{R}_{Ch}_rat".format(R = region, Ch = chamber), "[0]*x + [1]", -0.5, 0.5))
-        flist[i].SetParameters(.1, 1.0)
-        hlist_l1[i].Fit("f{R}_{Ch}_rat".format(R = region, Ch = chamber))
-        flist[i].SetLineColor(ROOT.kRed)
-        flist[i].Draw("same")
+        if do_Layer_Ratio_Fit:
+          flist.append(ROOT.TF1("f{R}_{Ch}_rat".format(R = region, Ch = chamber), "[0]*x + [1]", -0.5, 0.5))
+          flist[i].SetParameters(.1, 1.0)
+          hlist_l1[i].Fit("f{R}_{Ch}_rat".format(R = region, Ch = chamber))
+          flist[i].SetLineColor(ROOT.kRed)
+          flist[i].Draw("same")
 
 
         latex = ROOT.TLatex()
@@ -412,13 +400,8 @@ if do_1D:
         latex.SetTextFont(42)
         latex.SetTextSize(0.8*ROOT.gPad.GetTopMargin())
 
-        latex.DrawLatex(1.1*ROOT.gPad.GetLeftMargin(), 1 - 4*ROOT.gPad.GetTopMargin(), "{zer} x + {one}".format(zer = round(flist[i].GetParameter(0), 4), one = round(flist[i].GetParameter(1), 4)))
-
-
-        #frame = canvas.GetFrame()
-        #frame.Draw()
-
-        #ROOT.gPad.SaveAs(plotdir+"each/ratio_Region{R}_Ch{Ch}.png".format(R = region, Ch = chamber))
+        if do_Layer_Ratio_Fit:
+          latex.DrawLatex(1.1*ROOT.gPad.GetLeftMargin(), 1 - 4*ROOT.gPad.GetTopMargin(), "{zer} x + {one}".format(zer = round(flist[i].GetParameter(0), 4), one = round(flist[i].GetParameter(1), 4)))
 
       canvas.SaveAs(plotdir+"ratio_Region{R}.png".format(R = region))
 
@@ -429,8 +412,6 @@ if do_2D:
     plotdir = "plots/region_level/"
     if not os.path.exists(plotdir):
       os.makedirs(plotdir)
-    if not os.path.exists(plotdir+"each/"):
-      os.makedirs(plotdir+"each/")
 
     nX_plots = 2
     nY_plots = 1
@@ -532,9 +513,6 @@ if do_2D:
       frame = canvas.GetFrame()
       frame.Draw()
 
-      canvas.SaveAs(plotdir+"each/res2D_R{R}.png".format(R = region))
-
-
     canvas.SaveAs(plotdir+"res2D.png")
 
 
@@ -543,8 +521,6 @@ if do_2D:
     plotdir = "plots/chamber_level/"
     if not os.path.exists(plotdir):
       os.makedirs(plotdir)
-    if not os.path.exists(plotdir+"each/"):
-      os.makedirs(plotdir+"each/")
 
     nX_plots = 9
     nY_plots = 4
@@ -649,8 +625,6 @@ if do_2D:
         frame = canvas.GetFrame()
         frame.Draw()
 
-        canvas.SaveAs(plotdir+"each/res2D_Region{R}_Ch{Ch}.png".format(R = region, Ch = chamber))
-
       canvas.SaveAs(plotdir+"res2D_Region{R}.png".format(R = region))
 
 
@@ -659,8 +633,6 @@ if do_2D:
     plotdir = "plots/layer_level/"
     if not os.path.exists(plotdir):
       os.makedirs(plotdir)
-    if not os.path.exists(plotdir+"each/"):
-      os.makedirs(plotdir+"each/")
 
     nX_plots = 9
     nY_plots = 4
@@ -766,7 +738,5 @@ if do_2D:
 
           frame = canvas.GetFrame()
           frame.Draw()
-
-          canvas.SaveAs(plotdir+"each/res2D_Region{R}_Ch{Ch}_Layer{lay}.png".format(R = region, Ch = chamber, lay = layer))
 
         canvas.SaveAs(plotdir+"res2D_Region{R}_Layer{lay}.png".format(R = region, lay = layer))
