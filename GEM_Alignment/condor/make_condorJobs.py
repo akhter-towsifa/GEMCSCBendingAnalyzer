@@ -3,12 +3,16 @@ import os
 #filepath = "/eos/user/d/daebi/cosmic_MC/" #MC cosmic
 #filepath = "/eos/cms/store/express/Commissioning2020/ExpressCosmics/FEVT/Express-v1/000/337/973/00000/" #MWGR4 express dataset
 #filepath = "/eos/cms/store/express/Commissioning2020/ExpressCosmics/FEVT/Express-v1/000/338/714/" #MWGR5 express dataset
-filepath = "/eos/cms/store/express/Commissioning2021/ExpressCosmics/FEVT/Express-v1/000/341/343/" #MWGR3 express dataset
+#filepath = "/eos/cms/store/express/Commissioning2021/ExpressCosmics/FEVT/Express-v1/000/341/343/" #MWGR3 express dataset
+filepath = "/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/" #CRAFT
+runlist = [348773,348776,348777,348838,348908,348955,349016,349073,349078,349079,349084,349146,349147,349260,349263,349348,349422,349433,349435,349436,349437,349527,349528,349611,349703,349758,349833,349834,349839,349840,349893,349963,350010,350107,350142,350166,350174,350254,350294,350361,350424,350425,350431,350450,350459,350460,350462,350463,350464,350490,350491,350561,350619]
 pwd = os.getcwd()+'/'
 
 submit_together = True #cd scripts // condor_submit submit_all_condor.sh
 submit_individ = False #./submit_all.sh
-n_files_per_python = 3
+n_files_per_script = 15
+jobname = "ME11Iter2_GE11Iter0_210522"
+high_priority = True
 
 #Whether or not to use a misalignment
 misalign = False
@@ -17,166 +21,106 @@ misalign_tag = "GEM"
 misalign_APR_tag = "test"
 
 #Set up the current folder to be the working space
-os.system("mkdir -p output")
-os.system("mkdir -p error")
-os.system("mkdir -p log")
-os.system("mkdir -p python")
-os.system("mkdir -p scripts")
-os.system("mkdir -p rootfiles")
+curr_dir = pwd + jobname + "/"
+os.system("mkdir -p {curr_dir}".format(curr_dir = curr_dir))
 
-sub_all = open("submit_all.sh", "write")
+sub_all_name = "{jobname}/submit_all.sh".format(jobname = jobname)
+sub_all = open(sub_all_name, "w")
 sub_all.write("#!/bin/bash\n")
-sub_all.write("cd "+pwd+"\n")
+sub_all.write("date\n")
+sub_all.write("cd "+curr_dir+"\n")
 sub_all.write("eval `scramv1 runtime -sh`\n")
 
-filelist = os.listdir(filepath)
-print filelist
+ntotal_jobs = 0
 
-filecounter = 0
-files_in_python = 0
-job_filelist = []
+for run in runlist:
+  job_filelist = []
+  files_in_script = 0
+  runjob_counter = 0
 
-for subdir in filelist:
+  run_str = str(run)
+  run_inputdir = filepath + run_str[:3] + "/" + run_str[3:] + "/"
+  run_dir = curr_dir + run_str + "/"
+  os.system("mkdir -p {run_dir}".format(run_dir = run_dir))
+  os.system("mkdir -p {run_dir}/output".format(run_dir = run_dir))
+  os.system("mkdir -p {run_dir}/error".format(run_dir = run_dir))
+  os.system("mkdir -p {run_dir}/log".format(run_dir = run_dir))
+  os.system("mkdir -p {run_dir}/scripts".format(run_dir = run_dir))
+  os.system("mkdir -p {run_dir}/rootfiles".format(run_dir = run_dir))
 
-  #subdir is the first folder of dataset, "0000/" and "0001/" usually
-  filepath_tmp = filepath+subdir+"/"
-  filelist_tmp = os.listdir(filepath_tmp)
+  for subdir in os.listdir(run_inputdir):
+    sub_run_inputdir = run_inputdir + subdir + "/"
+    for tmp_filename in os.listdir(sub_run_inputdir):
+      if ".root" not in tmp_filename: continue
+      filename = sub_run_inputdir + tmp_filename
 
-  for name in filelist_tmp:
-    #print "path = ", filepath_tmp, " name = ", name
-    if (".root" not in name):
-      continue
-    name = name[:-5] #Take filename without '.root'
-    #print name
+      if files_in_script == 0:
+        scriptname = run_dir+"scripts/run"+run_str+"_job{njob}.sh".format(njob = runjob_counter)
+        c_script = open(scriptname, "w")
+        runjob_counter += 1
 
-    if files_in_python == 0:
-      print filecounter
-      ana_name = "python/analyser_"+name+".py"
-      ana_script = open(ana_name, "write")
+      job_filelist.append('file:'+filename)
+      files_in_script += 1
 
-      c_name = "scripts/condor_"+name+".sh"
-      c_script = open(c_name, "write")
+      if files_in_script == n_files_per_script or (subdir == os.listdir(run_inputdir)[-1] and tmp_filename == os.listdir(sub_run_inputdir)[-1]):
+        #print("Got filelist, writing condor script for {nfiles} files".format(nfiles = files_in_script))
+        files_in_script = 0
 
-    job_filelist.append('file:{filepath}{name}.root'.format(name = name, filepath = filepath_tmp))
-    files_in_python += 1    
+        outname = run_dir+"rootfiles/out_run"+run_str+"_job{njob}.root".format(njob = runjob_counter)
+        filelist = ""
+        for fname in job_filelist:
+          filelist += "file:" + fname
+          if fname != job_filelist[-1]:
+            filelist += ","
+        c_script.write("#!/bin/bash\n")
+        c_script.write("date\n")
+        c_script.write("cd "+pwd+"\n")
+        c_script.write("eval `scramv1 runtime -sh`\n")
+        c_script.write("cmsRun run_ME11_GE11_condor.py inputFiles={filelist} outputFile={outname}\n".format(filelist = filelist, outname = outname))
+        c_script.write("echo 'done'\n")
+        c_script.write("date\n")
 
-    if (subdir == filelist[-1] and name == filelist_tmp[-1][:-5]):
-      print "WE DONE!"
-    if files_in_python == n_files_per_python or (subdir == filelist[-1] and name == filelist_tmp[-1][:-5]):
-      files_in_python = 0
-      #print job_filelist
+        job_filelist = []
+        os.system("chmod 755 "+scriptname)
 
-      ana_script.write("import FWCore.ParameterSet.Config as cms \n")
-      ana_script.write("from Configuration.Eras.Era_Run3_cff import Run3\n")
-      ana_script.write("process = cms.Process('analyser',Run3)\n")
-      ana_script.write('process.load("FWCore.MessageService.MessageLogger_cfi")\n')
-      #ana_script.write("process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')\n")
-      ana_script.write("process.load('Configuration.StandardSequences.MagneticField_0T_cff')\n")
-      ana_script.write("process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')\n")
-      ana_script.write("process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')\n")
-      ana_script.write("process.load('Configuration.StandardSequences.SimIdeal_cff')\n")
-      ana_script.write("process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')\n")
-      ana_script.write("process.load('Configuration.StandardSequences.GeometryRecoDB_cff')\n")
-      ana_script.write("from Configuration.AlCa.GlobalTag import GlobalTag\n")
-      ana_script.write("process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')\n")
+        ntotal_jobs += 1
+  print("Run " + run_str + " had {njob} total jobs".format(njob = runjob_counter))
 
-
-
-      if misalign:
-        #This is misalignment part
-        ana_script.write("process.GlobalTag.toGet = cms.VPSet(\n")
-        ana_script.write("    cms.PSet(\n")
-        ana_script.write("            connect = cms.string('sqlite_file:{misalign_db}'),\n".format(misalign_db = pwd+misalign_db))
-        ana_script.write("            record = cms.string('GEMAlignmentRcd'),\n")
-        ana_script.write("            tag = cms.string('{misalign_tag}')\n".format(misalign_tag = misalign_tag))
-        ana_script.write("    ),\n")
-        ana_script.write("    cms.PSet(\n")
-        ana_script.write("            connect = cms.string('sqlite_file:{misalign_db}'),\n".format(misalign_db = pwd+misalign_db))
-        ana_script.write("            record = cms.string('GEMAlignmentErrorExtendedRcd'),\n")
-        ana_script.write("            tag = cms.string('{misalign_APR_tag}')\n".format(misalign_APR_tag = misalign_APR_tag))
-        ana_script.write("    ),\n")
-        ana_script.write("    cms.PSet(record=cms.string('GlobalPositionRcd'), tag = cms.string('IdealGeometry'))\n")
-        ana_script.write(")\n")
-        ana_script.write("process.GEMGeometryESModule.applyAlignment = cms.bool(True)\n")
-        #End of misalignment part
-
-      ana_script.write("process.MessageLogger.cerr.FwkReport.reportEvery = 5000\n")
-      ana_script.write("from FWCore.ParameterSet.VarParsing import VarParsing\n")
-      ana_script.write("options = VarParsing('analysis')\n")
-      ana_script.write("options.register ('nEvents',\n")
-      ana_script.write("                        -1, #Max number of events\n")
-      ana_script.write("                        VarParsing.multiplicity.singleton,\n")
-      ana_script.write("                        VarParsing.varType.int,\n")
-      ana_script.write('                        "Number of events")\n')
-      ana_script.write("options.parseArguments()\n")
-      ana_script.write("process.maxEvents = cms.untracked.PSet(\n")
-      ana_script.write("  input = cms.untracked.int32(options.nEvents)\n")
-      ana_script.write(")\n")
-      ana_script.write("process.maxEvents.input = cms.untracked.int32(-1)\n")
-      ana_script.write('process.source = cms.Source("PoolSource",\n')
-      ana_script.write("                                fileNames = cms.untracked.vstring({input_filelist}),\n".format(input_filelist = job_filelist))
-      ana_script.write("                                inputCommands = cms.untracked.vstring(\n")
-      ana_script.write('                        "keep *",\n')
-      ana_script.write('                        "drop TotemTimingDigiedmDetSetVector_totemTimingRawToDigi_TotemTiming_reRECO",\n')
-      ana_script.write('                        "drop TotemTimingRecHitedmDetSetVector_totemTimingRecHits__reRECO"\n')
-      ana_script.write("                        )\n")
-      ana_script.write("                                )\n")
-      #ana_script.write("process.source.fileNames.append('file:{filepath}{name}.root')\n".format(name = name, filepath = filepath_tmp))
-      ana_script.write('process.options = cms.untracked.PSet(\n')
-      ana_script.write("                        SkipEvent = cms.untracked.vstring('ProductNotFound')\n")
-      ana_script.write("                        )\n")
-      ana_script.write('process.TFileService = cms.Service("TFileService", fileName = cms.string("{pwd}rootfiles/out_ana_{name}.root"))\n'.format(name = name, pwd = pwd))
-      ana_script.write("process.analyser = cms.EDAnalyzer('analyser',\n")
-      ana_script.write('        process.MuonServiceProxy,\n')
-      ana_script.write('        gemRecHits = cms.InputTag("gemRecHits"),\n')
-      ana_script.write('        gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"),\n')
-      ana_script.write('        muons = cms.InputTag("muons"),\n')
-      ana_script.write('        vertexCollection = cms.InputTag("offlinePrimaryVerticies"),\n')
-      ana_script.write('        tracker_prop = cms.bool(False),\n')
-      ana_script.write('        CSC_prop = cms.bool(True),\n')
-      ana_script.write('        debug = cms.bool(False)\n')
-      ana_script.write(')\n')
-      ana_script.write('process.p = cms.EndPath(process.analyser)\n')
-
-      job_filelist = []
-
-
-      c_script.write("#!/bin/bash\n")
-      c_script.write("date\n")
-      c_script.write("cd "+pwd+"\n")
-      c_script.write("eval `scramv1 runtime -sh`\n")
-      c_script.write("cmsRun "+ana_name+"\n")
-      c_script.write("echo 'done'\n")
-      c_script.write("date\n")
-
-      if submit_individ:
-        condor_sub = open("scripts/submit_"+name+".sh", "write")
-        condor_sub.write("""universe                = vanilla
-executable              = {fname}
-arguments               = no
-output                  = {pwd}/output/out_{name}.$(ClusterId).$(ProcId).out
-error                   = {pwd}/error/err_{name}.$(ClusterId).$(ProcId).err
-log                     = {pwd}/log/log_{name}.$(ClusterId).log
-request_memory          = 4000M
-+JobFlavour             = "workday"
-queue""".format(fname = c_name, pwd = pwd, name = name))
-
-        sub_all.write("echo File {filecounter}\n".format(filecounter = filecounter))
-        sub_all.write("condor_submit scripts/submit_"+name+".sh\n")
-    filecounter += 1
-
-    os.system("chmod 755 "+c_name)
-
-if submit_individ:
-  os.system("chmod 755 submit_all.sh")
-
-if submit_together:
-  sub_all = open("scripts/submit_all_condor.sh", "write")
-  sub_all.write("""executable              = $(filename)
-output                  = {pwd}/output/$(filename).out
-error                   = {pwd}/error/$(filename).err
-log                     = {pwd}/log/$(filename).log
+  submit_run_name = "{run_dir}/scripts/submit_run{run_str}.sh".format(run_dir = run_dir, run_str = run_str)
+  submit_run = open(submit_run_name, "w")
+  if high_priority:
+    submit_run.write("""executable              = $(filename)
+output                  = {run_dir}/output/$(filename).out
+error                   = {run_dir}/error/$(filename).err
+log                     = {run_dir}/log/$(filename).log
 request_memory          = 4000M
 +JobFlavour             = "workday"
 universe                = vanilla
-queue filename matching files condor*.sh""".format(pwd = pwd))
++AccountingGroup        = "group_u_CMS.CAF.ALCA"
+queue filename matching files run*.sh""".format(run_dir = run_dir))
+
+  else:
+    submit_run.write("""executable              = $(filename)
+output                  = {run_dir}/output/$(filename).out
+error                   = {run_dir}/error/$(filename).err
+log                     = {run_dir}/log/$(filename).log
+request_memory          = 4000M
++JobFlavour             = "workday"
+universe                = vanilla
+queue filename matching files run*.sh""".format(run_dir = run_dir))
+
+  os.system("chmod 755 "+submit_run_name)
+
+  sub_all.write("echo run {run_str}\n".format(run_str = run_str))
+  sub_all.write("cd {run_dir}/scripts/\n".format(run_dir = run_dir))
+  sub_all.write("condor_submit {run_dir}/scripts/submit_run{run_str}.sh\n".format(run_dir = run_dir, run_str = run_str))
+
+print("Total jobs made was ", ntotal_jobs)
+
+sub_all.write("echo 'done'\n")
+sub_all.write("cd "+curr_dir+"\n")
+sub_all.write("date\n")
+
+os.system("chmod 755 "+sub_all_name)
+
+print("Total number of runs was ", len(runlist))
