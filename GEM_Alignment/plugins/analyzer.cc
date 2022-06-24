@@ -73,6 +73,7 @@ struct MuonData
   //Propagation Info//////////////////////////////////////////////////////
   float prop_GP[3]; float prop_LP[3]; float prop_startingPoint_GP[3];
   float prop_yroll; float prop_localphi_rad; float prop_localphi_deg;
+  float prop_globalphi_rad;
   bool has_prop; bool has_fidcut;
   int prop_location[5];
   //Track Info//////////////////////////////////////////////////////
@@ -86,6 +87,7 @@ struct MuonData
   bool has_rechit;
   int rechit_first_strip; int rechit_CLS; int rechit_BunchX;
   float RdPhi; float RdPhi_Corrected; int rechit_detId;
+  float bending_angle;
   int nRecHitsTot; int nRecHits5; int nRecHits2;
   int rechit_location[5];
   int nRecHitsRpos1L1; int nRecHitsRpos1L2;
@@ -105,6 +107,7 @@ void MuonData::init()
     prop_GP[i] = 99999; prop_LP[i] = 99999; prop_startingPoint_GP[i] = 99999;
   }
   prop_yroll = 99999; prop_localphi_rad = 99999; prop_localphi_deg = 99999;
+  prop_globalphi_rad = 99999;
   has_prop = false; has_fidcut = false;
   for(int i=0; i<5; ++i){
     prop_location[i] = 99999;
@@ -125,6 +128,7 @@ void MuonData::init()
   has_rechit = false;
   rechit_first_strip = 999999; rechit_CLS = 999999; rechit_BunchX = 999999;
   RdPhi = 999999; RdPhi_Corrected = 999999; rechit_detId = 999999;
+  bending_angle = 999999;
   nRecHitsTot = 999999; nRecHits5 = 999999; nRecHits2 = 999999;
   for(int i=0; i<5; ++i){
     rechit_location[i] = 999999;
@@ -164,6 +168,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("prop_yroll", &prop_yroll);
   t->Branch("prop_localphi_rad", &prop_localphi_rad);
   t->Branch("prop_localphi_deg", &prop_localphi_deg);
+  t->Branch("prop_globalphi_rad", &prop_globalphi_rad);
   t->Branch("has_prop", &has_prop);
   t->Branch("has_fidcut", &has_fidcut);
   t->Branch("prop_location", &prop_location, "prop_location[5] (reg, sta, cha, lay, rol)/I");
@@ -190,6 +195,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("RdPhi", &RdPhi);
   t->Branch("RdPhi_Corrected", &RdPhi_Corrected);
   t->Branch("rechit_detId", &rechit_detId);
+  t->Branch("bending_angle", &bending_angle);
   t->Branch("nRecHitsTot", &nRecHitsTot);
   t->Branch("nRecHits2", &nRecHits2);
   t->Branch("nRecHits5", &nRecHits5);
@@ -325,85 +331,14 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   for (size_t i = 0; i < muons->size(); ++i){
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
     const reco::Muon* mu = muRef.get();
-    //if (mu->pt() < 2.0) continue;  //can apply a pt cut later
     if (not mu->standAloneMuon()) continue;
+    if (mu->pt() < 10.0) continue;  //can apply a pt cut later
     if (debug) cout << "new standalone" << endl;
     for(auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "prop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
       propagate(mu, prop_type, iEvent, i);
     }
-  }
-
-  if (debug){
-    int muon_size = muons->size();
-    int CSCSegments_size = cscSegments->size();
-    int muon_STA_counter = 0;
-    int ME11_counter = 0;
-    int Matches_counter_norepeat = 0;
-    int ME11_counter_norepeat = 0;
-    int tot_muon_ME11_counter = 0;
-
-    //Commented out for github, may be many print statements
-    //cout << "Starting loop over all gemRecHits " << gemRecHits->size() << std::endl;
-    //for(GEMRecHitCollection::const_iterator gemRecHit = gemRecHits->begin(); gemRecHit != gemRecHits->end(); gemRecHit++){
-    //  cout << gemRecHit->gemId() << endl;
-    //}
-
-    std::cout << "MUON MATCHES" << std::endl;
-    std::vector<int> list_of_matches = {};
-    for (size_t i = 0; i < muons->size(); ++i){
-      edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
-      const reco::Muon* mu = muRef.get();
-      if (mu->isStandAloneMuon()){
-        muon_STA_counter ++;
-        int muon_ME11_counter_tmp = 0;
-        auto matches = mu->matches();
-        for (auto MCM : matches){
-          if(MCM.detector() != 2) continue;
-          for(auto MSM : MCM.segmentMatches){
-            auto cscSegRef = MSM.cscSegmentRef;
-            auto cscDetID = cscSegRef->cscDetId();
-            std::cout << cscDetID.endcap() << cscDetID.station() << cscDetID.ring() << cscDetID.chamber() << std::endl;
-            if(cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
-              muon_ME11_counter_tmp++;
-              int tmp_ID = cscDetID.endcap()*10000+cscDetID.station()*1000+cscDetID.ring()*100+cscDetID.chamber();
-              if (std::find(list_of_matches.begin(), list_of_matches.end(), tmp_ID) == list_of_matches.end()){
-                list_of_matches.push_back(tmp_ID);
-                std::cout << "New Det Triggered " << tmp_ID << std::endl;
-                Matches_counter_norepeat++;
-              }
-            }
-          }
-        }
-        std::cout << "Muon had " << muon_ME11_counter_tmp << " segments" << std::endl;
-        tot_muon_ME11_counter += muon_ME11_counter_tmp;
-      }
-    }
-
-    std::cout << "SEGMENT COLLECTION" << std::endl;
-    std::vector<int> list_of_collection = {};
-    for(CSCSegmentCollection::const_iterator segmentCSC = cscSegments->begin(); segmentCSC != cscSegments->end(); segmentCSC++){
-      auto cscDetID = (segmentCSC)->cscDetId();
-      std::cout << cscDetID.endcap() << cscDetID.station() << cscDetID.ring() << cscDetID.chamber() << std::endl;
-      if(cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
-        ME11_counter++;
-        int tmp_ID = cscDetID.endcap()*10000+cscDetID.station()*1000+cscDetID.ring()*100+cscDetID.chamber();
-        if (std::find(list_of_collection.begin(), list_of_collection.end(), tmp_ID) == list_of_collection.end()){
-          list_of_collection.push_back(tmp_ID);
-          std::cout << "New Det Triggered " << tmp_ID << std::endl;
-          ME11_counter_norepeat++;
-        }
-      }
-    }
-  std::cout << "Muon size           = " << muon_size << std::endl;
-  std::cout << "Segment Size        = " << CSCSegments_size << std::endl;
-  std::cout << "muon STA  counter   = " << muon_STA_counter << std::endl;
-  std::cout << "Muon Matches ME11   = " << tot_muon_ME11_counter << std::endl;
-  std::cout << "Seg Collection ME11 = " << ME11_counter << std::endl;
-  std::cout << "Muon Matches no rep = " << Matches_counter_norepeat << std::endl;
-  std::cout << "Coll Matches no rep = " << ME11_counter_norepeat << std::endl;
-  nME11_col_vs_matches->Fill(Matches_counter_norepeat, ME11_counter_norepeat);
   }
 }
 
@@ -492,10 +427,13 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
   GlobalPoint pos_startingPoint_GP;
   if(prop_type == 1 or prop_type == 2){
     if(prop_type == 1){
+      if (!(mu->isStandAloneMuon())) return;
       Track = mu->outerTrack().get();
       ttrack = ttrackBuilder_->build(Track);
     }
     if(prop_type == 2){
+      if(debug) std::cout << "Prop type " << prop_type << " getting track" << std::endl;
+      if (!(mu->isTrackerMuon())) return;
       Track = mu->track().get();
       ttrack = ttrackBuilder_->build(Track);
     }
@@ -524,25 +462,33 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     }
   }
   if(prop_type == 3){
-    Track = mu->track().get();
+    LocalVector momentum_at_surface = ME11_segment->localDirection(); //No momentum for segments;
     DetId segDetId = ME11_segment->geographicalId();
     const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
-    LocalVector momentum_at_surface = ME11_segment->localDirection(); //No momentum for segments
-    if (Track != 0){
-      tmp_inner_or_outer_mom = 0;
-      momentum_at_surface = momentum_at_surface*(Track->outerP()); //If innerTrack exists, use momentum
+    if (mu->isTrackerMuon()){
+      Track = mu->track().get();
+      if (Track != 0){
+        tmp_inner_or_outer_mom = 0;
+        momentum_at_surface = momentum_at_surface*(Track->outerP()); //If innerTrack exists, use momentum
+        if(debug) std::cout << "Got inner momentum = " << momentum_at_surface << std::endl;
+      }
     }
-    else{
+    else if (mu->isStandAloneMuon()){
       Track = mu->outerTrack().get();
       if (Track != 0){
         tmp_inner_or_outer_mom = 1;
         momentum_at_surface = momentum_at_surface*(Track->outerP()); //If no innerTrack, use outerTrack
+        if(debug) std::cout << "Got outer momentum = " << momentum_at_surface << std::endl;
       }
       else{
         if(debug){std::cout << "No tracks!" << std::endl;}
         return;
       }
     }
+    else{
+      return;
+    }
+    if(debug) std::cout << "Got momentum" << std::endl;
     LocalTrajectoryParameters param(ME11_segment->localPosition(), momentum_at_surface, mu->charge());
     AlgebraicSymMatrix mat(5,0);
     mat = ME11_segment->parametersError().similarityT( ME11_segment->projectionMatrix() );
@@ -560,6 +506,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     }
   }
   if(tmp_has_prop){
+    if(debug) std::cout << "Valid GEM prop" << std::endl;
     const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
     const float prop_y_to_center = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp(); //y distance to the current eta part
     const float prop_y_to_chamber = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2))).y();
@@ -572,6 +519,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     float local_phi = local_to_center.phi();
     data_.prop_localphi_rad = (3.14159265/2.) - local_phi;
     data_.prop_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
+    data_.prop_globalphi_rad = pos_GP.phi();
     data_.has_prop = tmp_has_prop;
     data_.has_fidcut = fidcutCheck(tmp_prop_LP.y(), ((3.14159265/2.) - local_phi)*(180./3.14159265), ch);
     data_.prop_location[0] = ch->id().region(); data_.prop_location[1] = ch->id().station(); data_.prop_location[2] = ch->id().chamber(); data_.prop_location[3] = ch->id().layer(); data_.prop_location[4] = ch->id().roll();
@@ -585,6 +533,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
   bool tmp_has_rechit = false;
   int tmp_rechit_first_strip; int tmp_rechit_CLS; int tmp_rechit_BunchX;
   float tmp_RdPhi = 9999.; float tmp_RdPhi_Corrected; int tmp_rechit_detId;
+  float tmp_bending_angle = 9999.;
   int tmp_nRecHitsTot = 0; int tmp_nRecHits5 = 0; int tmp_nRecHits2 = 0;
   int tmp_rechit_region; int tmp_rechit_station; int tmp_rechit_chamber; int tmp_rechit_layer; int tmp_rechit_roll;
   int tmp_nRecHitsRpos1L1 = 0; int tmp_nRecHitsRpos1L2 = 0; int tmp_nRecHitsRneg1L1 = 0; int tmp_nRecHitsRneg1L2 = 0;
@@ -621,6 +570,20 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             tmp_rechit_first_strip = (hit)->firstClusterStrip();
             tmp_rechit_CLS = (hit)->clusterSize();
             tmp_rechit_BunchX = (hit)->BunchX();
+
+            //Calculate the bending angle: Will use CSC_segment_phi - GEM_hit_phi
+            if(data_.hasME11){
+
+              DetId segDetId = ME11_segment->geographicalId();
+              const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
+              float CSC_segment_phi = (segDet->toGlobal(ME11_segment->localPosition())).phi();
+
+
+              float GEM_hit_phi = (etaPart->toGlobal(hit->localPosition())).phi();
+              tmp_bending_angle = CSC_segment_phi - GEM_hit_phi;
+              if(debug) std::cout << "Bending angle = " << tmp_bending_angle << " and pT = " << data_.muon_pt << std::endl;
+            }
+
             tmp_RdPhi = RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch);
             tmp_RdPhi_Corrected = tmp_RdPhi;
             if((gemid.region() == 1 and gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)){
@@ -646,6 +609,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
     data_.RdPhi = tmp_RdPhi;
     data_.RdPhi_Corrected = tmp_RdPhi_Corrected;
     data_.rechit_detId = tmp_rechit_detId;
+    data_.bending_angle = tmp_bending_angle;
     data_.nRecHitsTot = tmp_nRecHitsTot; data_.nRecHits5 = tmp_nRecHits5; data_.nRecHits2 = tmp_nRecHits2;
     data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
     data_.nRecHitsRpos1L1 = tmp_nRecHitsRpos1L1; data_.nRecHitsRpos1L2 = tmp_nRecHitsRpos1L2; data_.nRecHitsRneg1L1 = tmp_nRecHitsRneg1L1; data_.nRecHitsRneg1L2 = tmp_nRecHitsRneg1L2;
@@ -690,12 +654,15 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   if (debug) std::cout << "Getting tree, track, tttrack" << std::endl;
   if(prop_type == 1){ //If want to swith to global, use mu->globalTrack().get()
     tree = CSC_tree;
+    if(!(mu->isStandAloneMuon())){return;}
     if(!(mu->outerTrack().isNonnull())){return;}
     Track = mu->outerTrack().get();
     ttTrack = ttrackBuilder_->build(Track);
   }
   else if (prop_type == 2){
     tree = Tracker_tree;
+    if(debug) std::cout << "TrackerMuon/Nonnull " << mu->isTrackerMuon() << "/" << mu->track().isNonnull() << std::endl;
+    if(!(mu->isTrackerMuon())){return;}
     if(!(mu->track().isNonnull())){return;}
     Track = mu->track().get();
     ttTrack = ttrackBuilder_->build(Track);
@@ -703,11 +670,13 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   else if (prop_type == 3){
     tree = Segment_tree;
     if(isCosmic){
+      if(!(mu->isStandAloneMuon())){return;}
       if(!(mu->outerTrack().isNonnull())){return;}
       Track = mu->outerTrack().get();
       ttTrack = ttrackBuilder_->build(Track);
     }
     else{
+      if(!(mu->isTrackerMuon())){return;}
       if(!(mu->track().isNonnull())){return;}
       Track = mu->track().get();
       ttTrack = ttrackBuilder_->build(Track);
@@ -736,12 +705,14 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     GlobalPoint tmp_prop_GP; bool tmp_has_prop = 0;
     propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_);
     if(tmp_has_prop){
+      if(debug) std::cout << "Finished valid propagation!" << std::endl;
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
       //Rechit Info//////////////////////////////////////////////////////
       GEM_rechit_matcher(ch, tmp_prop_LP, data_);
       if(isMC){
         GEM_simhit_matcher(ch, tmp_prop_GP, data_);
       }
+      if(debug) std::cout << "Filling tree! WOW" << std::endl;
       tree->Fill();
     }
   }

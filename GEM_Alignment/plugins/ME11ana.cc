@@ -73,6 +73,7 @@ struct ME11Data
   //Propagation Info//////////////////////////////////////////////////////
   float prop_GP[3]; float prop_LP[3]; float prop_startingPoint_GP[3];
   float prop_localphi_rad; float prop_localphi_deg;
+  float prop_globalphi_rad;
   bool has_prop; bool has_fidcut;
   int prop_location[5];
   //Track Info//////////////////////////////////////////////////////
@@ -101,6 +102,7 @@ void ME11Data::init()
     prop_GP[i] = 99999; prop_LP[i] = 99999; prop_startingPoint_GP[i] = 99999;
   }
   prop_localphi_rad = 99999; prop_localphi_deg = 99999;
+  prop_globalphi_rad = 99999;
   has_prop = false; has_fidcut = false;
   for(int i=0; i<5; ++i){
     prop_location[i] = 99999;
@@ -143,6 +145,7 @@ TTree* ME11Data::book(TTree *t){
   t->Branch("prop_startingPoint_GP", &prop_startingPoint_GP, "prop_startingPoint_GP[3] (x,y,z)/F");
   t->Branch("prop_localphi_rad", &prop_localphi_rad);
   t->Branch("prop_localphi_deg", &prop_localphi_deg);
+  t->Branch("prop_globalphi_rad", &prop_globalphi_rad);
   t->Branch("has_prop", &has_prop);
   t->Branch("has_fidcut", &has_fidcut);
   t->Branch("prop_location", &prop_location, "prop_location[5] (reg, sta, ring, cha, lay)/I");
@@ -280,14 +283,14 @@ void ME11ana::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (! iEvent.eventAuxiliary().isRealData()) isMC = true;
   iEvent.getByToken(gemRecHits_, gemRecHits);
   if (isMC) {
-    iEvent.getByToken(gemSimHits_, gemSimHits); 
+    iEvent.getByToken(gemSimHits_, gemSimHits);
   }
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
 
   iEvent.getByToken(cscSegments_, cscSegments);
-  iEvent.getByToken(csc2DRecHits_, csc2DRecHits); 
+  iEvent.getByToken(csc2DRecHits_, csc2DRecHits);
 
 
   if (debug) cout << "New! EvtNumber = " << iEvent.eventAuxiliary().event() << " LumiBlock = " << iEvent.eventAuxiliary().luminosityBlock() << " RunNumber = " << iEvent.run() << endl;
@@ -349,7 +352,7 @@ void ME11ana::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
     std::cout << "SEGMENT COLLECTION" << std::endl;
     std::vector<int> list_of_collection = {};
-    for(CSCSegmentCollection::const_iterator segmentCSC = cscSegments->begin(); segmentCSC != cscSegments->end(); segmentCSC++){  
+    for(CSCSegmentCollection::const_iterator segmentCSC = cscSegments->begin(); segmentCSC != cscSegments->end(); segmentCSC++){
       auto cscDetID = (segmentCSC)->cscDetId();
       std::cout << cscDetID.endcap() << cscDetID.station() << cscDetID.ring() << cscDetID.chamber() << std::endl;
       if(cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
@@ -418,7 +421,7 @@ void ME11ana::CSCSegmentCounter(const reco::Muon* mu, ME11Data& data_){
         uint16_t RecHitSubDet = RecHitId.subdetId();
         if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
           if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1 and RecHit->dimension() == 4){
-            tmp_ME11_counter++; 
+            tmp_ME11_counter++;
             if (debug){std::cout << "isCosmic = False! Getting ME11 Segment" << std::endl;}
             RecSegment* Rec_segment = (RecSegment*)RecHit;
             ME11_segment = (CSCSegment*)Rec_segment;
@@ -549,10 +552,11 @@ void ME11ana::propagate_to_ME11(const reco::Muon* mu, const CSCLayer* ch, bool &
     float radius = pos_GP.perp();
     LocalPoint local_to_center(tmp_prop_LP.x(), tmp_prop_LP.y() + radius, 0); //tmp_prop_LP is from center of chamber, not center of endcap
     float local_phi = local_to_center.phi();
-    std::cout << "Local nofix = " << tmp_prop_LP << std::endl;
-    std::cout << "Local point = " << local_to_center << std::endl;
-    std::cout << "Local phi   = " << ((3.14159265/2.) - local_phi)*(180./3.14159265) << std::endl;
-
+    if(debug){
+      std::cout << "Local nofix = " << tmp_prop_LP << std::endl;
+      std::cout << "Local point = " << local_to_center << std::endl;
+      std::cout << "Local phi   = " << ((3.14159265/2.) - local_phi)*(180./3.14159265) << std::endl;
+    }
 
     //int strip = ch->geometry()->nearestStrip(tmp_prop_LP);
     //double stripAngle = ch->geometry()->stripAngle(strip) - M_PI/2.;
@@ -562,6 +566,7 @@ void ME11ana::propagate_to_ME11(const reco::Muon* mu, const CSCLayer* ch, bool &
     //std::cout << "Local point = " << local_to_center << std::endl;
     data_.prop_localphi_rad = (3.14159265/2.) - local_phi;
     data_.prop_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
+    data_.prop_globalphi_rad = pos_GP.phi();
     data_.has_prop = tmp_has_prop;
     data_.has_fidcut = fidcutCheck(tmp_prop_LP.y(), ((3.14159265/2.) - local_phi)*(180./3.14159265));
     data_.prop_location[0] = ch->id().zendcap(); data_.prop_location[1] = ch->id().station(); data_.prop_location[2] = ch->id().ring(); data_.prop_location[3] = ch->id().chamber(); data_.prop_location[4] = ch->id().layer();
@@ -578,11 +583,11 @@ void ME11ana::ME11_rechit_matcher(const CSCLayer* ch, LocalPoint prop_LP, ME11Da
   bool tmp_has_rechit = false;
   float tmp_RdPhi = 9999.; int tmp_rechit_detId;
   int tmp_rechit_region; int tmp_rechit_station; int tmp_rechit_ring; int tmp_rechit_chamber; int tmp_rechit_layer;
-  for (auto hit = csc2DRecHits->begin(); hit != csc2DRecHits->end(); hit++){ 
+  for (auto hit = csc2DRecHits->begin(); hit != csc2DRecHits->end(); hit++){
     CSCDetId cscid((hit)->geographicalId());
     if (!(cscid == ch->id())) continue;
     if (!(ch->id().station() == 1 and ch->id().ring() == 1 and fabs((hit)->localPosition().x() - prop_LP.x()) < 999.0)) continue;
-    
+
     int strip = ch->geometry()->nearestStrip(hit->localPosition());
     double stripAngle = ch->geometry()->stripAngle(strip) - M_PI/2.;
     if (abs(tmp_RdPhi) < cos(stripAngle) * (prop_LP.x() - (hit)->localPosition().x()) + sin(stripAngle) * (prop_LP.y() - (hit)->localPosition().y())) continue;
