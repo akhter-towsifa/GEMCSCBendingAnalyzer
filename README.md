@@ -1,9 +1,9 @@
 # GEMCSCBendingAnalyzer
 
 ## how to check out cmssw and this package
-cmsrel CMSSW_12_0_3 
+cmsrel CMSSW_12_4_0
 
-cd CMSSW_12_0_3/src/
+cd CMSSW_12_4_0/src/
 
 cmsenv
 
@@ -13,19 +13,28 @@ git clone https://github.com/aebid/GEMCSCBendingAnalyzer.git
 
 scram b -j 8
 
-## analyzer.cc: package for GEM residual 
-### run on data
-cd test
-cmsRun analyzer.py
+## Resiudal Packages
+cd GEMCSCBendingAnalyzer/GEM_Alignment/test/
+### GE1/1 Analyzer
+cmsRun run_GE11ana.py
+### ME1/1 Analyzer
+cmsRun run_ME11ana.py
+### GE1/1 and ME1/1 Analyzer
+cmsRun run_both_analyzers.py
+
+## GEM DB Maker
+cd GEMCSCBendingAnalyzer/GEM_Alignment/test/
+cmsRun GEMAlDBWriter_cfg.py
 
 ## GEM_fitter.cpp: package for creating alignment estimates
-### run on output form analyzer
-cd script/standAloneGemAlignment
-./run_GEM_fitter.sh
+cd GEMCSCBendingAnalyzer/GEM_Alignment/script/standAloneGemAlignment
+./run_3DOF_Fitter.sh
 
-Will create a .csv with the recommended alignment values on each GEM chamber, options to include 3dof (dx, dy, dphiz)
+
+
+
 
 
 
 The packaged is inherited from Jason Lee's MuonPerformance and it is used for GEM related analysis at TAMU group. The major target is to analyse
-GEM-CSC bending angle in real data from CMS. 
+GEM-CSC bending angle in real data from CMS.
