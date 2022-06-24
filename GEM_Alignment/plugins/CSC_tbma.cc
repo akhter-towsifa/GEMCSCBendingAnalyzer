@@ -223,6 +223,8 @@ private:
 
   bool isMC;
 
+  int ntrk = 0; int nsta = 0; int nglb = 0; int nmu = 0; int nSegCol = 0; int nSegMat = 0; int nCSCSegments = 0; int nCSCRegHits = 0;
+
   const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeomToken_;
   const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> ttkToken_;
   const edm::ESGetToken<GlobalTrackingGeometry, GlobalTrackingGeometryRecord> geomToken_;
@@ -263,13 +265,16 @@ void CSC_tbma::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
 
   isMC = false;
+  if (debug) cout << "Started event loop" << endl;
   if (! iEvent.eventAuxiliary().isRealData()) isMC = true;
   if (! iEvent.getByToken(muons_, muons)) return;
+  if (debug) cout << "Got collection, nMuons = " << muons->size() << endl;
   if (muons->size() == 0) return;
 
 
   iEvent.getByToken(cscSegments_, cscSegments);
   iEvent.getByToken(csc2DRecHits_, csc2DRecHits);
+  nCSCSegments += cscSegments->size(); nCSCRegHits += csc2DRecHits->size();
 
 
   if (debug) cout << "New! EvtNumber = " << iEvent.eventAuxiliary().event() << " LumiBlock = " << iEvent.eventAuxiliary().luminosityBlock() << " RunNumber = " << iEvent.run() << endl;
@@ -278,7 +283,10 @@ void CSC_tbma::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
     const reco::Muon* mu = muRef.get();
     //if (mu->pt() < 2.0) continue;  //can apply a pt cut later
-    if (not mu->standAloneMuon()) continue;
+    if(debug) std::cout << "Tracker / STA / Global " << mu->isTrackerMuon() << " / " << mu->isStandAloneMuon() << " / " << mu->isGlobalMuon() << std::endl;
+    ntrk += mu->isTrackerMuon(); nsta += mu->isStandAloneMuon(); nglb += mu->isGlobalMuon(); nmu += 1;
+    //if (not mu->standAloneMuon()) continue;
+    if (!(mu->isGlobalMuon())) continue;
     if (debug) cout << "new standalone" << endl;
     propagate(mu, iEvent, i);
   }
@@ -286,15 +294,27 @@ void CSC_tbma::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
 
 void CSC_tbma::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
+  if(debug) std::cout << "Starting propagate function" << std::endl;
   const reco::Track* Track;
   reco::TransientTrack ttTrack;
   TTree* tree;
   tree = Tracker_tree;
   TTree* tree_ChamberLevel;
   tree_ChamberLevel = Tracker_tree_ChamberLevel;
-  if(!(mu->track().isNonnull())){return;}
+
+  //This was a nightmare, apparently isNonnull() does nothing in ALCARECO set and segfaults on Track object
+  //if(!(mu->track().isNonnull())){return;}
+  //if(!(mu->isTrackerMuon())){return;}
+  //Track = mu->track().get();
+  //if(!(mu->globalTrack().isNonnull())){return;}
+  //if(!(mu->isGlobalMuon())){return;}
+  //Track = mu->globalTrack().get();
+
+  if(!(mu->isGlobalMuon())){return;}
   Track = mu->track().get();
+
   ttTrack = ttrackBuilder_->build(Track);
+  //ttTrack(*Track, ttrackBuilder_->field()) //, *ttrackBuilder_->trackingGeometry());
   if(!ttTrack.isValid()){std::cout << "BAD EVENT! NO TRACK" << std::endl;}
   data_.init();
   data_ChamberLevel_.init();
@@ -320,6 +340,7 @@ void CSC_tbma::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
   }
   data_.which_track = incoming_or_outgoing;
   //Get CSC Segments////////////////////////////////////////////////
+  std::vector<const TrackingRecHit*> AllTRH_from_matches;
   std::vector<const CSCSegment*> AllCSCSegments_Matches;
   std::vector<CSCDetId> Chambers_Matches;
   std::vector<CSCDetId> Chambers_Matches_repeats;
@@ -328,12 +349,16 @@ void CSC_tbma::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
     for (auto muon_seg_match : muon_match.segmentMatches){
       auto CSCSeg = muon_seg_match.cscSegmentRef;
       AllCSCSegments_Matches.push_back(CSCSeg.get());
+      AllTRH_from_matches.push_back(CSCSeg.get()->cloneHit());
       if (std::find(Chambers_Matches.begin(), Chambers_Matches.end(), CSCSeg.get()->cscDetId()) != Chambers_Matches.end()){
         Chambers_Matches_repeats.push_back(CSCSeg.get()->cscDetId());
       }
-      else{Chambers_Matches.push_back(CSCSeg.get()->cscDetId());}
+      else{
+        Chambers_Matches.push_back(CSCSeg.get()->cscDetId());
+      }
     }
   }
+  std::cout << "Size of vector = " << AllTRH_from_matches.size() << std::endl;
   std::vector<const CSCSegment*> AllCSCSegments_Collection;
   std::vector<CSCDetId> Chambers_Collection;
   std::vector<CSCDetId> Chambers_Collection_repeats;
@@ -347,6 +372,8 @@ void CSC_tbma::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
   }
   std::cout << "All Segs Size from Matches    = " << AllCSCSegments_Matches.size() << std::endl;
   std::cout << "All Segs Size from Collection = " << AllCSCSegments_Collection.size() << std::endl;
+  nSegCol += AllCSCSegments_Collection.size();
+  nSegMat += AllCSCSegments_Matches.size();
 
   //Choose segments and loop over rechits///////////////////////////
   auto AllCSCSegments = AllCSCSegments_Matches;
@@ -407,7 +434,7 @@ void CSC_tbma::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
 
       //Adding the TBMA CHAMBER RESIDUALS values
       float xx = CSCRecHit->localPositionError().xx(); float xy = CSCRecHit->localPositionError().xy(); float yy = CSCRecHit->localPositionError().yy();
-      std::cout << "Error mat xx = " << xx << " yy = " << yy << " xy = " << xy << std::endl;
+      if(debug) std::cout << "Error mat xx = " << xx << " yy = " << yy << " xy = " << xy << std::endl;
       float weight = 1.0/(xx*cosAngle*cosAngle + 2.0*xy*sinAngle*cosAngle + yy*sinAngle*sinAngle);
       float prop_local_z = CSCGeometry_->idToDet(CSCSeg->cscDetId())->toLocal((tsos_on_chamber.globalPosition())).z();
       sum_weight += weight;
@@ -417,7 +444,7 @@ void CSC_tbma::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
       sum_weight_propz_propz += weight*prop_local_z*prop_local_z;
       sum_weight_propz_residual += weight*prop_local_z*residual;
       nRecHits_in_smoothing += 1;
-      std::cout << "RecHit " << nRecHits_in_smoothing << "Using w/propz/res " << weight << "/" << prop_local_z << "/" << residual << std::endl;
+      if(debug) std::cout << "RecHit " << nRecHits_in_smoothing << "Using w/propz/res " << weight << "/" << prop_local_z << "/" << residual << std::endl;
 
       //TBMA prop x
       float prop_x = tsos_on_chamber.localPosition().x();
@@ -430,11 +457,11 @@ void CSC_tbma::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
       sum_weight_propz_propy += weight*prop_local_z*prop_y;
 
     }
-    std::cout << "Begin smoothing! On Chamber " << CSCSeg->cscDetId() << std::endl;
+    if(debug) std::cout << "Begin smoothing! On Chamber " << CSCSeg->cscDetId() << std::endl;
     float delta_res = (sum_weight * sum_weight_propz_propz) - (sum_weight_propz * sum_weight_propz);
     float real_residual = ((sum_weight_propz_propz * sum_weight_residual) - (sum_weight_propz * sum_weight_propz_residual)) / delta_res;
     float real_slope = ((sum_weight * sum_weight_propz_residual) - (sum_weight_propz * sum_weight_residual)) / delta_res;
-    std::cout << "Smoothed delta/res/slope " << delta_res << "/" << real_residual << "/" << real_slope << std::endl;
+    if(debug) std::cout << "Smoothed delta/res/slope " << delta_res << "/" << real_residual << "/" << real_slope << std::endl;
 
     float delta_propx = (sum_weight * sum_weight_propz_propz) - (sum_weight_propz * sum_weight_propz);
     float real_x = ((sum_weight_propz_propz * sum_weight_propx) - (sum_weight_propz * sum_weight_propz_propx)) / delta_propx;
@@ -458,18 +485,19 @@ void CSC_tbma::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
     //Chamber Level :  Region : Station :  Ring   : Chamber:
     //              :   sign  :  *1,000 :   *100  :    *1  :
     data_ChamberLevel_.detId = CSCSeg->cscDetId().zendcap()*(CSCSeg->cscDetId().station()*1000 + CSCSeg->cscDetId().ring()*100 + CSCSeg->cscDetId().chamber());
-    std::cout << "On a chamber level!" << std::endl;
-    std::cout << "RdPhi    " << data_ChamberLevel_.res_x << std::endl;
-    std::cout << "RdPhiDz  " << data_ChamberLevel_.res_slope_x << std::endl;
-    std::cout << "pos x    " << data_ChamberLevel_.pos_x << std::endl;
-    std::cout << "pos y    " << data_ChamberLevel_.pos_y << std::endl;
-    std::cout << "dxdz     " << data_ChamberLevel_.angle_x << std::endl;
-    std::cout << "dydz     " << data_ChamberLevel_.angle_y << std::endl;
-    std::cout << "pZ       " << data_ChamberLevel_.pz << std::endl;
-    std::cout << "pT       " << data_ChamberLevel_.pt << std::endl;
-    std::cout << "Charge   " << data_ChamberLevel_.q << std::endl;
-    std::cout << "DetID    " << data_ChamberLevel_.detId << std::endl;
-
+    if(debug){
+      std::cout << "On a chamber level!" << std::endl;
+      std::cout << "RdPhi    " << data_ChamberLevel_.res_x << std::endl;
+      std::cout << "RdPhiDz  " << data_ChamberLevel_.res_slope_x << std::endl;
+      std::cout << "pos x    " << data_ChamberLevel_.pos_x << std::endl;
+      std::cout << "pos y    " << data_ChamberLevel_.pos_y << std::endl;
+      std::cout << "dxdz     " << data_ChamberLevel_.angle_x << std::endl;
+      std::cout << "dydz     " << data_ChamberLevel_.angle_y << std::endl;
+      std::cout << "pZ       " << data_ChamberLevel_.pz << std::endl;
+      std::cout << "pT       " << data_ChamberLevel_.pt << std::endl;
+      std::cout << "Charge   " << data_ChamberLevel_.q << std::endl;
+      std::cout << "DetID    " << data_ChamberLevel_.detId << std::endl;
+    }
 
     tree_ChamberLevel->Fill();
   }
@@ -536,6 +564,10 @@ void CSC_tbma::propagate(const reco::Muon* mu, const edm::Event& iEvent, int i){
 
 
 void CSC_tbma::beginJob(){}
-void CSC_tbma::endJob(){}
+void CSC_tbma::endJob(){
+  std::cout << "Counters MU/TRK/STA/GLB = " << nmu << "/" << ntrk << "/" << nsta << "/" << nglb << std::endl;
+  std::cout << "Col/Mat = " << nSegCol << "/" << nSegMat << std::endl;
+  std::cout << "nCSCSegments/nCSC2DRecHits = "<< nCSCSegments << "/" << nCSCRegHits << std::endl;
+}
 
 DEFINE_FWK_MODULE(CSC_tbma);

@@ -13,7 +13,7 @@ git clone https://github.com/aebid/GEMCSCBendingAnalyzer.git
 
 scram b -j 8
 
-## Resiudal Packages
+## Residual Packages
 cd GEMCSCBendingAnalyzer/GEM_Alignment/test/
 ### GE1/1 Analyzer
 cmsRun run_GE11ana.py
@@ -24,10 +24,13 @@ cmsRun run_both_analyzers.py
 
 ## GEM DB Maker
 cd GEMCSCBendingAnalyzer/GEM_Alignment/test/
+
 cmsRun GEMAlDBWriter_cfg.py
 
 ## GEM_fitter.cpp: package for creating alignment estimates
+
 cd GEMCSCBendingAnalyzer/GEM_Alignment/script/standAloneGemAlignment
+
 ./run_3DOF_Fitter.sh
 
 

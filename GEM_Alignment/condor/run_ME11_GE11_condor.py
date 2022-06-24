@@ -17,8 +17,10 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 ### This is the misalignment part
 misalign = True
 if misalign:
-  db_file = 'sqlite_file:CRAFT2022_ME11Iter1_GEMIter0.db'
+  #db_file = 'sqlite_file:CRAFT2022_ME11Iter1_GEMIter0.db'
   db_file = 'sqlite_file:CRAFT2022_ME11Iter2_GEMIter0.db'
+  #db_file = 'sqlite_file:CRAFT2022_ME11Iter2_GEMIter1.db'
+  #db_file = 'sqlite_file:CRAFT2022_ME11Iter2_GEMIter2.db'
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
     cms.PSet(
@@ -96,7 +98,8 @@ process.ME11ana = cms.EDAnalyzer('ME11ana',
         csc2DRecHits = cms.InputTag("csc2DRecHits"),
 	gemRecHits = cms.InputTag("gemRecHits"),
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"),
-        muons = cms.InputTag("muons"),
+        #muons = cms.InputTag("muons"),
+        muons = cms.InputTag("ALCARECOMuAlGlobalCosmics:SelectedMuons"),
 	vertexCollection = cms.InputTag("offlinePrimaryVerticies"),
         debug = cms.bool(False),
         isCosmic = cms.bool(True)
@@ -108,12 +111,13 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         process.MuonServiceProxy,
         gemRecHits = cms.InputTag("gemRecHits"),
         gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"),
-        muons = cms.InputTag("muons"),
+        #muons = cms.InputTag("muons"),
+        muons = cms.InputTag("ALCARECOMuAlGlobalCosmics:SelectedMuons"),
         vertexCollection = cms.InputTag("offlinePrimaryVerticies"),
         tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(True),
         Segment_prop = cms.bool(True),
-        debug = cms.bool(False),
+        debug = cms.bool(True),
         isCosmic = cms.bool(True)
 )
 

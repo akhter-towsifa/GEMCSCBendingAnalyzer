@@ -11,12 +11,13 @@ if not os.path.exists("plots/"):
   os.makedirs("plots/")
 
 do_1D = True
-do_2D = True
-do_Region = True
-do_Chamber = True
-do_Layer = True
-do_Layer_Ratio = True
+do_2D = False
+do_Region = False
+do_Chamber = False
+do_Layer = False
+do_Layer_Ratio = False
 do_Layer_Ratio_Fit = False
+do_Layer_Comparison = True
 
 if do_1D:
   #1D Residual by Region
@@ -404,6 +405,108 @@ if do_1D:
           latex.DrawLatex(1.1*ROOT.gPad.GetLeftMargin(), 1 - 4*ROOT.gPad.GetTopMargin(), "{zer} x + {one}".format(zer = round(flist[i].GetParameter(0), 4), one = round(flist[i].GetParameter(1), 4)))
 
       canvas.SaveAs(plotdir+"ratio_Region{R}.png".format(R = region))
+
+
+  #1D Residual by Chamber + Layer Comparison
+  if do_Layer_Comparison:
+    plotdir = "plots/layer_comparison/"
+    if not os.path.exists(plotdir):
+      os.makedirs(plotdir)
+
+    nX_plots = 9
+    nY_plots = 4
+
+    H_ref = 800
+    W_ref = 800
+    W = W_ref*nX_plots
+    H = H_ref*nY_plots
+
+    T = 0.12*H
+    B = 0.16*H
+    L = 0.16*W
+    R = 0.08*W
+
+    xbins = 20
+    ybins = 100
+    xlow  = -0.5
+    xhigh = 0.5
+
+    canvas = ROOT.TCanvas("c1", "c1", W, H)
+    canvas.SetFillColor(0)
+    canvas.SetBorderMode(0)
+    canvas.SetFrameFillStyle(0)
+    canvas.SetFrameBorderMode(0)
+    canvas.SetLeftMargin( L/W )
+    canvas.SetRightMargin( R/W )
+    canvas.SetTopMargin( T/H )
+    canvas.SetBottomMargin( B/H )
+    canvas.SetTickx(0)
+    canvas.SetTicky(0)
+
+    canvas.Divide(nX_plots, nY_plots)
+
+
+
+
+    for region in [-1, 1]:
+      hlist_l1 = []
+      hlist_l2 = []
+      flist = []
+
+      for i, chamber in enumerate(range(1, 37)):
+        canvas.cd(i+1)
+        ROOT.gPad.SetGridx()
+        ROOT.gPad.SetGridy()
+        cut = base_cut + " && prop_location[0] == {R} && prop_location[2] == {Ch} && prop_location[2] == ME11_location[3]".format(R = region, Ch = chamber)
+        hlist_l1.append(ROOT.TH1D("h{R}_{Ch}_1_rat".format(R = region, Ch = chamber), "h{R}_{Ch}_1_rat".format(R = region, Ch = chamber), xbins, xlow, xhigh))
+        hlist_l2.append(ROOT.TH1D("h{R}_{Ch}_2_rat".format(R = region, Ch = chamber), "h{R}_{Ch}_2_rat".format(R = region, Ch = chamber), xbins, xlow, xhigh))
+        xAxis = hlist_l1[i].GetXaxis()
+        xAxis.SetTitleOffset(2)
+        xAxis.SetTitleSize(0.04)
+        xAxis.SetTitle("#DeltaR#phi [cm]")
+
+        yAxis = hlist_l1[i].GetYaxis()
+        yAxis.SetTitleOffset(0)
+        yAxis.SetTitleSize(0.04)
+        yAxis.SetTitle("Entries")
+
+        event.Project("h{R}_{Ch}_1_rat".format(R = region, Ch = chamber), RdPhi_Branch, cut+" && prop_location[3] == 1")
+        event.Project("h{R}_{Ch}_2_rat".format(R = region, Ch = chamber), RdPhi_Branch, cut+" && prop_location[3] == 2")
+
+        hlist_l1[i].SetLineWidth(3)
+        hlist_l1[i].Draw()
+        hlist_l2[i].SetLineWidth(3)
+        hlist_l2[i].SetLineColor(ROOT.kRed)
+        hlist_l2[i].Draw("same")
+        hlist_l1[i].Scale(1.0/hlist_l1[i].Integral())
+        hlist_l2[i].Scale(1.0/hlist_l2[i].Integral())
+        yAxis.SetRangeUser(0, 1.2*max(hlist_l1[i].GetMaximum(), hlist_l2[i].GetMaximum()))
+
+        latex = ROOT.TLatex()
+        latex.SetNDC()
+        latex.SetTextAngle(0)
+        #latex.SetTextColor(ROOT.kBlack)
+
+        latex.SetTextFont(42)
+        latex.SetTextSize(0.8*ROOT.gPad.GetTopMargin())
+
+        latex.SetTextAlign(12)
+        latex.DrawLatex(0+1.1*canvas.GetLeftMargin(), 1 - 0.6*canvas.GetTopMargin(), "Region: {R}".format(R = region))
+        latex.DrawLatex(0+1.1*canvas.GetLeftMargin(), 1- 1.0*canvas.GetTopMargin(), "Chamber: {Ch}".format(Ch = chamber))
+
+        latex.SetTextSize(0.8*ROOT.gPad.GetTopMargin())
+        latex.SetTextFont(61)
+        latex.DrawLatex(ROOT.gPad.GetLeftMargin(), 1 - 0.4*ROOT.gPad.GetTopMargin(), "CMS")
+        latex.SetTextFont(52)
+        latex.SetTextSize(0.6*ROOT.gPad.GetTopMargin())
+        #latex.DrawLatex(1.9*canvas.GetLeftMargin(), 1-canvas.GetTopMargin()+0.2*canvas.GetTopMargin(), "Preliminary")
+        latex.DrawLatex(1.9*ROOT.gPad.GetLeftMargin(), 1 - 0.45*ROOT.gPad.GetTopMargin(), "Work in Progress")
+
+        latex.SetTextFont(42)
+        latex.SetTextSize(0.8*ROOT.gPad.GetTopMargin())
+
+      canvas.SaveAs(plotdir+"comparison_Region{R}.png".format(R = region))
+
 
 
 if do_2D:
