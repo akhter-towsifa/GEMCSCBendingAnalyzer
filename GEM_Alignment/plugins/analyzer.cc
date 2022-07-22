@@ -72,6 +72,7 @@ struct MuonData
   int runNum;
   //Propagation Info//////////////////////////////////////////////////////
   float prop_GP[3]; float prop_LP[3]; float prop_startingPoint_GP[3];
+  float prop_dxdz;
   float prop_yroll; float prop_localphi_rad; float prop_localphi_deg;
   float prop_globalphi_rad;
   bool has_prop; bool has_fidcut;
@@ -106,6 +107,7 @@ void MuonData::init()
   for(int i=0; i<3; ++i){
     prop_GP[i] = 99999; prop_LP[i] = 99999; prop_startingPoint_GP[i] = 99999;
   }
+  prop_dxdz = 99999;
   prop_yroll = 99999; prop_localphi_rad = 99999; prop_localphi_deg = 99999;
   prop_globalphi_rad = 99999;
   has_prop = false; has_fidcut = false;
@@ -164,6 +166,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   //Propagation Info//////////////////////////////////////////////////////
   t->Branch("prop_GP", &prop_GP, "prop_GP[3] (x,y,z)/F");
   t->Branch("prop_LP", &prop_LP, "prop_LP[3] (x,y,z)/F");
+  t->Branch("prop_dxdz", &prop_dxdz);
   t->Branch("prop_startingPoint_GP", &prop_startingPoint_GP, "prop_startingPoint_GP[3] (x,y,z)/F");
   t->Branch("prop_yroll", &prop_yroll);
   t->Branch("prop_localphi_rad", &prop_localphi_rad);
@@ -332,7 +335,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
     const reco::Muon* mu = muRef.get();
     if (not mu->standAloneMuon()) continue;
-    if (mu->pt() < 10.0) continue;  //can apply a pt cut later
+    //if (mu->pt() < 10.0) continue;  //can apply a pt cut later
     if (debug) cout << "new standalone" << endl;
     for(auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "prop " << *it << "about to start propagate" << std::endl;
@@ -351,6 +354,8 @@ float analyzer::RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm
   return cos(stripAngle) * (prop_localx - (rechit)->localPosition().x()) - sin(stripAngle) * (prop_localy + deltay_roll);
 }
 void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
+  if(!(mu->isStandAloneMuon())){return;}
+  if(!(mu->outerTrack().isNonnull())){return;}
   const reco::Track* Track = mu->outerTrack().get();
   int tmp_CSC_counter = 0; int tmp_DT_counter = 0; int tmp_ME11_counter = 0; int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999; int tmp_ME11_strip = 99999; bool tmp_hasME11A = 0;
   if(isCosmic){
@@ -379,6 +384,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
     }
   }
   else{
+    if (Track->validFraction() > 0.0) return;
     for (size_t RecHit_iter = 0; RecHit_iter != Track->recHitsSize(); RecHit_iter++){
       const TrackingRecHit* RecHit = (Track->recHit(RecHit_iter)).get();
       DetId RecHitId = RecHit->geographicalId();
@@ -425,6 +431,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
   const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
   TrajectoryStateOnSurface tsos_ch; TrajectoryStateOnSurface tsos_seg;
   GlobalPoint pos_startingPoint_GP;
+  float prop_dxdz = 99999;
   if(prop_type == 1 or prop_type == 2){
     if(prop_type == 1){
       if (!(mu->isStandAloneMuon())) return;
@@ -498,10 +505,12 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     if (tsos_ch.isValid()){
       const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
       const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
+      const LocalVector direction_local_ch = ch->toLocal(tsos_ch.globalDirection());
       if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1){
         tmp_has_prop = true;
         pos_GP = tsos_ch.globalPosition();
         pos_startingPoint_GP = tsos_seg.globalPosition();
+        prop_dxdz = direction_local_ch.x()/direction_local_ch.z();
       }
     }
   }
@@ -513,6 +522,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     LocalPoint tmp_prop_LP = ch->toLocal(pos_GP);
     data_.prop_GP[0] = pos_GP.x(); data_.prop_GP[1] = pos_GP.y(); data_.prop_GP[2] = pos_GP.z();
     data_.prop_LP[0] = tmp_prop_LP.x(); data_.prop_LP[1] = tmp_prop_LP.y() + prop_y_to_chamber; data_.prop_LP[2] = tmp_prop_LP.z();
+    data_.prop_dxdz = prop_dxdz;
     data_.prop_startingPoint_GP[0] = pos_startingPoint_GP.x(); data_.prop_startingPoint_GP[1] = pos_startingPoint_GP.y(); data_.prop_startingPoint_GP[2] = pos_startingPoint_GP.z();
     data_.prop_yroll = tmp_prop_LP.y();
     LocalPoint local_to_center(tmp_prop_LP.x(), tmp_prop_LP.y() + prop_y_to_center, 0);
@@ -662,6 +672,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   else if (prop_type == 2){
     tree = Tracker_tree;
     if(debug) std::cout << "TrackerMuon/Nonnull " << mu->isTrackerMuon() << "/" << mu->track().isNonnull() << std::endl;
+    if(debug) std::cout << "StandAloneMuon/Nonnull " << mu->isStandAloneMuon() << "/" << mu->outerTrack().isNonnull() << std::endl;
     if(!(mu->isTrackerMuon())){return;}
     if(!(mu->track().isNonnull())){return;}
     Track = mu->track().get();

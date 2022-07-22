@@ -16,20 +16,34 @@ import os
 #releaseName = "CMSSW_12_3_0"                    #This is the name of the tarball and the CMSSW release ***This will only happen if tarball doesn't exist yet***
 ###########################################################################
 
+#2022B Collision dataset
+filepath = "/eos/cms/tier0/store/data/Run2022B/SingleMuon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v1/000/"
+runlist = [355094, 355101, 355103, 355105, 355107, 355109, 355111, 355113, 355118, 355120, 355122, 355124, 355128, 355130, 355134, 355181, 355203, 355205, 355207, 355100, 355102, 355104, 355106, 355108, 355110, 355112, 355117, 355119, 355121, 355123, 355127, 355129, 355133, 355135, 355196, 355204, 355206, 355208]
+cfg_name = "run_GE11_condor.py"
+jobname = "2022B_AllRuns_100722"
+useMisalign = False
+misalign_db = ""
+useStorage = True
+storage = "/eos/user/d/daebi/"+jobname+"/"
+n_files_per_script = 10
+joblength = "tomorrow"
+releaseName = "CMSSW_12_4_0"
+
+"""
 #List of CRAFT Express Cosmics runs with 690 or 700 uA
 filepath = "/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/" #CRAFT
 runlist = [348773,348776,348777,348838,348908,348955,349016,349073,349078,349079,349084,349146,349147,349260,349263,349348,349422,349433,349435,349436,349437,349527,349528,349611,349703,349758,349833,349834,349839,349840,349893,349963,350010,350107,350142,350166,350174,350254,350294,350361,350424,350425,350431,350450,350459,350460,350462,350463,350464,350490,350491,350561,350619]
 #cfg_name = "run_ME11_GE11_condor.py"
 cfg_name = "run_GE11_condor.py"
-jobname = "GE11Iter0_GlobalShiftIter1_230622"
+jobname = "GE11_6dof_GT_noYcap_020722"
 useMisalign = True #NEED TO CHANGE THE CFG FILE TOO!!!
-misalign_db = "GE11Iter0_GlobalShiftIter1_230622.db"
-#misalign_db = "GEM_GPR_Only.db"
+misalign_db = "GE11_6dof_GT_noYcap.db"
 useStorage = True
 storage = "/eos/user/d/daebi/"+jobname+"/"
-n_files_per_script = 10
+n_files_per_script = 50
 joblength = "tomorrow" #espresso = 20m, microcentury = 1h, longlunch = 2h, workday = 8h, tomorrow = 1d, testmatch = 3d, nextweek = 1w
-releaseName = "CMSSW_12_3_0"
+releaseName = "CMSSW_12_4_0"
+"""
 
 """
 #Hyunyong asked to check the CSC tbma analyzer with the ALCARECO dataset -- He said that the statistics were very low
@@ -133,9 +147,21 @@ for run in runlist:
             filelist += ","
         c_script.write("#!/bin/bash\n")
         c_script.write("date\n")
+        c_script.write("echo $HOME\n")
+        c_script.write("export HOME=`pwd`\n")
         c_script.write("export CAFDIR=`pwd`\n")
+        c_script.write("python --version\n")
+
+        c_script.write("cd /afs/cern.ch/work/d/daebi/analyser/CMSSW_12_4_0/src/GEMCSCBendingAnalyzer/GEM_Alignment/condor\n")
+        c_script.write("cmsenv\n")
+        c_script.write("cd $CAFDIR\n")
+
         c_script.write("tar xf {tarBall}\n".format(tarBall = tarBall))
+        c_script.write("ls\n")
         c_script.write("cd {cmsPath}\n".format(cmsPath = cmsPath))
+        c_script.write("pwd\n")
+        c_script.write("ls /cvmfs/cms.cern.ch/cmsset_default.sh\n")
+        c_script.write("source /cvmfs/cms.cern.ch/cmsset_default.sh\n")
         c_script.write("scram build ProjectRename\n")
         c_script.write("eval `scramv1 runtime -sh`\n")
         c_script.write("cd $CAFDIR\n")

@@ -15,9 +15,9 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 ### This is the misalignment part
-misalign = True
+misalign = False
 if misalign:
-  db_file = 'sqlite_file:GE11Iter0_GlobalShiftIter1_230622.db'
+  db_file = 'sqlite_file:GE11_6dof_GT_noYcap.db'
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
     cms.PSet(
@@ -97,12 +97,13 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"),
         muons = cms.InputTag("muons"),
         #muons = cms.InputTag("ALCARECOMuAlGlobalCosmics:SelectedMuons"),
+        #muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
         vertexCollection = cms.InputTag("offlinePrimaryVerticies"),
-        tracker_prop = cms.bool(False),
+        tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(False),
         Segment_prop = cms.bool(True),
         debug = cms.bool(False),
-        isCosmic = cms.bool(True)
+        isCosmic = cms.bool(False)
 )
 
 process.p = cms.Path(process.analyzer)
