@@ -19,4 +19,9 @@
 #include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
 
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
-#include "TrackingTools/TransientTrack/interface/"
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
+
+#include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
+
+#include "MagneticField/Engine/interface/MagneticField.h"
