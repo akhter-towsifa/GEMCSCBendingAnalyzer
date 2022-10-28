@@ -29,6 +29,7 @@
 
 #include "MagneticField/Engine/interface/MagneticField.h"
 
+#include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -231,6 +232,7 @@ private:
   edm::EDGetTokenT<vector<PSimHit> > gemSimHits_;
   edm::Handle<vector<PSimHit> > gemSimHits;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
+  edm::EDGetTokenT<edm::View<reco::Vertex> > vertex_; //check this -TA
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
 
   edm::Service<TFileService> fs;
@@ -274,6 +276,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   theService_ = new MuonServiceProxy(serviceParameters, consumesCollector());
 
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
+  vertex_ = consumes<View<reco::Vertex> >(iConfig.getParameter<InputTag>("vertex")); //check this -TA
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
   cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
@@ -309,6 +312,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     iEvent.getByToken(gemSimHits_, gemSimHits);
   }
   edm::Handle<View<reco::Muon> > muons;
+  
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
@@ -319,6 +323,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
   for (size_t i = 0; i < muons->size(); ++i){
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
+    std::vector<TrackBaseRef>::const_iterator trackRef = vertex->refAt(i); //check this -TA
     const reco::Muon* mu = muRef.get();
     if (not mu->isGlobalMuon()) continue;
     if (debug) cout << "new muon" << endl;
