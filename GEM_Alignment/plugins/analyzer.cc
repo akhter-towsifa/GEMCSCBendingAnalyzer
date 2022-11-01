@@ -69,6 +69,7 @@ struct MuonData
   int muon_charge; float muon_pt; float muon_eta; float muon_momentum;
   unsigned long long evtNum; unsigned long long lumiBlock; int muonIdx;
   int runNum;
+  bool has_TightID;
   //============ Propagation Info =========//
   float prop_GP[3]; float prop_LP[3]; float prop_startingPoint_GP[3];
   float prop_dxdz;  float prop_yroll; float prop_localphi_rad;
@@ -102,6 +103,7 @@ void MuonData::init()
   //=========== Muon Info ===============//
   muon_charge = 9999; muon_pt = 99999; muon_eta = 9999; muon_momentum = 9999;
   evtNum = 99999999; lumiBlock = 99999999; muonIdx = 99999999; runNum = 99999999;
+  has_TightID = 0;
   //=========== Propagation Info =======//
   for(int i=0; i<3; ++i){
     prop_GP[i] = 99999; prop_LP[i] = 99999; prop_startingPoint_GP[i] = 99999;
@@ -162,6 +164,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("muon_eta", &muon_eta);       t->Branch("muon_momentum", &muon_momentum);
   t->Branch("evtNum", &evtNum);           t->Branch("lumiBlock", &lumiBlock);
   t->Branch("runNum", &runNum);           t->Branch("muonIdx", &muonIdx);
+  t->Branch("has_TightID", &has_TightID);
   //========== Propagation Info =======//
   t->Branch("prop_GP", &prop_GP, "prop_GP[3] (x,y,z)/F");
   t->Branch("prop_LP", &prop_LP, "prop_LP[3] (x,y,z)/F");
@@ -225,14 +228,16 @@ private:
   virtual void beginJob() ;
   virtual void endJob() ;
 
+  void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i);
   //add lines 230 - 236 from Devin's code afterwards here
+  bool fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch);
 
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
   edm::Handle<GEMRecHitCollection> gemRecHits;
   edm::EDGetTokenT<vector<PSimHit> > gemSimHits_;
   edm::Handle<vector<PSimHit> > gemSimHits;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
-  edm::EDGetTokenT<edm::View<reco::Vertex> > vertex_; //check this -TA
+  edm::EDGetTokenT<reco::VertexCollection> vertexCollection_; //check this -TA
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
 
   edm::Service<TFileService> fs;
@@ -276,7 +281,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   theService_ = new MuonServiceProxy(serviceParameters, consumesCollector());
 
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
-  vertex_ = consumes<View<reco::Vertex> >(iConfig.getParameter<InputTag>("vertex")); //check this -TA
+  vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection")); //check this -TA
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
   cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
@@ -320,17 +325,54 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
 
   if (debug) cout << "New! EventNumber = " << iEvent.eventAuxiliary().event() << " LumiBlock = " << iEvent.eventAuxiliary().luminosityBlock() << " RunNumber = " << iEvent.run() << endl;
+  //==========Check this -TA
+  edm::Handle<reco::VertexCollection> vertexCollection;
+  iEvent.getByToken(vertexCollection_, vertexCollection);
+  reco::Vertex vertexSelection; //choose type of vertex needed
+  if(vertexCollection.isValid()){
+    vertexCollection->size();
+    if (debug) cout << "\tvertex size: " << vertexCollection->size() << endl;
+  }
+  for (const auto& vertex : *vertexCollection.product()){
+    if (vertexCollection.isValid()) {
+      vertexSelection = vertex;
+      break; //selecting the first valid vertex
+    }
+  }
+
+  //=======End of Check -TA
 
   for (size_t i = 0; i < muons->size(); ++i){
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
-    std::vector<TrackBaseRef>::const_iterator trackRef = vertex->refAt(i); //check this -TA
+    //std::vector<TrackBaseRef>::const_iterator trackRef = vertex->refAt(i); //check this -TA
     const reco::Muon* mu = muRef.get();
     if (not mu->isGlobalMuon()) continue;
     if (debug) cout << "new muon" << endl;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "prop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
-      //propagate(mu, prop_type, iEvent, i);
+      propagate(mu, prop_type, iEvent, i);
     }
   }
 }
+
+bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch){
+  const float fidcut_angle = 1.0;
+  const float cut_chamber = 5.0;
+  const float cut_angle = cut_chamber - fidcut_angle;
+  auto& parameters(ch->specs()->parameters());
+  float height(parameters[2]);
+  if ((abs(localphi_deg) < cut_angle) &&
+      ((local_y < (height - cut_chamber) && ch->id().roll() == 1) || (local_y > -1.0*(height - cut_chamber) && ch->id().roll() == 8) || (ch->id().roll() != 1 && ch->id().roll() != 8))
+     )
+    {return 1;}
+  else {return 0;}
+}
+
+
+void analyzer::beginJob(){}
+void analyzer::endJob(){
+  if (debug) nME11_col_vs_matches->Write();
+}
+
+DEFINE_FWK_MODULE(analyzer);
