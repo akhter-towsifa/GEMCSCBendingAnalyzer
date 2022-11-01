@@ -228,7 +228,7 @@ private:
   virtual void beginJob() ;
   virtual void endJob() ;
 
-  void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i);
+  void propagate(const reco::Muon* mu, reco::Vertex* vertexSelection, int prop_type, const edm::Event& iEvent, int i);
   //add lines 230 - 236 from Devin's code afterwards here
   bool fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch);
 
@@ -349,12 +349,74 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     if (not mu->isGlobalMuon()) continue;
     if (debug) cout << "new muon" << endl;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
-      if (debug) std::cout << "prop " << *it << "about to start propagate" << std::endl;
+      if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
-      propagate(mu, prop_type, iEvent, i);
+      propagate(mu, vertexSelection, prop_type, iEvent, i);
     }
   }
 }
+
+void analyzer::propagate(const reco::Muon* mu, reco::Vertex* vertexSelection, int prop_type, const edm::Event& iEvent, int i){
+  const reco::Track* Track;
+  reco::TransientTrack ttTrack;
+  TTree* tree;
+  if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
+  if (prop_type == 1){
+    tree = CSC_tree;
+    if (!(mu->isGlobalMuon())) {return;} //if(!(mu->isStandAloneMuon())){return;}
+    if (!(mu->globalTrack().isNonnull())) {return;}  //if(!(mu->outerTrack().isNonnull())){return;}
+    Track = mu->globalTrack().get(); //Track = mu->outerTrack().get();
+    ttTrack = ttrackBuilder_->build(Track);
+  }
+  else if (prop_type == 2){
+    tree = Tracker_tree; 
+    if (!(mu->isTrackerMuon())) {return;}
+    if (!(mu->track().isNonnull())) {return;}
+    Track = mu->track().get();
+    ttTrack = ttrackBuilder_->build(Track);
+  }
+  else if (prop_type == 3){
+    tree = Segment_tree;
+    //for cosmic study, use Lines 683-689,694 from Devin's code
+    if (!(mu->isTrackerMuon())) {return;}
+    if (!(mu->track().isNonnull())) {return;}
+    Track = mu->track().get();
+    ttTrack = ttrackBuilder_->build(Track);
+  }
+  else{
+    if (debug) cout << "Bad prop type, failure, not one of the 3" << endl;
+    return;
+  }
+
+  if (!(ttTrack.isValid())) {cout << "Bad event, no track" << endl;}
+  if (debug) cout << "Git track, now initiating data" << endl;
+  data_.init();
+  //======================Muon Info=======================
+  data_.muon_charge = mu->charge(); data_.muon_pt = mu->pt();  data_.muon_eta = mu->eta();
+  data_.muon_momentum = mu->momentum().mag2();                 data_.evtNum = iEvent.eventAuxiliary().event();
+  data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock(); data_.muonIdx = data_.evtNum*100 + i;
+  data_.runNum = iEvent.run();      data_.has_TightID = muon::isTightMuon(*mu, *vertexSelection); //check this -TA
+  //=====================Track Info=======================
+  data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
+  CSCSegmentCounter(mu, data_);
+  if (prop_type == 3 and data_.hasME11 != 1) {return;}
+  //================Propagation Info===================
+  if (debug) cout << "starting chamber loop" << endl;
+  for (const auto& ch : GEMGeometry_->etaPartitions()) {
+    if (ch->id().station() != 1) continue; //only concerned about GE1/1
+    GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
+    propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_);
+    if (tmp_has_prop){
+      LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
+      //==============RecHit Info======================
+      GEM_rechit_matcher(ch, tmp_prop_LP, data_);
+      // lines 723-725 if doing cosmic study
+      if (debug) cout << "Filling Tree" << endl;
+      tree->Fill();
+    }
+  }
+}
+
 
 bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch){
   const float fidcut_angle = 1.0;
