@@ -330,20 +330,20 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
   if (debug) cout << "New! EventNumber = " << iEvent.eventAuxiliary().event() << " LumiBlock = " << iEvent.eventAuxiliary().luminosityBlock() << " RunNumber = " << iEvent.run() << endl;
   //==========Check this -TA
-  edm::Handle<reco::VertexCollection> vertexCollection;
-  iEvent.getByToken(vertexCollection_, vertexCollection);
+  //edm::Handle<reco::VertexCollection> vertexCollection;
+  //iEvent.getByToken(vertexCollection_, vertexCollection);
 
-  if(vertexCollection.isValid()){
+  /*  if(vertexCollection.isValid()){
     vertexCollection->size();
     if (debug) cout << "\tvertex size: " << vertexCollection->size() << endl;
-  }
+    }
   reco::Vertex vertexSelection; //choose type of vertex needed
   for (const auto& vertex : *vertexCollection.product()){
     if (vertexCollection.isValid()) {
       vertexSelection = vertex;
       break; //selecting the first valid vertex
     }
-  }
+    }*/
   //if (debug) cout << "vertexSelection: " << vertexSelection << endl;
   //=======End of Check -TA
 
@@ -365,6 +365,16 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   reco::TransientTrack ttTrack;
   TTree* tree;
   if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
+  edm::Handle<reco::VertexCollection> vertexCollection;
+  iEvent.getByToken(vertexCollection_, vertexCollection);
+  reco::Vertex vertexSelection; //choose type of vertex needed
+  for (const auto& vertex : *vertexCollection.product()){
+    if (vertexCollection.isValid()) {
+      vertexSelection = vertex;
+      break; //selecting the first valid vertex
+    }
+  }
+
   if (prop_type == 1){
     tree = CSC_tree;
     if (!(mu->isGlobalMuon())) {return;} //if(!(mu->isStandAloneMuon())){return;}
@@ -399,7 +409,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   data_.muon_charge = mu->charge(); data_.muon_pt = mu->pt();  data_.muon_eta = mu->eta();
   data_.muon_momentum = mu->momentum().mag2();                 data_.evtNum = iEvent.eventAuxiliary().event();
   data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock(); data_.muonIdx = data_.evtNum*100 + i;
-  data_.runNum = iEvent.run();      //data_.has_TightID = muon::isTightMuon(*mu, *ver); //check this -TA
+  data_.runNum = iEvent.run();      data_.has_TightID = muon::isTightMuon(*mu, vertexSelection); //check this -TA
   //=====================Track Info=======================
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
   CSCSegmentCounter(mu, data_);
