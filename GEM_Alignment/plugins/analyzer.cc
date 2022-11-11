@@ -329,23 +329,6 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
 
   if (debug) cout << "New! EventNumber = " << iEvent.eventAuxiliary().event() << " LumiBlock = " << iEvent.eventAuxiliary().luminosityBlock() << " RunNumber = " << iEvent.run() << endl;
-  //==========Check this -TA
-  //edm::Handle<reco::VertexCollection> vertexCollection;
-  //iEvent.getByToken(vertexCollection_, vertexCollection);
-
-  /*  if(vertexCollection.isValid()){
-    vertexCollection->size();
-    if (debug) cout << "\tvertex size: " << vertexCollection->size() << endl;
-    }
-  reco::Vertex vertexSelection; //choose type of vertex needed
-  for (const auto& vertex : *vertexCollection.product()){
-    if (vertexCollection.isValid()) {
-      vertexSelection = vertex;
-      break; //selecting the first valid vertex
-    }
-    }*/
-  //if (debug) cout << "vertexSelection: " << vertexSelection << endl;
-  //=======End of Check -TA
 
   for (size_t i = 0; i < muons->size(); ++i){
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
@@ -365,6 +348,8 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   reco::TransientTrack ttTrack;
   TTree* tree;
   if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
+
+  //===============start of vertex edit by TA
   edm::Handle<reco::VertexCollection> vertexCollection;
   iEvent.getByToken(vertexCollection_, vertexCollection);
   reco::Vertex vertexSelection; //choose type of vertex needed
@@ -374,7 +359,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
       break; //selecting the first valid vertex
     }
   }
-
+  //================end of Vertex edit by TA
   if (prop_type == 1){
     tree = CSC_tree;
     if (!(mu->isGlobalMuon())) {return;} //if(!(mu->isStandAloneMuon())){return;}
