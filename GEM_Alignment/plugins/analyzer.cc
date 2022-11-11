@@ -422,14 +422,19 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
 void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   if (!(mu->isGlobalMuon())) {return;} //!(mu->isStandAloneMuon())
   if (!(mu->globalTrack().isNonnull())) {return;} //!(mu->outerTrack().isNonnull())
+  if (debug) cout << "mu is GlobalMuon" << endl;
   const reco::Track* Track = mu->globalTrack().get();
+  if (debug) cout << "mu has globalTrack" << endl;
   int tmp_CSC_counter = 0;   int tmp_DT_counter = 0;   int tmp_ME11_counter = 0;
   int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999;
   int tmp_ME11_strip = 99999; bool tmp_hasME11A = 0;
   //add lines 361-386, 415 if cosmics is needed.
+  if (debug) cout << "Track->validFraction() " << Track->validFraction() << endl;
   if (Track->validFraction() > 0.0) return;
   for (size_t RecHit_iter = 0; RecHit_iter != Track->recHitsSize(); RecHit_iter++){
+    if (debug) cout << "Track->recHitsSize(): " << Track->recHitsSize() << endl;
     const TrackingRecHit* RecHit = (Track->recHit(RecHit_iter)).get();
+    if (debug) cout << "rechit is selected" << endl;
     DetId RecHitId = RecHit->geographicalId();
     uint16_t RecHitDetId = RecHitId.det();
     if (RecHitDetId == DetId::Muon){
@@ -437,7 +442,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
       if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
         if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1 and RecHit->dimension() == 4){
           tmp_ME11_counter++;
-          if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
+          //if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
           RecSegment* Rec_segment = (RecSegment*)RecHit;
           ME11_segment = (CSCSegment*)Rec_segment;
           tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
@@ -452,6 +457,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
           data_.ME11_location[4] = CSCDetId(RecHitId).layer();
         }
         if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1){tmp_ME11RecHit_counter++;}
+        if (debug) cout << "tmp_ME11RecHit_counter: " << tmp_ME11RecHit_counter << endl;
         if (RecHit->dimension() == 4) {tmp_DT_counter++;}
       }
       if (RecHitSubDet == (uint16_t)MuonSubdetId::DT){
