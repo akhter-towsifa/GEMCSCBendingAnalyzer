@@ -429,7 +429,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999;
   int tmp_ME11_strip = 99999; bool tmp_hasME11A = 0;
   //add lines 361-386, 415 if cosmics is needed.
-  if (debug) cout << "Track->validFraction() " << Track->validFraction() << endl;
+  if (debug) cout << "Track->validFraction() " << Track->validFraction() << "\t Track->recHitsSize(): " << Track->recHitsSize() << endl;
   if (Track->validFraction() > 0.0) return;
   for (size_t RecHit_iter = 0; RecHit_iter != Track->recHitsSize(); RecHit_iter++){
     if (debug) cout << "Track->recHitsSize(): " << Track->recHitsSize() << endl;
