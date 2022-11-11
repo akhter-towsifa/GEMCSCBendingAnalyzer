@@ -356,8 +356,10 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   for (const auto& vertex : *vertexCollection.product()){
     if (vertexCollection.isValid()) {
       vertexSelection = vertex;
+      //if (debug) cout << "\t\tvertexSelection: " << vertexSelection << endl;
       break; //selecting the first valid vertex
     }
+    //if (debug) cout << "\t\tvertexSelection: " << vertexSelection << endl;
   }
   //================end of Vertex edit by TA
   if (prop_type == 1){
@@ -395,6 +397,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   data_.muon_momentum = mu->momentum().mag2();                 data_.evtNum = iEvent.eventAuxiliary().event();
   data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock(); data_.muonIdx = data_.evtNum*100 + i;
   data_.runNum = iEvent.run();      data_.has_TightID = muon::isTightMuon(*mu, vertexSelection); //check this -TA
+  if (debug) cout << "data_.has_TightID: " << data_.has_TightID << endl;
   //=====================Track Info=======================
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
   CSCSegmentCounter(mu, data_);
@@ -432,7 +435,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
     if (RecHitDetId == DetId::Muon){
       uint16_t RecHitSubDet = RecHitId.subdetId();
       if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
-        if (CSCDetId(RecHitId).station() == 1 and (CSCDetId(RecHitId).ring() == 1 or CSCDetId(RecHitId).ring() == 4) and RecHit->dimension() == 4){
+        if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1 and RecHit->dimension() == 4){
           tmp_ME11_counter++;
           if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
           RecSegment* Rec_segment = (RecSegment*)RecHit;
@@ -463,6 +466,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   data_.ME11_strip = tmp_ME11_strip;
   data_.hasME11A = tmp_hasME11A;
   if (data_.n_ME11_segment >=1 and data_.n_ME11_segment < 1000) {data_.hasME11 = 1;}
+  if (debug) cout << "data_.hasME11: " << data_.hasME11 << "\tdata_.n_ME11_segment: " << data_.n_ME11_segment << endl;
 }
 
 void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){
