@@ -69,7 +69,7 @@ struct MuonData
   int muon_charge; float muon_pt; float muon_eta; float muon_momentum;
   unsigned long long evtNum; unsigned long long lumiBlock; int muonIdx;
   int runNum;
-  bool has_TightID;
+  bool has_TightID; bool isPFIsoTightMu;
   //============ Propagation Info =========//
   float prop_GP[3]; float prop_LP[3]; float prop_startingPoint_GP[3];
   float prop_dxdz;  float prop_yroll; float prop_localphi_rad;
@@ -103,7 +103,7 @@ void MuonData::init()
   //=========== Muon Info ===============//
   muon_charge = 9999; muon_pt = 99999; muon_eta = 9999; muon_momentum = 9999;
   evtNum = 99999999; lumiBlock = 99999999; muonIdx = 99999999; runNum = 99999999;
-  has_TightID = 0;
+  has_TightID = 0;    isPFIsoTightMu = 0;
   //=========== Propagation Info =======//
   for(int i=0; i<3; ++i){
     prop_GP[i] = 99999; prop_LP[i] = 99999; prop_startingPoint_GP[i] = 99999;
@@ -164,7 +164,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("muon_eta", &muon_eta);       t->Branch("muon_momentum", &muon_momentum);
   t->Branch("evtNum", &evtNum);           t->Branch("lumiBlock", &lumiBlock);
   t->Branch("runNum", &runNum);           t->Branch("muonIdx", &muonIdx);
-  t->Branch("has_TightID", &has_TightID);
+  t->Branch("has_TightID", &has_TightID); t->Branch("isPFIsoTightMu", &isPFIsoTightMu);
   //========== Propagation Info =======//
   t->Branch("prop_GP", &prop_GP, "prop_GP[3] (x,y,z)/F");
   t->Branch("prop_LP", &prop_LP, "prop_LP[3] (x,y,z)/F");
@@ -396,8 +396,11 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   data_.muon_charge = mu->charge(); data_.muon_pt = mu->pt();  data_.muon_eta = mu->eta();
   data_.muon_momentum = mu->momentum().mag2();                 data_.evtNum = iEvent.eventAuxiliary().event();
   data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock(); data_.muonIdx = data_.evtNum*100 + i;
-  data_.runNum = iEvent.run();      data_.has_TightID = muon::isTightMuon(*mu, vertexSelection); //check this -TA
-  if (debug) cout << "data_.has_TightID: " << data_.has_TightID << endl;
+  data_.runNum = iEvent.run();
+  data_.has_TightID = muon::isTightMuon(*mu, vertexSelection); //check this -TA
+  data_.isPFIsoTightMu = muon::Selector(*mu, "PFIsoTight");    //check this -TA
+
+  if (debug) cout << "data_.has_TightID: " << data_.has_TightID << "\tdata_.isPFIsoTightMu: " << data_.isPFIsoTightMu << endl;
   //=====================Track Info=======================
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
   CSCSegmentCounter(mu, data_);
