@@ -356,10 +356,8 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   for (const auto& vertex : *vertexCollection.product()){
     if (vertexCollection.isValid()) {
       vertexSelection = vertex;
-      //if (debug) cout << "\t\tvertexSelection: " << vertexSelection << endl;
       break; //selecting the first valid vertex
     }
-    //if (debug) cout << "\t\tvertexSelection: " << vertexSelection << endl;
   }
   //================end of Vertex edit by TA
   if (prop_type == 1){
@@ -398,9 +396,9 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock(); data_.muonIdx = data_.evtNum*100 + i;
   data_.runNum = iEvent.run();
   data_.has_TightID = muon::isTightMuon(*mu, vertexSelection); //check this -TA
-  data_.isPFIsoTightMu = muon::Selector(*mu, "PFIsoTight");    //check this -TA
+  //data_.isPFIsoTightMu = muon::Selector(mu, "PFIsoTight");    //check this -TA
 
-  if (debug) cout << "data_.has_TightID: " << data_.has_TightID << "\tdata_.isPFIsoTightMu: " << data_.isPFIsoTightMu << endl;
+  //if (debug) cout << "data_.has_TightID: " << data_.has_TightID << "\tdata_.isPFIsoTightMu: " << data_.isPFIsoTightMu << endl;
   //=====================Track Info=======================
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
   CSCSegmentCounter(mu, data_);
@@ -433,7 +431,8 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   int tmp_ME11_strip = 99999; bool tmp_hasME11A = 0;
   //add lines 361-386, 415 if cosmics is needed.
   if (debug) cout << "Track->validFraction() " << Track->validFraction() << "\t Track->recHitsSize(): " << Track->recHitsSize() << endl;
-  if (Track->validFraction() > 0.0) return;
+  //if (Track->validFraction() > 0.0) return;
+  if (debug) cout << "checking if Track->validFraction() > 0.0 passes here" << endl;
   for (size_t RecHit_iter = 0; RecHit_iter != Track->recHitsSize(); RecHit_iter++){
     if (debug) cout << "Track->recHitsSize(): " << Track->recHitsSize() << endl;
     const TrackingRecHit* RecHit = (Track->recHit(RecHit_iter)).get();
