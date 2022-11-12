@@ -18,6 +18,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 
 #include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
 
@@ -31,6 +32,7 @@
 
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/MuonReco/interface/Muon.h" //check this -TA
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/DetId/interface/DetId.h"
@@ -283,8 +285,8 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   cout << "Begin analyzer" << endl;
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
   theService_ = new MuonServiceProxy(serviceParameters, consumesCollector());
-
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
+  //selector_ = consumes<View<reco::Muon> >("OfflineSlimmedMuonCollection");
   vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection")); //check this -TA
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
@@ -320,8 +322,10 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (isMC) {
     iEvent.getByToken(gemSimHits_, gemSimHits);
   }
+  selector_ = consumes<View<reco::Muon> >("OfflineSlimmedMuonCollection");
   edm::Handle<View<reco::Muon> > muons;
-  
+  StringCutObjectSelector<reco::Muon> selector="PFIsoTight";
+
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
@@ -335,6 +339,8 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     const reco::Muon* mu = muRef.get();
     if (not mu->isGlobalMuon()) continue;
     if (debug) cout << "new muon" << endl;
+    if (!selector(*mu)) continue;
+    if (debug) cout << "passes PFIsoTight" << endl;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
