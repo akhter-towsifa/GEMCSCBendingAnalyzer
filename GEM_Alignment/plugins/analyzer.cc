@@ -338,9 +338,9 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     edm::RefToBase<reco::Muon> muRef = muons->refAt(i);
     const reco::Muon* mu = muRef.get();
     if (not mu->isGlobalMuon()) continue;
-    if (debug) cout << "new muon" << endl;
+    if (debug) cout << "new muon, i = " << i << endl;
     //if (!selector(*mu)) continue;
-    if (!(reco::Muon::PFIsoTight > 0)) continue;
+    if (!(mu->passed(reco::Muon::PFIsoTight))) continue;
     if (debug) cout << "passes PFIsoTight" << endl;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
@@ -416,12 +416,13 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     if (ch->id().station() != 1) continue; //only concerned about GE1/1
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
     propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_);
+    if (prop_type==3 and debug) cout << "out of propagating to GEM function" << endl;
     if (tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
       //==============RecHit Info======================
       GEM_rechit_matcher(ch, tmp_prop_LP, data_);
       // lines 723-725 if doing cosmic study
-      if (debug) cout << "Filling Tree" << endl;
+      if (prop_type==3 and debug) cout << "Filling Tree for prop_type 3" << endl;
       tree->Fill();
     }
   }
@@ -543,7 +544,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       if (Track != 0) {
         tmp_inner_or_outer_mom = 0;
         momentum_at_surface = momentum_at_surface*(Track->outerP()); //If inner track exists, use momentum
-        if (debug) cout << "Got inner momentum = " << momentum_at_surface << endl;
+        //if (debug) cout << "Got inner momentum = " << momentum_at_surface << endl;
       }
     }
     else if (mu->isGlobalMuon()){
@@ -577,6 +578,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
         pos_startingPoint_GP = tsos_seg.globalPosition();
         prop_dxdz = direction_local_ch.x()/direction_local_ch.z();
       }
+      if (debug) cout << "isos_ch" << endl;
     }
   }
   if (tmp_has_prop){
@@ -599,6 +601,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     data_.has_fidcut = fidcutCheck(tmp_prop_LP.y(), ((3.14159265/2.) - local_phi)*(180./3.14159265), ch);
     data_.prop_location[0] = ch->id().region(); data_.prop_location[1] = ch->id().station(); data_.prop_location[2] = ch->id().chamber(); data_.prop_location[3] = ch->id().layer(); data_.prop_location[4] = ch->id().roll();
     data_.inner_or_outer_mom = tmp_inner_or_outer_mom;
+    if (debug) cout << "bunch of data.branches filled" << endl;
   }
 }
 
