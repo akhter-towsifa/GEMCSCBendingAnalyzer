@@ -339,9 +339,9 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     const reco::Muon* mu = muRef.get();
     if (not mu->isGlobalMuon()) continue;
     if (debug) cout << "new muon, i = " << i << endl;
-    //if (!selector(*mu)) continue;
+    
     if (!(mu->passed(reco::Muon::PFIsoTight))) continue;
-    if (debug) cout << "passes PFIsoTight" << endl;
+    //if (debug) cout << "passes PFIsoTight" << endl;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
@@ -431,22 +431,23 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
 void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   if (!(mu->isGlobalMuon())) {return;} //!(mu->isStandAloneMuon())
   if (!(mu->globalTrack().isNonnull())) {return;} //!(mu->outerTrack().isNonnull())
-  if (debug) cout << "mu is GlobalMuon" << endl;
+  //if (debug) cout << "mu is GlobalMuon" << endl;
   const reco::Track* Track = mu->globalTrack().get();
-  if (debug) cout << "mu has globalTrack" << endl;
+  //if (debug) cout << "mu has globalTrack" << endl;
   int tmp_CSC_counter = 0;   int tmp_DT_counter = 0;   int tmp_ME11_counter = 0;
   int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999;
   int tmp_ME11_strip = 99999; bool tmp_hasME11A = 0;
   //add lines 361-386, 415 if cosmics is needed.
   if (debug) cout << "Track->validFraction() " << Track->validFraction() << "\t Track->recHitsSize(): " << Track->recHitsSize() << endl;
   //if (Track->validFraction() > 0.0) return;
-  if (debug) cout << "checking if Track->validFraction() > 0.0 passes here" << endl;
+  //if (debug) cout << "checking if Track->validFraction() > 0.0 passes here" << endl;
+  if (debug) cout << "Track->recHitsSize(): " << Track->recHitsSize() << endl;
   for (size_t RecHit_iter = 0; RecHit_iter != Track->recHitsSize(); RecHit_iter++){
-    if (debug) cout << "Track->recHitsSize(): " << Track->recHitsSize() << endl;
     const TrackingRecHit* RecHit = (Track->recHit(RecHit_iter)).get();
-    if (debug) cout << "rechit is selected" << endl;
+    //if (debug) cout << "rechit is selected" << endl;
     DetId RecHitId = RecHit->geographicalId();
     uint16_t RecHitDetId = RecHitId.det();
+
     if (RecHitDetId == DetId::Muon){
       uint16_t RecHitSubDet = RecHitId.subdetId();
       if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
@@ -467,8 +468,9 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
           data_.ME11_location[4] = CSCDetId(RecHitId).layer();
         }
         if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1){tmp_ME11RecHit_counter++;}
-        if (debug) cout << "tmp_ME11RecHit_counter: " << tmp_ME11RecHit_counter << endl;
-        if (RecHit->dimension() == 4) {tmp_DT_counter++;}
+        //if (debug) cout << "tmp_ME11RecHit_counter: " << tmp_ME11RecHit_counter << endl;
+        if (RecHit->dimension() == 4) {tmp_CSC_counter++;}
+        if (debug) cout << "tmp_CSC_counter: " << tmp_CSC_counter << endl;
       }
       if (RecHitSubDet == (uint16_t)MuonSubdetId::DT){
         if (RecHit->dimension() > 1) {tmp_DT_counter++;}
@@ -602,6 +604,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     data_.has_prop = tmp_has_prop;
     data_.has_fidcut = fidcutCheck(tmp_prop_LP.y(), ((3.14159265/2.) - local_phi)*(180./3.14159265), ch);
     data_.prop_location[0] = ch->id().region(); data_.prop_location[1] = ch->id().station(); data_.prop_location[2] = ch->id().chamber(); data_.prop_location[3] = ch->id().layer(); data_.prop_location[4] = ch->id().roll();
+    if (debug) cout << "prop region:station:chamber:layer:roll " << data_.prop_location[0] << ":" << data_.prop_location[1] << ":"<< data_.prop_location[2] << ":" << data_.prop_location[3] << ":" << data_.prop_location[4] << endl; 
     data_.inner_or_outer_mom = tmp_inner_or_outer_mom;
     if (debug) cout << "bunch of data.branches filled" << endl;
   }
