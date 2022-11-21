@@ -416,13 +416,14 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     if (ch->id().station() != 1) continue; //only concerned about GE1/1
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
     propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_);
-    if (prop_type==3 and debug) cout << "out of propagating to GEM function" << endl;
+    //if (prop_type==3 and debug) cout << "out of propagating to GEM function" << endl;
     if (tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
       //==============RecHit Info======================
       GEM_rechit_matcher(ch, tmp_prop_LP, data_);
       // lines 723-725 if doing cosmic study
       if (prop_type==3 and debug) cout << "Filling Tree for prop_type 3" << endl;
+      if (debug and prop_type==3) cout << "propagate function-- prop region:station:chamber:layer:roll " << data_.prop_location[0] << ":" << data_.prop_location[1] << ":"<< data_.prop_location[2] << ":" << data_.prop_location[3] << ":" << data_.prop_location[4] << endl;
       tree->Fill();
     }
   }
@@ -564,7 +565,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     else{
       return;
     }
-    if (debug) cout << "Got momentum" << endl;
+    //if (debug) cout << "Got momentum" << endl;
     LocalTrajectoryParameters param(ME11_segment->localPosition(), momentum_at_surface, mu->charge());
     AlgebraicSymMatrix mat(5,0);
     mat = ME11_segment->parametersError().similarityT( ME11_segment->projectionMatrix() );
@@ -572,13 +573,13 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     TrajectoryStateOnSurface tsos_seg(param, error, segDet->surface(), &*theService_->magneticField());
     TrajectoryStateOnSurface tsos_ch = propagator->propagate(tsos_seg, ch->surface());
     if (tsos_ch.isValid()){
-      if (debug) cout << "tsos_ch valid" << endl;
+      //if (debug) cout << "tsos_ch valid" << endl;
       const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
       const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
       const LocalVector direction_local_ch = ch->toLocal(tsos_ch.globalDirection());
       if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1) {
         tmp_has_prop = true;
-        if (debug) cout << "tmp_has_prop is true now" << endl;
+        //if (debug) cout << "tmp_has_prop is true now" << endl;
         pos_GP = tsos_ch.globalPosition();
         pos_startingPoint_GP = tsos_seg.globalPosition();
         prop_dxdz = direction_local_ch.x()/direction_local_ch.z();
