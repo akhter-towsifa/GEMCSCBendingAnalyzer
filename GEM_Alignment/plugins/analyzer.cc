@@ -77,7 +77,7 @@ struct MuonData
   float prop_dxdz;  float prop_yroll; float prop_localphi_rad;
   float prop_localphi_deg;            float prop_globalphi_rad;
   bool has_prop;    bool has_fidcut;
-  int prop_location[5];
+  int prop_location[5];               float ME11_Segment_Direction[2];
   //============ Track Info ===============//
   float track_chi2; float track_ndof; int n_ME11_segment;
   int which_track;  int hasME11;      int hasME11RecHit;
@@ -125,6 +125,9 @@ void MuonData::init()
     ME11_location[i] = 999999;
   }
   inner_or_outer_mom = 99999;
+  for (int i=0; i<2; ++i){
+    ME11_Segment_Direction[i] = 999999;
+  }
   //=========== Rechit Info ===========//
   for (int i=0; i<3; ++i){
     rechit_GP[i] = 999999; rechit_LP[i] = 999999;
@@ -188,6 +191,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("nME11RecHits", &nME11RecHits);     t->Branch("ME11_BunchX", &ME11_BunchX);
   t->Branch("ME11_strip", &ME11_strip);
   t->Branch("ME11_location", &ME11_location, "ME11_location[5] (end, sta, ring, cha, lay)/I");
+  t->Branch("ME11_Segment_Direction", &ME11_Segment_Direction, "ME11_Segment_Direction[2] (x,y)/F");
   t->Branch("inner_or_outer_mom", &inner_or_outer_mom, "inner_or_outer_mom (0 = inner, 1 = outer)/I");
   //========== Rechit Info ============//
   t->Branch("rechit_GP", &rechit_GP, "rechit_GP[3] (x,y,z)/F");
@@ -439,6 +443,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   int tmp_CSC_counter = 0;   int tmp_DT_counter = 0;   int tmp_ME11_counter = 0;
   int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999;
   int tmp_ME11_strip = 99999; bool tmp_hasME11A = 0;
+  float tmp_me11_segment_x; float tmp_me11_segment_y;
   //add lines 361-386, 415 if cosmics is needed.
   if (debug) cout << "Track->validFraction() " << Track->validFraction() << "\t Track->recHitsSize(): " << Track->recHitsSize() << endl;
   //if (Track->validFraction() > 0.0) return;
@@ -459,11 +464,16 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
           if (debug) cout << "tmp_hasME11A: " << tmp_hasME11A << endl;
           RecSegment* Rec_segment = (RecSegment*)RecHit;
           ME11_segment = (CSCSegment*)Rec_segment;
+          tmp_me11_segment_x = ME11_segment->localDirection().x();
+          tmp_me11_segment_y = ME11_segment->localDirection().y();
+          if (debug) cout << "ME11segment direction x:y" << tmp_me11_segment_x << ":" << tmp_me11_segment_y << endl;
           tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
           auto cscDetID_FAKE = CSCDetId(CSCDetId(RecHitId).endcap(), CSCDetId(RecHitId).station(), CSCDetId(RecHitId).ring(), CSCDetId(RecHitId).chamber(), 3);
           const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
           const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
           tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(ME11_segment->localPosition());
+          data_.ME11_Segment_Direction[0] = tmp_me11_segment_x;   data_.ME11_Segment_Direction[1] = tmp_me11_segment_y;
+          if (debug) cout << "data_.ME11 segment direction x:y " << data_.ME11_Segment_Direction[0] << ":" << data_.ME11_Segment_Direction[1] << endl;
           data_.ME11_location[0] = CSCDetId(RecHitId).endcap();
           data_.ME11_location[1] = CSCDetId(RecHitId).station();
           data_.ME11_location[2] = CSCDetId(RecHitId).ring();
@@ -488,6 +498,8 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   data_.hasME11A = tmp_hasME11A;
   if (data_.n_ME11_segment >=1 and data_.n_ME11_segment < 1000) {data_.hasME11 = 1;}
   if (debug) cout << "data_.hasME11: " << data_.hasME11 << "\tdata_.n_ME11_segment: " << data_.n_ME11_segment << endl;
+  //data_.ME11_Segment_Direction[0] = tmp_me11_segment_x;   data_.ME11_Segment_Direction[1] = tmp_me11_segment_y;
+  //if (debug) cout << "data_.ME11 segment direction x:y " << data_.ME11_Segment_Direction[0] << ":" << data_.ME11_Segment_Direction[1] << endl;
 }
 
 void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){
@@ -542,6 +554,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
   }
   if (prop_type == 3){
     LocalVector momentum_at_surface = ME11_segment->localDirection(); //No momentum for segments;
+
     DetId segDetId = ME11_segment->geographicalId();
     const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
     if (mu->isTrackerMuon()) {
