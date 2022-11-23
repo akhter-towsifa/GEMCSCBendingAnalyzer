@@ -178,7 +178,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("prop_globalphi_rad", &prop_globalphi_rad);
   t->Branch("has_prop", &has_prop);
   t->Branch("has_fidcut", &has_fidcut);
-  t->Branch("prop_location", &prop_location, "prop_location[5] (reg, sta, cha, lay, rol)I");
+  t->Branch("prop_location", &prop_location, "prop_location[5] (reg, sta, cha, lay, rol)/I");
   //========== Track Info =============//
   t->Branch("track_chi2", &track_chi2);         t->Branch("track_ndof", &track_ndof);
   t->Branch("n_ME11_segment", &n_ME11_segment); t->Branch("which_track", &which_track);
@@ -421,9 +421,10 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
       //==============RecHit Info======================
       GEM_rechit_matcher(ch, tmp_prop_LP, data_);
-      // lines 723-725 if doing cosmic study
+      if (isMC){
+        GEM_simhit_matcher(ch, tmp_prop_GP, data_);
+      }
       if (prop_type==3 and debug) cout << "Filling Tree for prop_type 3" << endl;
-      if (debug and prop_type==3) cout << "propagate function-- prop region:station:chamber:layer:roll " << data_.prop_location[0] << ":" << data_.prop_location[1] << ":"<< data_.prop_location[2] << ":" << data_.prop_location[3] << ":" << data_.prop_location[4] << endl;
       tree->Fill();
     }
   }
@@ -452,9 +453,10 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
     if (RecHitDetId == DetId::Muon){
       uint16_t RecHitSubDet = RecHitId.subdetId();
       if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
-        if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1 and RecHit->dimension() == 4){
+        if (CSCDetId(RecHitId).station() == 1 and (CSCDetId(RecHitId).ring() == 1 or CSCDetId(RecHitId).ring() == 4) and RecHit->dimension() == 4){
           tmp_ME11_counter++;
-          //if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
+          if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
+          if (debug) cout << "tmp_hasME11A: " << tmp_hasME11A << endl;
           RecSegment* Rec_segment = (RecSegment*)RecHit;
           ME11_segment = (CSCSegment*)Rec_segment;
           tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
