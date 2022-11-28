@@ -11,7 +11,7 @@
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h" //necessary to declare the "analyzer" plugin to the CMSSW framework
+#include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -25,8 +25,6 @@
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
-
-#include "TrackPropagation/SteppingHelixPropagator/interface/SteppingHelixPropagator.h"
 
 #include "MagneticField/Engine/interface/MagneticField.h"
 
@@ -51,6 +49,12 @@
 #include "Geometry/CommonTopologies/interface/StripTopology.h"
 
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
+
+//The header files below are specifically for LCT 1/8 strip calculation. regroup these later if code works
+#include "L1Trigger/CSCTriggerPrimitives/interface/CSCGEMMatcher.h"
+#include "L1Trigger/CSCTriggerPrimitives/interface/GEMInternalCluster.h"
+// this header is already above #include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigi.h"
+//end of LCT 1/8 strip header files.
 
 #include "TTree.h"
 #include "TH1D.h"
@@ -240,7 +244,7 @@ private:
   virtual void endJob() ;
 
   void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i);
-  void CSCSegmentCounter(const reco::Muon* mu, MuonData& data_);
+  void CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, const bool isLayer2);
   void propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_);
   void GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP, MuonData& data_);
   void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_);
@@ -295,7 +299,6 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
   theService_ = new MuonServiceProxy(serviceParameters, consumesCollector());
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
-  //selector_ = consumes<View<reco::Muon> >("OfflineSlimmedMuonCollection");
   vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection")); //check this -TA
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
@@ -331,9 +334,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (isMC) {
     iEvent.getByToken(gemSimHits_, gemSimHits);
   }
-  //selector_ = consumes<View<reco::Muon> >("OfflineSlimmedMuonCollection");
   edm::Handle<View<reco::Muon> > muons;
-  //StringCutObjectSelector<reco::Muon::PFIsoTight> selector;
 
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
@@ -363,6 +364,8 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   const reco::Track* Track;
   reco::TransientTrack ttTrack;
   TTree* tree;
+  //Check the line below for 1/8 strip
+  //const CSCCorrelatedLCTDigi* lct; const GEMInternalCluster* cluster; const bool isLayer2;
   if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
 
   //===============start of vertex edit by TA
@@ -417,7 +420,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   //if (debug) cout << "data_.has_TightID: " << data_.has_TightID << "\tdata_.isPFIsoTightMu: " << data_.isPFIsoTightMu << endl;
   //=====================Track Info=======================
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
-  CSCSegmentCounter(mu, data_);
+  CSCSegmentCounter(mu, data_, lct, cluster, isLayer2);
   if (prop_type == 3 and data_.hasME11 != 1) {return;}
   //================Propagation Info===================
   if (debug) cout << "starting chamber loop" << endl;
@@ -439,7 +442,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   }
 }
 
-void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
+void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, const bool isLayer2){
   if (!(mu->isGlobalMuon())) {return;} //!(mu->isStandAloneMuon())
   if (!(mu->globalTrack().isNonnull())) {return;} //!(mu->outerTrack().isNonnull())
   //if (debug) cout << "mu is GlobalMuon" << endl;
@@ -468,6 +471,11 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
           tmp_ME11_counter++;
           if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
           if (debug) cout << "tmp_hasME11A: " << tmp_hasME11A << endl;
+          //Begininng of LCT 1/8 keystrip calculation
+          int lct_strip = cluster.getKeyStrip(8, isLayer2);
+          int eighthStripDiff = lct_strip - lct.getStrip(8);
+          if (debug) cout << "lct_strip: " << lct_strip << "\teighthStripDiff: " << eighthStripDiff << endl;
+          //end of LCT strip calculation
           RecSegment* Rec_segment = (RecSegment*)RecHit;
           ME11_segment = (CSCSegment*)Rec_segment;
           tmp_me11_segment_x = ME11_segment->localDirection().x();
