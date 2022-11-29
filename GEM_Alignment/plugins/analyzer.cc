@@ -53,7 +53,6 @@
 //The header files below are specifically for LCT 1/8 strip calculation. regroup these later if code works
 #include "L1Trigger/CSCTriggerPrimitives/interface/CSCGEMMatcher.h"
 #include "L1Trigger/CSCTriggerPrimitives/interface/GEMInternalCluster.h"
-// this header is already above #include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigi.h"
 //end of LCT 1/8 strip header files.
 
 #include "TTree.h"
@@ -91,6 +90,7 @@ struct MuonData
   int ME11_location[5];               int inner_or_outer_mom;
   float ME11_Segment_Direction[3];
   float ME11_Segment_slope_dxdz;      float ME11_Segment_slope_dydz;
+  int eighthStripDiff;
   //============ Rechit Info =============//
   float rechit_GP[3]; float rechit_LP[3];        bool has_rechit;
   float rechit_yroll; float rechit_localphi_rad; float rechit_localphi_deg;
@@ -135,6 +135,7 @@ void MuonData::init()
     ME11_Segment_Direction[i] = 999999;
   }
   ME11_Segment_slope_dxdz = 999999;    ME11_Segment_slope_dydz = 999999;
+  eighthStripDiff = 99999;
   //=========== Rechit Info ===========//
   for (int i=0; i<3; ++i){
     rechit_GP[i] = 999999; rechit_LP[i] = 999999;
@@ -194,6 +195,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("n_ME11_segment", &n_ME11_segment); t->Branch("which_track", &which_track);
   t->Branch("hasME11", &hasME11);               t->Branch("hasME11RecHit", &hasME11RecHit);
   t->Branch("hasME11A", &hasME11A);             t->Branch("hasME11ARecHit", &hasME11ARecHit);
+  t->Branch("eighthStripDiff", &eighthStripDiff);
   t->Branch("nCSCSeg", &nCSCSeg);               t->Branch("nDTSeg", &nDTSeg);
   t->Branch("nME11RecHits", &nME11RecHits);     t->Branch("ME11_BunchX", &ME11_BunchX);
   t->Branch("ME11_strip", &ME11_strip);
@@ -244,13 +246,14 @@ private:
   virtual void endJob() ;
 
   void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i);
-  void CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, const bool isLayer2);
+  void CSCSegmentCounter(const reco::Muon* mu, MuonData& data_);
   void propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_);
   void GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP, MuonData& data_);
   void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_);
   float RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<GEMRecHit> >::const_iterator rechit, float prop_localx, float prop_localy, const GEMEtaPartition* ch);
   bool fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch);
-
+  int eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A);
+  
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
   edm::Handle<GEMRecHitCollection> gemRecHits;
   edm::EDGetTokenT<vector<PSimHit> > gemSimHits_;
@@ -281,6 +284,10 @@ private:
 
   bool isMC;
   const CSCSegment *ME11_segment;
+  //check below 3 lines for LCT 1/8 strip diff calculation
+  const CSCCorrelatedLCTDigi* lct;
+  const GEMInternalCluster* cluster;
+  //const bool isLayer2;
 
   const edm::ESGetToken<GEMGeometry, MuonGeometryRecord> gemGeomToken_;
   const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeomToken_;
@@ -364,10 +371,12 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   const reco::Track* Track;
   reco::TransientTrack ttTrack;
   TTree* tree;
-  //Check the line below for 1/8 strip
-  //const CSCCorrelatedLCTDigi* lct; const GEMInternalCluster* cluster; const bool isLayer2;
   if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
 
+  /*  //======LCT check for layer2 in GEM internal cluster
+  bool isLayer2 = false;
+  if (!cluster.isMatchingLayer1() and cluster.isMatchingLayer2()) {isLayer2 = true;}
+  */
   //===============start of vertex edit by TA
   edm::Handle<reco::VertexCollection> vertexCollection;
   iEvent.getByToken(vertexCollection_, vertexCollection);
@@ -420,7 +429,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   //if (debug) cout << "data_.has_TightID: " << data_.has_TightID << "\tdata_.isPFIsoTightMu: " << data_.isPFIsoTightMu << endl;
   //=====================Track Info=======================
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
-  CSCSegmentCounter(mu, data_, lct, cluster, isLayer2);
+  CSCSegmentCounter(mu, data_);
   if (prop_type == 3 and data_.hasME11 != 1) {return;}
   //================Propagation Info===================
   if (debug) cout << "starting chamber loop" << endl;
@@ -442,7 +451,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   }
 }
 
-void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, const bool isLayer2){
+void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   if (!(mu->isGlobalMuon())) {return;} //!(mu->isStandAloneMuon())
   if (!(mu->globalTrack().isNonnull())) {return;} //!(mu->outerTrack().isNonnull())
   //if (debug) cout << "mu is GlobalMuon" << endl;
@@ -454,7 +463,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, const CS
   float tmp_me11_segment_x; float tmp_me11_segment_y; float tmp_me11_segment_z;
   float tmp_me11_segment_slope_dxdz; float tmp_me11_segment_slope_dydz;
   //add lines 361-386, 415 if cosmics is needed.
-  if (debug) cout << "Track->validFraction() " << Track->validFraction() << "\t Track->recHitsSize(): " << Track->recHitsSize() << endl;
+  //if (debug) cout << "Track->validFraction() " << Track->validFraction() << "\t Track->recHitsSize(): " << Track->recHitsSize() << endl;
   //if (Track->validFraction() > 0.0) return;
   //if (debug) cout << "checking if Track->validFraction() > 0.0 passes here" << endl;
   if (debug) cout << "Track->recHitsSize(): " << Track->recHitsSize() << endl;
@@ -471,11 +480,6 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, const CS
           tmp_ME11_counter++;
           if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
           if (debug) cout << "tmp_hasME11A: " << tmp_hasME11A << endl;
-          //Begininng of LCT 1/8 keystrip calculation
-          int lct_strip = cluster.getKeyStrip(8, isLayer2);
-          int eighthStripDiff = lct_strip - lct.getStrip(8);
-          if (debug) cout << "lct_strip: " << lct_strip << "\teighthStripDiff: " << eighthStripDiff << endl;
-          //end of LCT strip calculation
           RecSegment* Rec_segment = (RecSegment*)RecHit;
           ME11_segment = (CSCSegment*)Rec_segment;
           tmp_me11_segment_x = ME11_segment->localDirection().x();
@@ -517,6 +521,8 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, const CS
   data_.hasME11A = tmp_hasME11A;
   if (data_.n_ME11_segment >=1 and data_.n_ME11_segment < 1000) {data_.hasME11 = 1;}
   if (debug) cout << "data_.hasME11: " << data_.hasME11 << "\tdata_.n_ME11_segment: " << data_.n_ME11_segment << endl;
+  data_.eighthStripDiff = eightStripLCT(*lct, *cluster, data_.hasME11, tmp_hasME11A);
+  if (debug) cout << "data_.eighthStripDiff: " << data_.eighthStripDiff << endl;
 }
 
 void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){
@@ -789,6 +795,18 @@ bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartit
   else {return 0;}
 }
 
+int analyzer::eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A){
+  bool isLayer2 = false;
+  int lct_strip = 999;
+  if (!cluster.isMatchingLayer1() and cluster.isMatchingLayer2()) {isLayer2 = true;}
+
+  if (hasME11==1) {
+    if (hasME11A==1) {lct_strip = cluster.getKeyStripME1a(8, isLayer2);}
+    else {lct_strip = cluster.getKeyStrip(8, isLayer2);}
+  }
+  int eighthStripDiff = lct_strip - lct.getStrip(8);
+  return eighthStripDiff;
+}
 
 void analyzer::beginJob(){}
 void analyzer::endJob(){
