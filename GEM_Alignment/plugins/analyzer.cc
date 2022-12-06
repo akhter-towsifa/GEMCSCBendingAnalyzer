@@ -96,6 +96,7 @@ struct MuonData
   float rechit_yroll; float rechit_localphi_rad; float rechit_localphi_deg;
   int rechit_first_strip;     int rechit_CLS;    int rechit_BunchX;
   float RdPhi;        float RdPhi_Corrected;     int rechit_detId;
+  float RdPhi_mrad;   float RdPhi_Corrected_mrad;
   float bending_angle;
   int nRecHitsTot;    int nRecHits5;             int nRecHits2;
   int rechit_location[5];
@@ -144,6 +145,7 @@ void MuonData::init()
   has_rechit = false;
   rechit_first_strip = 999999; rechit_CLS = 999999; rechit_BunchX = 999999;
   RdPhi = 999999; RdPhi_Corrected = 999999; rechit_detId = 999999;
+  RdPhi_mrad = 999999; RdPhi_Corrected_mrad = 999999;
   bending_angle = 999999;
   nRecHitsTot = 999999; nRecHits5 = 999999; nRecHits2 = 999999;
   for (int i=0; i<5; ++i){
@@ -216,6 +218,8 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("rechit_BunchX", &rechit_BunchX);
   t->Branch("RdPhi", &RdPhi);
   t->Branch("RdPhi_Corrected", &RdPhi_Corrected);  
+  t->Branch("RdPhi_mrad", &RdPhi_mrad);
+  t->Branch("RdPhi_Corrected_mrad", &RdPhi_Corrected_mrad);
   t->Branch("rechit_detId", &rechit_detId);
   t->Branch("bending_angle", &bending_angle);
   t->Branch("nRecHitsTot", &nRecHitsTot);
@@ -658,6 +662,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
   bool tmp_has_rechit = false;
   int tmp_rechit_first_strip; int tmp_rechit_CLS; int tmp_rechit_BunchX;
   float tmp_RdPhi = 9999.; float tmp_RdPhi_Corrected; int tmp_rechit_detId;
+  float tmp_RdPhi_mrad = 9999.; float tmp_RdPhi_Corrected_mrad;
   float tmp_bending_angle = 9999.;
   int tmp_nRecHitsTot = 0; int tmp_nRecHits5 = 0; int tmp_nRecHits2 = 0;
   int tmp_rechit_region; int tmp_rechit_station; int tmp_rechit_chamber; int tmp_rechit_layer; int tmp_rechit_roll;
@@ -711,13 +716,24 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             
             tmp_RdPhi = RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch);
             tmp_RdPhi_Corrected = tmp_RdPhi;
+            tmp_RdPhi_mrad = 1000 * (tmp_rechit_localphi_rad - data_.prop_localphi_rad); //multiplying by 1000 for rad-->mrad
+            tmp_RdPhi_Corrected_mrad = tmp_RdPhi_mrad;
             if ((gemid.region() == 1 and gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)) {
               tmp_RdPhi_Corrected = -1.0*tmp_RdPhi_Corrected;
             }
+            if ((gemid.region() == -1 and gemid.chamber()%2 == 1) || (gemid.region() == 1 && gemid.chamber()%2 == 0)) {
+              tmp_RdPhi_Corrected_mrad = -1.0*tmp_RdPhi_Corrected_mrad;
+            }
+            /*
+            Big comment time (Towsifa): notice that for the residual calculation in phi we have rdphi_mrad = rechit_phi - prop_phi.
+            Also rdphi_corrected_mrad is flipped from what rdphi_corrected was. these are because in firmware, the -endcap's phi
+            matches the global phi.
+	     */
             tmp_rechit_detId = gemid.region()*(gemid.station()*100 + gemid.chamber());
             tmp_rechit_region = gemid.region();  tmp_rechit_station = gemid.station();
             tmp_rechit_chamber = gemid.chamber();  tmp_rechit_layer = gemid.layer();
             tmp_rechit_roll = gemid.roll();
+            if (debug) cout << "rechit_detId:RdPhi:RdPhi_Corrected:RdPhi_mrad:RdPhi_Corrected_mrad\t" << tmp_rechit_detId << ":" << tmp_RdPhi << ":" << tmp_RdPhi_Corrected << ":" << tmp_RdPhi_mrad << ":" << tmp_RdPhi_Corrected_mrad << endl;
           }
         }
       }
@@ -733,8 +749,8 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
     data_.rechit_first_strip = tmp_rechit_first_strip;
     data_.rechit_CLS = tmp_rechit_CLS;
     data_.rechit_BunchX = tmp_rechit_BunchX;
-    data_.RdPhi = tmp_RdPhi;
-    data_.RdPhi_Corrected = tmp_RdPhi_Corrected;
+    data_.RdPhi = tmp_RdPhi;                      data_.RdPhi_mrad = tmp_RdPhi_mrad;
+    data_.RdPhi_Corrected = tmp_RdPhi_Corrected;  data_.RdPhi_Corrected_mrad = tmp_RdPhi_Corrected_mrad;
     data_.rechit_detId = tmp_rechit_detId;
     data_.bending_angle = tmp_bending_angle;
     data_.nRecHitsTot = tmp_nRecHitsTot; data_.nRecHits5 = tmp_nRecHits5; data_.nRecHits2 = tmp_nRecHits2;
@@ -782,6 +798,12 @@ float analyzer::RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm
   const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
   float deltay_roll = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp() - etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp();
   return cos(stripAngle) * (prop_localx - (rechit)->localPosition().x()) - sin(stripAngle) * (prop_localy + deltay_roll);
+  /*
+  RdPhi clarification (Towsifa): The residual calculation is RdPhi = cos(Angle) * delta_x + sin(Angle) * delta_y.
+  Mapping of the angle in GEM is clockwise, whereas this equation considers counterclockwise strip angle to be positive.
+  Since cosine is an even function, no sign change is needed for the first part of residual calculation.
+  But to the second part, for sine being an odd function, we add the minus sign to account for the CW angles. 
+   */
 }
 
 bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch){
