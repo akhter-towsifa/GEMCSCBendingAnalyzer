@@ -252,8 +252,9 @@ private:
   void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_);
   float RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<GEMRecHit> >::const_iterator rechit, float prop_localx, float prop_localy, const GEMEtaPartition* ch);
   bool fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch);
-  int eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A);
-  
+  //int eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A);
+  //int eightStripLCT(int hasME11, int hasME11A);
+
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
   edm::Handle<GEMRecHitCollection> gemRecHits;
   edm::EDGetTokenT<vector<PSimHit> > gemSimHits_;
@@ -285,8 +286,8 @@ private:
   bool isMC;
   const CSCSegment *ME11_segment;
   //check below 3 lines for LCT 1/8 strip diff calculation
-  const CSCCorrelatedLCTDigi* lct;
-  const GEMInternalCluster* cluster;
+  //const CSCCorrelatedLCTDigi* lct;
+  //const GEMInternalCluster* cluster;
   //const bool isLayer2;
 
   const edm::ESGetToken<GEMGeometry, MuonGeometryRecord> gemGeomToken_;
@@ -521,8 +522,9 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   data_.hasME11A = tmp_hasME11A;
   if (data_.n_ME11_segment >=1 and data_.n_ME11_segment < 1000) {data_.hasME11 = 1;}
   if (debug) cout << "data_.hasME11: " << data_.hasME11 << "\tdata_.n_ME11_segment: " << data_.n_ME11_segment << endl;
-  data_.eighthStripDiff = eightStripLCT(*lct, *cluster, data_.hasME11, tmp_hasME11A);
-  if (debug) cout << "data_.eighthStripDiff: " << data_.eighthStripDiff << endl;
+  //data_.eighthStripDiff = eightStripLCT(&lct, &cluster, data_.hasME11, tmp_hasME11A);
+  //data_.eighthStripDiff = eightStripLCT(data_.hasME11, tmp_hasME11A);
+  //if (debug) cout << "data_.eighthStripDiff: " << data_.eighthStripDiff << endl;
 }
 
 void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){
@@ -794,20 +796,29 @@ bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartit
     {return 1;}
   else {return 0;}
 }
-
-int analyzer::eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A){
-  bool isLayer2 = false;
+/*
+//int analyzer::eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A){
+int analyzer::eightStripLCT(int hasME11, int hasME11A){
+  //const CSCCorrelatedLCTDigi& lct;
+  const GEMInternalCluster& cluster;  
+  //bool isLayer2 = false;
   int lct_strip = 999;
-  if (!cluster.isMatchingLayer1() and cluster.isMatchingLayer2()) {isLayer2 = true;}
+  //if (!cluster.isMatchingLayer1() and cluster.isMatchingLayer2()) {isLayer2 = true;}
+  //if (debug) cout << "\teightStripLCT function isLayer2: " << isLayer2 << endl;
+  
+//  if (hasME11==1) {
+//    if (hasME11A==1) {lct_strip = cluster.getKeyStripME1a(8, isLayer2);}
+//    else {lct_strip = cluster.getKeyStrip(8, isLayer2);}
+//    }
 
-  if (hasME11==1) {
-    if (hasME11A==1) {lct_strip = cluster.getKeyStripME1a(8, isLayer2);}
-    else {lct_strip = cluster.getKeyStrip(8, isLayer2);}
-  }
-  int eighthStripDiff = lct_strip - lct.getStrip(8);
+  //if (debug) cout << "\teightStripLCT function hasME11:hasME11A:lct_strip " << hasME11 << ":" << hasME11A << ":" << lct_strip << endl;
+  //int eighthStripDiff = lct_strip - lct.getStrip(8);
+  int eighthStripDiff = cluster.getKeyStripME1a(); //this is just a check
+  if (debug) cout << "\teightStripLCT function eighthStripDiff: " << eighthStripDiff << endl;
   return eighthStripDiff;
+  
 }
-
+*/
 void analyzer::beginJob(){}
 void analyzer::endJob(){
   if (debug) nME11_col_vs_matches->Write();
