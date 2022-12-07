@@ -794,9 +794,9 @@ void analyzer::GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP
 
 float analyzer::RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<GEMRecHit> >::const_iterator rechit, float prop_localx, float prop_localy, const GEMEtaPartition* ch){
   GEMDetId gemid((rechit)->geographicalId());
-  const auto& etaPart = GEMGeometry_->etaPartition(gemid);
-  const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
-  float deltay_roll = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp() - etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp();
+  const auto& etaPart = GEMGeometry_->etaPartition(gemid); //eta partition of the reconstructed hit location
+  const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id()); //eta partition of the propagated hit location
+  float deltay_roll = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp() - etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp(); //global position of the center of the propagated y and subtract the rechit chamber center eta
   return cos(stripAngle) * (prop_localx - (rechit)->localPosition().x()) - sin(stripAngle) * (prop_localy + deltay_roll);
   /*
   RdPhi clarification (Towsifa): The residual calculation is RdPhi = cos(Angle) * delta_x + sin(Angle) * delta_y.
