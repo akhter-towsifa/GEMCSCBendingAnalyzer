@@ -104,12 +104,12 @@ int main() {
   //////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////
   //Input root file name
-  const char* input_name = "out_RdPhiAna_Craft2022_TerukiRuns_ME11Iter0_GEMIter0_080522.root";
+  const char* input_name = "../../test/Run2022D_ZMu_PromptReco_RAWRECO_globalMu_pfisotight_v7.root";
   //Tree name ***Make sure to use correct one***
-  const char* tree_name = "ME11ana/Inner_Prop";   //"analyzer/ME11Seg_Prop" or "ME11ana/Inner_Prop" for example
+  const char* tree_name = "analyzer/ME11Seg_Prop";   //"analyzer/ME11Seg_Prop" or "ME11ana/Inner_Prop" for example
   const char* Rdphi_name = "RdPhi";
   //Will only change the name of the output csv file
-  const char* outname_prefix = "ME11_test";
+  const char* outname_prefix = "2022D_globalMu_pfisotight_v7_ME11Seg_Prop";
   //Cuts on full tree in first cloning step
   const char* cuts = "muon_pt > 5 && abs(RdPhi) < 100 && has_fidcut"; //n_ME11_segment == 1
   //Option to turn on or off 3 dof alignments and layer level vs chamber level
@@ -117,7 +117,7 @@ int main() {
   bool doDy = true;
   bool doDphiz = true;
   //Make sure this one matches the tree!!!!!!! CSCs do not do by layer!
-  bool byLayer = false;
+  bool byLayer = true;
   //Number of cuts to fit on, each cut reduces the total sample remaining by 2 (n/2, 3n/4, 7n/8, 15n/16, ...)
   //2 is the base value
   int nCuts = 2;
@@ -178,6 +178,7 @@ int main() {
           TFile* tmpTF = new TFile("tmp2.root","recreate");
           std::cout <<"About to copy tree" << std::endl;
           TTree* tt_tmp;
+          if (j==-1 and i==25){continue;}
           if(byLayer){
             tt_tmp = cutEn->CopyTree(Form("rechit_detId==%d && prop_location[3] == %d",detNum, k));		//Only fits 1 chamber at a time (det_id)
           }
