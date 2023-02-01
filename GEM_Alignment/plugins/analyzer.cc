@@ -256,8 +256,6 @@ private:
   void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_);
   float RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<GEMRecHit> >::const_iterator rechit, float prop_localx, float prop_localy, const GEMEtaPartition* ch);
   bool fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch);
-  //int eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A);
-  //int eightStripLCT(int hasME11, int hasME11A);
 
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
   edm::Handle<GEMRecHitCollection> gemRecHits;
