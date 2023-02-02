@@ -66,7 +66,7 @@ for reg in [-1, 1]:
   #t1.writelines(txt_description)
   #t1.writelines("Endcap | Station | Superchamber | eta | Shift [strip(8)] | SuperChamber dPhi mean [mRad]\n")
 
-  for st in [2]:
+  for st in [1, 2]:
     for ch in range(1, 37):
       h_index = -1
       h1_index = -1
