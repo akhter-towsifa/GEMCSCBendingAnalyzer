@@ -1,9 +1,9 @@
 # GEMCSCBendingAnalyzer
 
 ## how to check out cmssw and this package
-cmsrel CMSSW_12_4_6
+cmsrel CMSSW_12_6_0
 
-cd CMSSW_12_4_6/src/
+cd CMSSW_12_6_0/src/
 
 cmsenv
 
