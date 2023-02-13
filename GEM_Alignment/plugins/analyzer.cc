@@ -50,11 +50,6 @@
 
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 
-//The header files below are specifically for LCT 1/8 strip calculation. regroup these later if code works
-#include "L1Trigger/CSCTriggerPrimitives/interface/CSCGEMMatcher.h"
-#include "L1Trigger/CSCTriggerPrimitives/interface/GEMInternalCluster.h"
-//end of LCT 1/8 strip header files.
-
 #include "TTree.h"
 #include "TH1D.h"
 #include "TH2D.h"
@@ -256,8 +251,6 @@ private:
   void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_);
   float RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<GEMRecHit> >::const_iterator rechit, float prop_localx, float prop_localy, const GEMEtaPartition* ch);
   bool fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch);
-  //int eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A);
-  //int eightStripLCT(int hasME11, int hasME11A);
 
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
   edm::Handle<GEMRecHitCollection> gemRecHits;
@@ -289,10 +282,6 @@ private:
 
   bool isMC;
   const CSCSegment *ME11_segment;
-  //check below 3 lines for LCT 1/8 strip diff calculation
-  //const CSCCorrelatedLCTDigi* lct;
-  //const GEMInternalCluster* cluster;
-  //const bool isLayer2;
 
   const edm::ESGetToken<GEMGeometry, MuonGeometryRecord> gemGeomToken_;
   const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeomToken_;
@@ -331,7 +320,6 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
 
 void
 analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-
   GEMGeometry_ = &iSetup.getData(gemGeomToken_);
   CSCGeometry_ = &iSetup.getData(cscGeomToken_);
   ttrackBuilder_ = &iSetup.getData(ttkToken_);
@@ -346,8 +334,8 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (isMC) {
     iEvent.getByToken(gemSimHits_, gemSimHits);
   }
-  edm::Handle<View<reco::Muon> > muons;
 
+  edm::Handle<View<reco::Muon> > muons;
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
@@ -363,7 +351,6 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     if (debug) cout << "new muon, i = " << i << endl;
     
     if (!(mu->passed(reco::Muon::PFIsoTight))) continue;
-    //if (debug) cout << "passes PFIsoTight" << endl;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
@@ -819,29 +806,7 @@ bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartit
     {return 1;}
   else {return 0;}
 }
-/*
-//int analyzer::eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A){
-int analyzer::eightStripLCT(int hasME11, int hasME11A){
-  //const CSCCorrelatedLCTDigi& lct;
-  const GEMInternalCluster& cluster;  
-  //bool isLayer2 = false;
-  int lct_strip = 999;
-  //if (!cluster.isMatchingLayer1() and cluster.isMatchingLayer2()) {isLayer2 = true;}
-  //if (debug) cout << "\teightStripLCT function isLayer2: " << isLayer2 << endl;
-  
-//  if (hasME11==1) {
-//    if (hasME11A==1) {lct_strip = cluster.getKeyStripME1a(8, isLayer2);}
-//    else {lct_strip = cluster.getKeyStrip(8, isLayer2);}
-//    }
 
-  //if (debug) cout << "\teightStripLCT function hasME11:hasME11A:lct_strip " << hasME11 << ":" << hasME11A << ":" << lct_strip << endl;
-  //int eighthStripDiff = lct_strip - lct.getStrip(8);
-  int eighthStripDiff = cluster.getKeyStripME1a(); //this is just a check
-  if (debug) cout << "\teightStripLCT function eighthStripDiff: " << eighthStripDiff << endl;
-  return eighthStripDiff;
-  
-}
-*/
 void analyzer::beginJob(){}
 void analyzer::endJob(){
   if (debug) nME11_col_vs_matches->Write();
