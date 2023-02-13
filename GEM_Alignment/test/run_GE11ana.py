@@ -71,7 +71,7 @@ if misalign:
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'run3_data_prompt', '') #Antonello Comparison
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_frozen_v4', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_forReRecoCondition_v1', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v10', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10', '')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
@@ -120,7 +120,7 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(True),
         Segment_prop = cms.bool(True),
-                                  debug = cms.bool(False),
+                                  debug = cms.bool(True),
         isCosmic = cms.bool(False)
 )
 
