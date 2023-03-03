@@ -16,6 +16,7 @@
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/InputTag.h" //check this -TA
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
@@ -25,6 +26,9 @@
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h" //from MK
+#include "TrackingTools/TrackRefitter/interface/TrackTransformer.h" //check if needed. not needed
+#include "TrackingTools/TrackFitters/interface/TrajectoryFitter.h" //chck if needed
 
 #include "MagneticField/Engine/interface/MagneticField.h"
 
@@ -41,6 +45,7 @@
 #include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigi.h"
 #include "DataFormats/GEMRecHit/interface/GEMRecHitCollection.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h" //check this -TA
 
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 #include "Geometry/GEMGeometry/interface/GEMGeometry.h"
@@ -316,6 +321,8 @@ private:
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_; //check this -TA
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
+  edm::Handle<TrajTrackAssociationCollection> ref_muon; //check this later-TA
+  edm::EDGetTokenT<TrajTrackAssociationCollection> ref_muon_; //check this later-TA
 
   edm::Service<TFileService> fs;
   MuonServiceProxy* theService_;
@@ -365,6 +372,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
   cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
+  ref_muon_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_muons"));//("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"));//("ref_muon"));
 
   tracker_prop = iConfig.getParameter<bool>("tracker_prop");
   CSC_prop = iConfig.getParameter<bool>("CSC_prop");
@@ -396,8 +404,11 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (isMC) {
     iEvent.getByToken(gemSimHits_, gemSimHits);
   }
-  edm::Handle<View<reco::Muon> > muons;
 
+  edm::Handle<TrajTrackAssociationCollection> ref_muon;
+  iEvent.getByToken(ref_muon_, ref_muon);
+
+  edm::Handle<View<reco::Muon> > muons;
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
@@ -542,7 +553,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
           tmp_me11_segment_z = ME11_segment->localDirection().z();
           tmp_me11_segment_slope_dxdz = tmp_me11_segment_x / tmp_me11_segment_z;
           tmp_me11_segment_slope_dydz = tmp_me11_segment_y / tmp_me11_segment_z;
-          if (debug) cout << "ME11segment direction x:y:z" << tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
+          //if (debug) cout << "ME11segment direction x:y:z" << tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
           tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
           auto cscDetID_FAKE = CSCDetId(CSCDetId(RecHitId).endcap(), CSCDetId(RecHitId).station(), CSCDetId(RecHitId).ring(), CSCDetId(RecHitId).chamber(), 3);
           const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
@@ -552,7 +563,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
           if (debug) cout << "CSC Endcap:Station:Ring:SC:Layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
           if (debug) cout << "ME11 segment direction x:y:z " << data_.ME11_Segment_Direction[0] << ":" << data_.ME11_Segment_Direction[1] << ":" << data_.ME11_Segment_Direction[2] << endl;
           data_.ME11_Segment_slope_dxdz = tmp_me11_segment_slope_dxdz;  data_.ME11_Segment_slope_dydz= tmp_me11_segment_slope_dydz;
-          if (debug) cout << "segment slope dx/dz:dy/dz" << data_.ME11_Segment_slope_dxdz << ":" << data_.ME11_Segment_slope_dydz << endl;
+          if (debug) cout << "segment slope dx/dz:dy/dz " << data_.ME11_Segment_slope_dxdz << ":" << data_.ME11_Segment_slope_dydz << endl;
           data_.ME11_location[0] = CSCDetId(RecHitId).endcap();
           data_.ME11_location[1] = CSCDetId(RecHitId).station();
           data_.ME11_location[2] = CSCDetId(RecHitId).ring();
