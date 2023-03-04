@@ -26,9 +26,17 @@
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
-#include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h" //from MK
-#include "TrackingTools/TrackRefitter/interface/TrackTransformer.h" //check if needed. not needed
-#include "TrackingTools/TrackFitters/interface/TrajectoryFitter.h" //chck if needed
+#include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h" //from MK for Refit
+//#include "TrackingTools/TrackRefitter/interface/TrackTransformer.h" //TA: check if needed. not needed
+#include "TrackingTools/TrackFitters/interface/TrajectoryFitter.h" //TA: chck if needed for refit
+#include "TrackingTools/KalmanUpdators/interface/Chi2MeasurementEstimator.h" //TA: check if needed for refit
+#include "TrackingTools/KalmanUpdators/interface/KFUpdator.h" //TA: check if needed for refit
+#include "TrackingTools/Records/interface/TransientRecHitRecord.h" //TA: check if needed for refit
+#include "TrackingTools/TrackFitters/interface/KFTrajectoryFitter.h" //TA: check if needed for refit
+#include "TrackingTools/TrackFitters/interface/KFTrajectorySmoother.h" //TA: check if needed for refit
+#include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h" //TA: check if needed for refit
+
+#include "Alignment/CommonAlignmentAlgorithm/interface/AlignmentAlgorithmBase.h" //TA: check if needed for refit:ConstTrajTrackPairs type
 
 #include "MagneticField/Engine/interface/MagneticField.h"
 
@@ -346,10 +354,6 @@ private:
 
   bool isMC;
   const CSCSegment *ME11_segment;
-  //check below 3 lines for LCT 1/8 strip diff calculation
-  //const CSCCorrelatedLCTDigi* lct;
-  //const GEMInternalCluster* cluster;
-  //const bool isLayer2;
 
   const edm::ESGetToken<GEMGeometry, MuonGeometryRecord> gemGeomToken_;
   const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeomToken_;
@@ -405,12 +409,26 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     iEvent.getByToken(gemSimHits_, gemSimHits);
   }
 
-  edm::Handle<TrajTrackAssociationCollection> ref_muon;
-  iEvent.getByToken(ref_muon_, ref_muon);
-
   edm::Handle<View<reco::Muon> > muons;
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
+
+  //TA: adding refit muon (Convert track pairs to reco::Track for refitted Tracker track)
+
+  edm::Handle<TrajTrackAssociationCollection> ref_muon;
+  iEvent.getByToken(ref_muon_, ref_muon);
+
+  ConstTrajTrackPairs ref_muon_pairs;
+  for (auto it = ref_muon->begin(); it != ref_muon->end(); ++it) {
+    ref_muon_pairs.push_back(ConstTrajTrackPair(&(*(*it).key), &(*(*it).val)));
+  }
+
+  std::vector<const Trajectory*> trajMuon;
+  for (ConstTrajTrackPairs::const_iterator it = ref_muon_pairs.begin(); it != ref_muon_pairs.end(); ++it) {
+    trajMuon.push_back((*it).first);
+  }
+
+  //TA: end of Refit Muon
 
   edm::Handle<CSCSegmentCollection> cscSegments;
   if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
@@ -588,9 +606,6 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   data_.hasME11A = tmp_hasME11A;
   if (data_.n_ME11_segment >=1 and data_.n_ME11_segment < 1000) {data_.hasME11 = 1;}
   if (debug) cout << "data_.hasME11: " << data_.hasME11 << "\tdata_.n_ME11_segment: " << data_.n_ME11_segment << endl;
-  //data_.eighthStripDiff = eightStripLCT(&lct, &cluster, data_.hasME11, tmp_hasME11A);
-  //data_.eighthStripDiff = eightStripLCT(data_.hasME11, tmp_hasME11A);
-  //if (debug) cout << "data_.eighthStripDiff: " << data_.eighthStripDiff << endl;
 }
 
 void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){
@@ -948,29 +963,7 @@ bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartit
     {return 1;}
   else {return 0;}
 }
-/*
-//int analyzer::eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A){
-int analyzer::eightStripLCT(int hasME11, int hasME11A){
-  //const CSCCorrelatedLCTDigi& lct;
-  const GEMInternalCluster& cluster;  
-  //bool isLayer2 = false;
-  int lct_strip = 999;
-  //if (!cluster.isMatchingLayer1() and cluster.isMatchingLayer2()) {isLayer2 = true;}
-  //if (debug) cout << "\teightStripLCT function isLayer2: " << isLayer2 << endl;
-  
-//  if (hasME11==1) {
-//    if (hasME11A==1) {lct_strip = cluster.getKeyStripME1a(8, isLayer2);}
-//    else {lct_strip = cluster.getKeyStrip(8, isLayer2);}
-//    }
 
-  //if (debug) cout << "\teightStripLCT function hasME11:hasME11A:lct_strip " << hasME11 << ":" << hasME11A << ":" << lct_strip << endl;
-  //int eighthStripDiff = lct_strip - lct.getStrip(8);
-  int eighthStripDiff = cluster.getKeyStripME1a(); //this is just a check
-  if (debug) cout << "\teightStripLCT function eighthStripDiff: " << eighthStripDiff << endl;
-  return eighthStripDiff;
-  
-}
-*/
 void analyzer::beginJob(){}
 void analyzer::endJob(){
   if (debug) nME11_col_vs_matches->Write();
