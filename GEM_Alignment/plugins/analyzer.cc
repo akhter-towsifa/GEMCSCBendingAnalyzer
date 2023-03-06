@@ -329,8 +329,8 @@ private:
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_; //check this -TA
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
-  edm::Handle<TrajTrackAssociationCollection> ref_muon; //check this later-TA
-  edm::EDGetTokenT<TrajTrackAssociationCollection> ref_muon_; //check this later-TA
+  edm::Handle<TrajTrackAssociationCollection> ref_track; //check this later-TA
+  edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_; //check this later-TA
 
   edm::Service<TFileService> fs;
   MuonServiceProxy* theService_;
@@ -376,7 +376,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
   cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
-  ref_muon_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_muons"));//("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"));//("ref_muon"));
+  ref_track_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_track"));
 
   tracker_prop = iConfig.getParameter<bool>("tracker_prop");
   CSC_prop = iConfig.getParameter<bool>("CSC_prop");
@@ -415,17 +415,17 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
   //TA: adding refit muon (Convert track pairs to reco::Track for refitted Tracker track)
 
-  edm::Handle<TrajTrackAssociationCollection> ref_muon;
-  iEvent.getByToken(ref_muon_, ref_muon);
+  edm::Handle<TrajTrackAssociationCollection> ref_track;
+  iEvent.getByToken(ref_track_, ref_track);
 
-  ConstTrajTrackPairs ref_muon_pairs;
-  for (auto it = ref_muon->begin(); it != ref_muon->end(); ++it) {
-    ref_muon_pairs.push_back(ConstTrajTrackPair(&(*(*it).key), &(*(*it).val)));
+  ConstTrajTrackPairs ref_track_pairs;
+  for (auto it = ref_track->begin(); it != ref_track->end(); ++it) {
+    ref_track_pairs.push_back(ConstTrajTrackPair(&(*(*it).key), &(*(*it).val)));
   }
 
-  std::vector<const Trajectory*> trajMuon;
-  for (ConstTrajTrackPairs::const_iterator it = ref_muon_pairs.begin(); it != ref_muon_pairs.end(); ++it) {
-    trajMuon.push_back((*it).first);
+  std::vector<const Trajectory*> trajTrack;
+  for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
+    trajTrack.push_back((*it).first);
   }
 
   //TA: end of Refit Muon

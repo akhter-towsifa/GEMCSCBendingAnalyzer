@@ -102,19 +102,9 @@ process.source = cms.Source("PoolSource",
 				)
 
 #testfile = "/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_83.root"
-#testfile = "/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/348/776/00000/475b2a2f-673c-4104-a360-72ddee06377f.root"
-#testfile = "013a0b3d-c139-4f5d-baaa-d7bc01ef886b.root"
-#testfile = "/eos/cms/tier0/store/data/Run2022B/SingleMuon/RAW-RECO/ZMu-PromptReco-v1/000/355/769/00000/9d91894d-ece9-462b-a8cc-e11a17167415.root"
 outfile = "out_me11dir.root"
 #process.source.fileNames.append('file:'+testfile)
-#process.source.fileNames.append('file:step2.root')
-#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Commissioning2021/Cosmics/AOD/PromptReco-v1/000/339/479/00000/72dc8a4a-a3cd-4eba-9f8b-7b38d3c3ec38.root')
-#process.source.fileNames.append('file:CRUZET_344064_testfile.root')
-#process.source.fileNames.append('file:2018runCtest.root')
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
-#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/RAW-RECO/ZMu-PromptReco-v2/000/357/734/00000/07a64f0e-25eb-40b6-b2a6-e8971a4e0ce8.root')
-#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022C/SingleMuon/RAW-RECO/ZMu-PromptReco-v1/000/356/386/00000/f9a2e6db-c5e9-4f5b-a690-28c67031b395.root')
-#process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_109.root')
 process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root')
 
 process.options = cms.untracked.PSet(
@@ -136,12 +126,12 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
-                                  ref_muons = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
+        ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
 	vertexCollection = cms.InputTag("offlinePrimaryVertices"),
         tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(True),
         Segment_prop = cms.bool(True),
-                                  debug = cms.bool(True),
+        debug = cms.bool(True),
         isCosmic = cms.bool(False)
 )
 
