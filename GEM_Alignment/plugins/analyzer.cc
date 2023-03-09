@@ -413,7 +413,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
-  //TA: adding refit muon (Convert track pairs to reco::Track for refitted Tracker track)
+  //Towsifa: adding refit muon (Convert track pairs to reco::Track for refitted Tracker track)
 
   edm::Handle<TrajTrackAssociationCollection> ref_track;
   iEvent.getByToken(ref_track_, ref_track);
@@ -424,11 +424,13 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   }
 
   std::vector<const Trajectory*> trajTrack;
+  std::vector<const reco::Track*> trackTrack;
   for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
     trajTrack.push_back((*it).first);
+    trackTrack.push_back((*it).second);
   }
-
-  //TA: end of Refit Muon
+  if (debug) cout << "trajTrack size: " << trajTrack.size() << "\tmuons list size: " << muons->size() <<  "\tdiff in trajTrack and muons size = " << trajTrack.size()-muons->size() << endl;
+  //Towsifa: end of Refit Muon
 
   edm::Handle<CSCSegmentCollection> cscSegments;
   if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
@@ -441,6 +443,20 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     if (not mu->isGlobalMuon()) continue;
     if (debug) cout << "new muon, i = " << i << endl;
     
+    //Towsifa: trajectory muon matching
+    //const Trajectory* traj_of_muon;
+    const Trajectory* traj_of_Track;
+    const reco::Track* track_of_Track;
+    //const reco::Track* Track;
+    for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
+      traj_of_Track = (*it).first;
+      track_of_Track = (*it).second;
+      if (track_of_Track == mu->track().get()) {
+        const Trajectory* traj_of_muon = traj_of_Track;
+      }
+    }
+    //end of trajectory muon matching
+
     if (!(mu->passed(reco::Muon::PFIsoTight))) continue;
     //if (debug) cout << "passes PFIsoTight" << endl;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
@@ -484,7 +500,10 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     if (!(mu->isTrackerMuon())) {return;}
     if (!(mu->track().isNonnull())) {return;}
     Track = mu->track().get();
+    //if (trajTrack.size() == 0) return;
+    //Track = trajTrack[0];
     ttTrack = ttrackBuilder_->build(Track);
+    
   }
   else if (prop_type == 3){
     tree = Segment_tree;
