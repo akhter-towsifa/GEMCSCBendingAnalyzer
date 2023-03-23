@@ -313,9 +313,9 @@ private:
   virtual void beginJob() ;
   virtual void endJob() ;
 
-  void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i, const Trajectory* traj_of_muon);
+  void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i);//, const Trajectory* traj_of_muon);
   void CSCSegmentCounter(const reco::Muon* mu, MuonData& data_);
-  void propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_, std::vector <TrajectoryMeasurement> traj_measurement);
+  void propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_);//, std::vector <TrajectoryMeasurement> traj_measurement);
   void GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP, MuonData& data_);
   void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_);
   float RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<GEMRecHit> >::const_iterator rechit, float prop_localx, float prop_localy, const GEMEtaPartition* ch);
@@ -466,15 +466,15 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
-      propagate(mu, prop_type, iEvent, i, traj_of_muon);
+      propagate(mu, prop_type, iEvent, i);//, traj_of_muon);
     }
   }
 }
 
-void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i, const Trajectory* traj_of_muon){
+void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i){//, const Trajectory* traj_of_muon){
   const reco::Track* Track;
   reco::TransientTrack ttTrack;
-  std::vector <TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
+  //std::vector <TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
   TTree* tree;
   if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
 
@@ -544,7 +544,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   for (const auto& ch : GEMGeometry_->etaPartitions()) {
     if (ch->id().station() != 1) continue; //only concerned about GE1/1
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
-    propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_, traj_measurement);
+    propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_);//, traj_measurement);
     //if (prop_type==3 and debug) cout << "out of propagating to GEM function" << endl;
     if (tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
@@ -632,7 +632,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   if (debug) cout << "data_.hasME11: " << data_.hasME11 << "\tdata_.n_ME11_segment: " << data_.n_ME11_segment << endl;
 }
 
-void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_, std::vector <TrajectoryMeasurement> traj_measurement){
+void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){//, std::vector <TrajectoryMeasurement> traj_measurement){
   const reco::Track* Track;
   reco::TransientTrack ttrack;
   tmp_has_prop = false;
