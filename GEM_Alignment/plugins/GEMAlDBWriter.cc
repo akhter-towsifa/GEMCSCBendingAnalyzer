@@ -180,6 +180,8 @@ void GEMAlDBWriter::analyze(const edm::Event& event, const edm::EventSetup& even
     }
     for (const auto& chamber : CSCChambers) {
       auto cscId = chamber->id();
+      const CSCChamber* cscChamber = theCSCGeometry->chamber(chamber->geomDetId());
+      std::cout << "Starting chamber " << cscChamber->id().endcap() << cscChamber->id().station() << cscChamber->id().ring() << cscChamber->id().chamber() << cscChamber->id().layer() << std::endl;
       if (alPar.count(cscId) < 1)
         //throw cms::Exception("NotAvailable") << "can't find detId " << GEMDetId(gemId) ;
         continue;

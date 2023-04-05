@@ -655,6 +655,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     data_.prop_localphi_rad = (3.14159265/2.) - local_phi;
     data_.prop_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
     data_.prop_globalphi_rad = pos_GP.phi();
+    if (debug) cout << "propagation local x: local y: local phi [rad]" << data_.prop_LP[0] << ":" << data_.prop_LP[1] << ":" << data_.prop_localphi_rad << endl;
     data_.has_prop = tmp_has_prop;
     data_.has_fidcut = fidcutCheck(tmp_prop_LP.y(), ((3.14159265/2.) - local_phi)*(180./3.14159265), ch);
     data_.prop_location[0] = ch->id().region(); data_.prop_location[1] = ch->id().station(); data_.prop_location[2] = ch->id().chamber(); data_.prop_location[3] = ch->id().layer(); data_.prop_location[4] = ch->id().roll();
@@ -720,6 +721,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
               float CSC_segment_phi = (segDet->toGlobal(ME11_segment->localPosition())).phi();
               float GEM_hit_phi = (etaPart->toGlobal(hit->localPosition())).phi();
               tmp_bending_angle = CSC_segment_phi - GEM_hit_phi;
+              if (debug) cout << "CSC_segment_phi=" << CSC_segment_phi << " GEM_hit_phi=" << GEM_hit_phi << endl;
               if (debug) cout << "Bending Angle = " << tmp_bending_angle << "\tpT = " << data_.muon_pt << endl;
             }
             
@@ -806,6 +808,7 @@ float analyzer::RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm
   const auto& etaPart = GEMGeometry_->etaPartition(gemid); //eta partition of the reconstructed hit location
   const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id()); //eta partition of the propagated hit location
   float deltay_roll = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp() - etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp(); //global position of the center of the propagated y and subtract the rechit chamber center eta
+  if (debug) cout << "prop_localx:prop_localy " << prop_localx << ":" << prop_localy << "\tstripAngle: " << stripAngle << endl;
   return cos(stripAngle) * (prop_localx - (rechit)->localPosition().x()) - sin(stripAngle) * (prop_localy + deltay_roll);
   /*
   RdPhi clarification (Towsifa): The residual calculation is RdPhi = cos(Angle) * delta_x + sin(Angle) * delta_y.
