@@ -1,15 +1,15 @@
 # GEMCSCBendingAnalyzer
 
 ## how to check out cmssw and this package
-cmsrel CMSSW_12_4_6
+cmsrel CMSSW_13_0_0_pre1
 
-cd CMSSW_12_4_6/src/
+cd CMSSW_13_0_0_pre1/src/
 
 cmsenv
 
 git cms-init
 
-git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 12_4_6_alcaReco
+git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 13_X
 
 scram b -j 8
 
