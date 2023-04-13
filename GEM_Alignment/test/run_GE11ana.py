@@ -16,7 +16,7 @@ process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('TrackingTools.TrackRefitter.globalMuonTrajectories_cff') #TA
-process.load('TrackingTools.TrackFitters.TrackFitters_cff') #for refitting -TA
+#process.load('TrackingTools.TrackFitters.TrackFitters_cff') #for refitting -TA
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 
@@ -68,12 +68,12 @@ if misalign:
 
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '') #Antonello Comparison
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_frozen_v4', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_forReRecoCondition_v1', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v10', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v10', '')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
@@ -105,7 +105,8 @@ process.source = cms.Source("PoolSource",
 outfile = "out_me11dir.root"
 #process.source.fileNames.append('file:'+testfile)
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
-process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root')
+#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root')
+process.source.fileNames.append("/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/230412_171008/0000/singleMuonGun_ReducedRECO_1.root")
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -113,10 +114,10 @@ process.options = cms.untracked.PSet(
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(outfile)) #variable name set above
 
-from TrackingTools.TrackRefitter.globalMuonTrajectories_cff import *
-process.MuonAlignmentFromReferenceGlobalMuonRefit = globalMuons.clone()
-process.MuonAlignmentFromReferenceGlobalMuonRefit.Tracks = cms.InputTag("ALCARECOMuAlCalIsolatedMu:TrackerOnly")
-process.MuonAlignmentFromReferenceGlobalMuonRefit.TrackTransformer.RefitRPCHits = cms.bool(False)
+#from TrackingTools.TrackRefitter.globalMuonTrajectories_cff import *
+#process.MuonAlignmentFromReferenceGlobalMuonRefit = globalMuons.clone()
+#process.MuonAlignmentFromReferenceGlobalMuonRefit.Tracks = cms.InputTag("ALCARECOMuAlCalIsolatedMu:TrackerOnly")
+#process.MuonAlignmentFromReferenceGlobalMuonRefit.TrackTransformer.RefitRPCHits = cms.bool(False)
 
 
 
@@ -125,8 +126,8 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         #csc2DRecHits = cms.InputTag("csc2DRecHits"), 
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
-        muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
-        ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
+        muons = cms.InputTag("muons"),
+        #ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
 	vertexCollection = cms.InputTag("offlinePrimaryVertices"),
         tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(True),
@@ -136,4 +137,5 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 )
 
 #process.p = cms.EndPath(process.analyzer)
-process.p = cms.Path(process.MuonAlignmentFromReferenceGlobalMuonRefit + process.analyzer)
+#process.p = cms.Path(process.MuonAlignmentFromReferenceGlobalMuonRefit + process.analyzer)
+process.p = cms.Path(process.analyzer)

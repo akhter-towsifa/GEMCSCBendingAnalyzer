@@ -16,7 +16,7 @@
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Utilities/interface/InputTag.h" //check this -TA
+//#include "FWCore/Utilities/interface/InputTag.h" //check this -TA
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
@@ -26,7 +26,7 @@
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
-#include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h" //from MK for Refit
+/*#include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h" //from MK for Refit
 #include "TrackingTools/TrackFitters/interface/TrajectoryFitter.h" //TA: for refit
 #include "TrackingTools/KalmanUpdators/interface/Chi2MeasurementEstimator.h" //TA: for refit
 #include "TrackingTools/KalmanUpdators/interface/KFUpdator.h" //TA: for refit
@@ -36,7 +36,7 @@
 #include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h" //TA: for refit
 
 #include "Alignment/CommonAlignmentAlgorithm/interface/AlignmentAlgorithmBase.h" //TA: for refit:ConstTrajTrackPairs
-
+*/
 #include "MagneticField/Engine/interface/MagneticField.h"
 
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
@@ -313,9 +313,9 @@ private:
   virtual void beginJob() ;
   virtual void endJob() ;
 
-  void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i);//, const Trajectory* traj_of_muon);
+  void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i);
   void CSCSegmentCounter(const reco::Muon* mu, MuonData& data_);
-  void propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_);//, std::vector <TrajectoryMeasurement> traj_measurement);
+  void propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_);
   void GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP, MuonData& data_);
   void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_);
   float RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<GEMRecHit> >::const_iterator rechit, float prop_localx, float prop_localy, const GEMEtaPartition* ch);
@@ -328,8 +328,8 @@ private:
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_; //check this -TA
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
-  edm::Handle<TrajTrackAssociationCollection> ref_track; //check this later-TA
-  edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_; //check this later-TA
+  //edm::Handle<TrajTrackAssociationCollection> ref_track; //check this later-TA
+  //edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_; //check this later-TA
 
   edm::Service<TFileService> fs;
   MuonServiceProxy* theService_;
@@ -377,7 +377,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
   cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
-  ref_track_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_track"));
+  //ref_track_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_track"));
 
   tracker_prop = iConfig.getParameter<bool>("tracker_prop");
   CSC_prop = iConfig.getParameter<bool>("CSC_prop");
@@ -414,7 +414,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
-  //Towsifa: adding refit trajectory
+  /*//Towsifa: adding refit trajectory
 
   edm::Handle<TrajTrackAssociationCollection> ref_track;
   iEvent.getByToken(ref_track_, ref_track);
@@ -435,7 +435,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   n_track_size->Fill(trajTrack.size());
   if (debug) cout << "trajTrack size: " << trajTrack.size() << "\tmuons list size: " << muons->size() <<  "\tdiff in trajTrack and muons size = " << trajTrack.size()-muons->size() << endl;
   //Towsifa: end of Refit trajectory
-
+  */
   edm::Handle<CSCSegmentCollection> cscSegments;
   if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
 
@@ -447,7 +447,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     if (not mu->isGlobalMuon()) continue;
     if (debug) cout << "new muon, i = " << i << endl;
     
-    //Towsifa: trajectory muon matching
+    /*//Towsifa: trajectory muon matching
     const Trajectory* traj_of_muon;
     const Trajectory* traj_of_Track;
     const reco::Track* track_of_Track;
@@ -460,7 +460,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
       }
     }
     //end of trajectory muon matching
-
+    */
     if (!(mu->passed(reco::Muon::PFIsoTight))) continue;
     //if (debug) cout << "passes PFIsoTight" << endl;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
@@ -474,7 +474,6 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i){//, const Trajectory* traj_of_muon){
   const reco::Track* Track;
   reco::TransientTrack ttTrack;
-  //std::vector <TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
   TTree* tree;
   if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
 
@@ -654,9 +653,6 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       Track = mu->track().get();
       ttrack = ttrackBuilder_->build(Track);
     }
-    //if (traj_measurement.isValid()){
-    //  cout << "valid trajecory measurement matched ot a muon" << endl;
-    //}
 
     float inner_delta = abs(ttrack.innermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
     float outer_delta = abs(ttrack.outermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
@@ -995,8 +991,6 @@ bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartit
 void analyzer::beginJob(){}
 void analyzer::endJob(){
   if (debug) nME11_col_vs_matches->Write();
-  n_muons_size->Write();
-  n_track_size->Write();
 }
 
 DEFINE_FWK_MODULE(analyzer);
