@@ -16,7 +16,7 @@
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-//#include "FWCore/Utilities/interface/InputTag.h" //check this -TA
+#include "FWCore/Utilities/interface/InputTag.h" //check this -TA
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"

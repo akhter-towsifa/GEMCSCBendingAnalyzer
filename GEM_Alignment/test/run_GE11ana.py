@@ -1,9 +1,11 @@
 import FWCore.ParameterSet.Config as cms
 #from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
-from Configuration.Eras.Era_Run3_cff import Run3
+#from Configuration.Eras.Era_Run3_cff import Run3
+from Configuration.Eras.Era_Phase2_cff import Phase2
 
 #process = cms.Process('analyzer',Phase2C9)
-process = cms.Process('analyzer',Run3)
+#process = cms.Process('analyzer',Run3)
+process = cms.Process('analyzer', Phase2)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
@@ -15,7 +17,8 @@ process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
 process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('TrackingTools.TrackRefitter.globalMuonTrajectories_cff') #TA
+#process.load('TrackingTools.TrackRefitter.globalMuonTrajectories_cff') #TA
+
 #process.load('TrackingTools.TrackFitters.TrackFitters_cff') #for refitting -TA
 
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -33,12 +36,12 @@ if misalign:
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
     cms.PSet(
-        connect = cms.string(db_file),
+        connect = cms.string(gem_db_file),
         record = cms.string('GEMAlignmentRcd'),
         tag = cms.string('GEMAlignmentRcd')
     ),
     cms.PSet(
-        connect = cms.string(db_file),
+        connect = cms.string(gem_db_file),
         record = cms.string('GEMAlignmentErrorExtendedRcd'),
         tag = cms.string('GEMAlignmentErrorExtendedRcd')
     )
@@ -60,20 +63,22 @@ if misalign:
     #)
   )
 
-  process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
+  #process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
   #process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
 ################################
-
+process.GEMGeometryESModule.applyAlignment = False
 
 
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '') #Antonello Comparison
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_frozen_v4', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_forReRecoCondition_v1', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v10', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '131X_mcRun4_realistic_v3', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, '130X_mcRun4_realistic_v3', '')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
@@ -106,7 +111,8 @@ outfile = "out_me11dir.root"
 #process.source.fileNames.append('file:'+testfile)
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root')
-process.source.fileNames.append("/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/230412_171008/0000/singleMuonGun_ReducedRECO_1.root")
+#process.source.fileNames.append("file:/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/230412_171008/0000/singleMuonGun_ReducedRECO_1.root")
+process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_RECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_RECOSIM/230412_161049/0000/step3_RAW2DIGI_L1Reco_RECO_RECOSIM_1.root')
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
