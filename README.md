@@ -39,5 +39,5 @@ cd GEMCSCBendingAnalyzer/GEM_Alignment/script/standAloneGemAlignment
 
 
 
-The packaged is inherited from Jason Lee's MuonPerformance and it is used for GEM related analysis at TAMU group. The major target is to analyse
+The package is inherited from Jason Lee's MuonPerformance and it is used for GEM related analysis at TAMU group. The major target is to analyze
 GEM-CSC bending angle in real data from CMS.
