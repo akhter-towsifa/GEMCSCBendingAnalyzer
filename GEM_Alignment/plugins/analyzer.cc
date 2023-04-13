@@ -714,6 +714,8 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
 	    tmp_rechit_CLS = (hit)->clusterSize();
 	    tmp_rechit_BunchX = (hit)->BunchX();
 
+            if (debug) cout << "cluster size of recHit: " << tmp_rechit_CLS << endl;
+
             //Calculating the bending angle = CSC segment phi - GEM rechit phi
             if (data_.hasME11) {
               DetId segDetId = ME11_segment->geographicalId();
