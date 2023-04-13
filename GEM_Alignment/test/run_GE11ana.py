@@ -111,8 +111,8 @@ outfile = "out_me11dir.root"
 #process.source.fileNames.append('file:'+testfile)
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root')
-#process.source.fileNames.append("file:/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/230412_171008/0000/singleMuonGun_ReducedRECO_1.root")
-process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_RECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_RECOSIM/230412_161049/0000/step3_RAW2DIGI_L1Reco_RECO_RECOSIM_1.root')
+process.source.fileNames.append("file:/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/230412_171008/0000/singleMuonGun_ReducedRECO_1.root")
+#process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_RECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_RECOSIM/230412_161049/0000/step3_RAW2DIGI_L1Reco_RECO_RECOSIM_1.root')
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -133,6 +133,7 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("muons"),
+        #muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
         #ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
 	vertexCollection = cms.InputTag("offlinePrimaryVertices"),
         tracker_prop = cms.bool(True),
