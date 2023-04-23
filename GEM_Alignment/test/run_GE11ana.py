@@ -12,7 +12,7 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
-process.load('Configuration.StandardSequences.SimIdeal_cff')
+#process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('TrackingTools.TrackRefitter.globalMuonTrajectories_cff') #TA
@@ -22,26 +22,26 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 
 ### This is the misalignment part
-misalign = False
+misalign = True
 do_GEM = False
 do_CSC = False
 if misalign:
-  db_file = 'sqlite_file:dummy_dx1.db'
-  gem_db_file = 'sqlite_file:GEMAllZeros.db' #'sqlite_file:output_geometry_2022C_v4.db' #for GEM
+  #db_file = 'sqlite_file:dummy_dx1.db'
+  #gem_db_file = 'sqlite_file:GEMAllZeros.db' #'sqlite_file:output_geometry_2022C_v4.db' #for GEM
   #csc_db_file = 'sqlite_file:Run3v1.db' #Run2022BC_v3_CSC_02.db' #for csc alignment only in this case
   #gpr_db_file = 'sqlite_file:Run3v1.db' #Run3GPRL4wRun3TBMAv2It2.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
-    cms.PSet(
-        connect = cms.string(db_file),
-        record = cms.string('GEMAlignmentRcd'),
-        tag = cms.string('GEMAlignmentRcd')
-    ),
-    cms.PSet(
-        connect = cms.string(db_file),
-        record = cms.string('GEMAlignmentErrorExtendedRcd'),
-        tag = cms.string('GEMAlignmentErrorExtendedRcd')
-    )
+    #cms.PSet(
+    #    connect = cms.string(db_file),
+    #    record = cms.string('GEMAlignmentRcd'),
+    #    tag = cms.string('GEMAlignmentRcd')
+    #),
+    #cms.PSet(
+    #    connect = cms.string(db_file),
+    #    record = cms.string('GEMAlignmentErrorExtendedRcd'),
+    #    tag = cms.string('GEMAlignmentErrorExtendedRcd')
+    #)
     #ME11 rec/tag
     #cms.PSet(
     #    connect = cms.string(db_file),
@@ -73,7 +73,7 @@ if misalign:
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '') #Antonello Comparison
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_frozen_v4', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_forReRecoCondition_v1', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v10', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v14', '')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
@@ -131,6 +131,7 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(True),
         Segment_prop = cms.bool(True),
+        trackerRefit_prop = cms.bool(True),
         debug = cms.bool(True),
         isCosmic = cms.bool(False)
 )

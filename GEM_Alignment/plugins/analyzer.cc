@@ -26,7 +26,7 @@
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
-#include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h" //from MK for Refit
+#include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
 #include "TrackingTools/TrackFitters/interface/TrajectoryFitter.h" //TA: for refit
 #include "TrackingTools/KalmanUpdators/interface/Chi2MeasurementEstimator.h" //TA: for refit
 #include "TrackingTools/KalmanUpdators/interface/KFUpdator.h" //TA: for refit
@@ -34,6 +34,8 @@
 #include "TrackingTools/TrackFitters/interface/KFTrajectoryFitter.h" //TA: for refit
 #include "TrackingTools/TrackFitters/interface/KFTrajectorySmoother.h" //TA:for refit
 #include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h" //TA: for refit
+#include "TrackingTools/TrackFitters/interface/TrajectoryStateCombiner.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 
 #include "Alignment/CommonAlignmentAlgorithm/interface/AlignmentAlgorithmBase.h" //TA: for refit:ConstTrajTrackPairs
 
@@ -211,6 +213,9 @@ TTree* MuonData::book(TTree *t, int prop_type){
   else if(prop_type == 3){
     t = fs->make<TTree>("ME11Seg_Prop", "ME11Seg_Prop");
   }
+  else if(prop_type == 4){
+    t = fs->make<TTree>("InnerRefit_Prop", "InnerRefit_Prop");
+  }
   else{
     std::cout << "Bad prop type, failure, doesnt fall under the 3 prop_type listed" << std::endl;
   }
@@ -313,9 +318,9 @@ private:
   virtual void beginJob() ;
   virtual void endJob() ;
 
-  void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i);//, const Trajectory* traj_of_muon);
+  void propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i, const Trajectory* traj_of_muon);
   void CSCSegmentCounter(const reco::Muon* mu, MuonData& data_);
-  void propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_);//, std::vector <TrajectoryMeasurement> traj_measurement);
+  void propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_, const Trajectory* traj_of_muon);
   void GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP, MuonData& data_);
   void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_);
   float RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<GEMRecHit> >::const_iterator rechit, float prop_localx, float prop_localy, const GEMEtaPartition* ch);
@@ -328,8 +333,8 @@ private:
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_; //check this -TA
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
-  edm::Handle<TrajTrackAssociationCollection> ref_track; //check this later-TA
-  edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_; //check this later-TA
+  edm::Handle<TrajTrackAssociationCollection> ref_track;
+  edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_;
 
   edm::Service<TFileService> fs;
   MuonServiceProxy* theService_;
@@ -342,13 +347,13 @@ private:
   edm::ESHandle<GEMGeometry> GEMGeometry_;
   edm::ESHandle<CSCGeometry> CSCGeometry_;
 
-  bool CSC_prop; bool tracker_prop; bool Segment_prop;
+  bool CSC_prop; bool tracker_prop; bool Segment_prop; bool trackerRefit_prop;
   vector<int> prop_list;
   bool debug;
   bool isCosmic;
 
   MuonData data_;
-  TTree* CSC_tree; TTree* Tracker_tree; TTree* Segment_tree;
+  TTree* CSC_tree; TTree* Tracker_tree; TTree* Segment_tree; TTree* TrackerRefit_tree;
   TH2D* nME11_col_vs_matches = new TH2D("nME11_test", "nME11_test", 5, 0, 5, 5, 0, 5);
   TH1D* n_muons_size = new TH1D("n_muons", "n_muons", 20, 0, 20);
   TH1D* n_track_size = new TH1D("n_track", "n_track", 20, 0, 20);
@@ -382,13 +387,15 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   tracker_prop = iConfig.getParameter<bool>("tracker_prop");
   CSC_prop = iConfig.getParameter<bool>("CSC_prop");
   Segment_prop = iConfig.getParameter<bool>("Segment_prop");
+  trackerRefit_prop = iConfig.getParameter<bool>("trackerRefit_prop");
   debug = iConfig.getParameter<bool>("debug");
   isCosmic = iConfig.getParameter<bool>("isCosmic");
-  std::cout << "tracker_prop " << tracker_prop << "\tCSC_prop " << CSC_prop << "\tSegment_prop " << Segment_prop << "\tdebug " << debug << std::endl;
+  std::cout << "tracker_prop:trackerRefit_prop " << tracker_prop << ":" << trackerRefit_prop << "\tCSC_prop " << CSC_prop << "\tSegment_prop " << Segment_prop << "\tdebug " << debug << std::endl;
 
   if(CSC_prop){CSC_tree = data_.book(CSC_tree, 1); prop_list.push_back(1);}
   if(tracker_prop){Tracker_tree = data_.book(Tracker_tree, 2); prop_list.push_back(2);}
   if(Segment_prop){Segment_tree = data_.book(Segment_tree, 3); prop_list.push_back(3);}
+  if(trackerRefit_prop){TrackerRefit_tree = data_.book(TrackerRefit_tree, 4); prop_list.push_back(4);}
 }
 
 
@@ -422,13 +429,13 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   ConstTrajTrackPairs ref_track_pairs;
   for (auto it = ref_track->begin(); it != ref_track->end(); ++it) {
     ref_track_pairs.push_back(ConstTrajTrackPair(&(*(*it).key), &(*(*it).val)));
-  }
+  } //the loop goes over tracks and saves the key and value of each track as a pair in ref_track_pairs.
 
-  std::vector<const Trajectory*> trajTrack;
-  std::vector<const reco::Track*> trackTrack;
+  std::vector<const Trajectory*> trajTrack; //declaring a vector trajectory of the track "trajTrack"
+  std::vector<const reco::Track*> trackTrack; //declaring a reconstructed track vector "trackTrack" 
   for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
-    trajTrack.push_back((*it).first);
-    trackTrack.push_back((*it).second);
+    trajTrack.push_back((*it).first); //for each track stored in ref_track_pairs (key, value), the trajectory is stored in the vector trajTrack
+    trackTrack.push_back((*it).second); //for each track stored in ref_track_pairs (key, value), the track is stored in the vector trackTrack
   }
 
   n_muons_size->Fill(muons->size());
@@ -447,18 +454,19 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     if (not mu->isGlobalMuon()) continue;
     if (debug) cout << "new muon, i = " << i << endl;
     
-    //Towsifa: trajectory muon matching
+    //Towsifa: trajectory muon matching--we want to match muons with the tracks
     const Trajectory* traj_of_muon;
     const Trajectory* traj_of_Track;
     const reco::Track* track_of_Track;
     //const reco::Track* Track;
-    for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
-      traj_of_Track = (*it).first;
-      track_of_Track = (*it).second;
-      if (track_of_Track == mu->track().get()) {
-        const Trajectory* traj_of_muon = traj_of_Track;
-      }
-    }
+    //for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
+    //  traj_of_Track = (*it).first; //similar to before, storing the trajectory of track from the ref_track_pairs.
+    //  track_of_Track = (*it).second; //again similar to before, storing the track from the ref_track_pairs
+    //  if (track_of_Track == mu->track().get()) { //checking if this track matches with the muon's track
+    //    traj_of_muon = traj_of_Track; //once we have a matched track to muon track, saving the trajectory of that track as this particular muon's trajectory.
+    //  }
+    //  if (debug) cout << "traj_of_muon in analyze function after the loop" << traj_of_muon << endl;
+    //}
     //end of trajectory muon matching
 
     if (!(mu->passed(reco::Muon::PFIsoTight))) continue;
@@ -466,15 +474,22 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
-      propagate(mu, prop_type, iEvent, i);//, traj_of_muon);
+      for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
+        traj_of_Track = (*it).first;
+        track_of_Track = (*it).second;
+        if (track_of_Track == mu->track().get()) {
+          traj_of_muon = traj_of_Track;
+          if (debug) cout << "mu, prop_type, i, traj_of_muon: " << mu << "," << prop_type << "," << i << "," << traj_of_muon << endl;
+          propagate(mu, prop_type, iEvent, i, traj_of_muon); //taking the matched trajectory of muon to the propagate function
+        }
+      }
     }
   }
 }
 
-void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i){//, const Trajectory* traj_of_muon){
+void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i, const Trajectory* traj_of_muon){
   const reco::Track* Track;
   reco::TransientTrack ttTrack;
-  //std::vector <TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
   TTree* tree;
   if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
 
@@ -500,15 +515,15 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     Track = mu->globalTrack().get(); //Track = mu->outerTrack().get();
     ttTrack = ttrackBuilder_->build(Track);
   }
-  else if (prop_type == 2){
-    tree = Tracker_tree; 
+  else if (prop_type == 2 or prop_type == 4){
+    if (prop_type == 2) {tree = Tracker_tree;}
+    else{tree = TrackerRefit_tree;} 
     if (!(mu->isTrackerMuon())) {return;}
     if (!(mu->track().isNonnull())) {return;}
     Track = mu->track().get();
     //if (trajTrack.size() == 0) return;
     //Track = trajTrack[0];
     ttTrack = ttrackBuilder_->build(Track);
-    
   }
   else if (prop_type == 3){
     tree = Segment_tree;
@@ -544,8 +559,9 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   for (const auto& ch : GEMGeometry_->etaPartitions()) {
     if (ch->id().station() != 1) continue; //only concerned about GE1/1
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
-    propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_);//, traj_measurement);
-    //if (prop_type==3 and debug) cout << "out of propagating to GEM function" << endl;
+    if (debug and prop_type==4) cout << "prop_type=4, before prop_to_gem"<< endl;
+    propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_, traj_of_muon);
+    if (prop_type==4 and debug) cout << "prop_type=4, after prop_to_gem" << endl;
     if (tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
       //==============RecHit Info======================
@@ -632,7 +648,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   if (debug) cout << "data_.hasME11: " << data_.hasME11 << "\tdata_.n_ME11_segment: " << data_.n_ME11_segment << endl;
 }
 
-void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){//, std::vector <TrajectoryMeasurement> traj_measurement){
+void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_, const Trajectory* traj_of_muon){
   const reco::Track* Track;
   reco::TransientTrack ttrack;
   tmp_has_prop = false;
@@ -640,27 +656,130 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
   const BoundPlane& bps(ch->surface());
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
   const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
+  TrajectoryStateOnSurface tsos; //Towsifa
   TrajectoryStateOnSurface tsos_ch; TrajectoryStateOnSurface tsos_seg;
   GlobalPoint pos_startingPoint_GP;
   float prop_dxdz = 99999;
-  if (prop_type==1 or prop_type==2){
+
+  TrajectoryStateOnSurface previous_trackTSOS; //Towsifa
+  double previous_trackTSOS_globalPositionR = 0.0; //Towsifa
+  std::vector<TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
+
+  if (prop_type==1 or prop_type==2 or prop_type==4){
     if (prop_type==1){
       if (!(mu->isGlobalMuon())) return;
       Track = mu->globalTrack().get();
       ttrack = ttrackBuilder_->build(Track);
     }
-    if (prop_type==2){
+    if (prop_type==2 or prop_type==4){
       if (!(mu->isTrackerMuon())) return;
       Track = mu->track().get();
       ttrack = ttrackBuilder_->build(Track);
-    }
-    //if (traj_measurement.isValid()){
-    //  cout << "valid trajecory measurement matched ot a muon" << endl;
-    //}
+    } 
+    if (prop_type==4){
+      for (std::vector<TrajectoryMeasurement>::const_iterator it_traj_measurement = traj_measurement.begin(); it_traj_measurement != traj_measurement.end(); ++it_traj_measurement){
+        TrajectoryMeasurement iTraj_measurement = *it_traj_measurement;
+        TrajectoryStateOnSurface tsos = TrajectoryStateCombiner().combine(iTraj_measurement.forwardPredictedState(), iTraj_measurement.backwardPredictedState());
+        if (tsos.isValid()){
+          double tsosGlobalPositionR = sqrt(tsos.globalPosition().x() * tsos.globalPosition().x() +
+                                            tsos.globalPosition().y() * tsos.globalPosition().y());
+       
+          if (tsosGlobalPositionR > previous_trackTSOS_globalPositionR){
+            previous_trackTSOS = tsos;
+            previous_trackTSOS_globalPositionR = tsosGlobalPositionR;
+          }          
+        }
+      }
 
-    float inner_delta = abs(ttrack.innermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
-    float outer_delta = abs(ttrack.outermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
-    float used_delta = 0;
+      tsos_ch = propagator->propagate(previous_trackTSOS, ch->surface());
+
+      if (tsos_ch.isValid()){
+        const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
+        const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
+        if (!(tsos_ch.globalPosition().z() * previous_trackTSOS.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1) {
+          tmp_has_prop = true;
+          pos_GP = tsos_ch.globalPosition();
+          pos_startingPoint_GP = previous_trackTSOS.globalPosition();
+        }
+      }
+    }
+
+    if (prop_type==2 or prop_type==1){
+      float inner_delta = abs(ttrack.innermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
+      float outer_delta = abs(ttrack.outermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
+      float used_delta = 0;
+
+      if (inner_delta < outer_delta){
+	tsos_seg = ttrack.innermostMeasurementState();
+	tsos_ch = propagator->propagate(tsos_seg, ch->surface());
+	used_delta = inner_delta;
+	if (prop_type==1){data_.which_track = 1;}
+	else{data_.which_track = 0;}
+      }
+      else{
+	tsos_seg = ttrack.outermostMeasurementState();
+	tsos_ch = propagator->propagate(tsos_seg, ch->surface());
+	used_delta = outer_delta;
+	if (prop_type==1){data_.which_track = 0;}
+	else{data_.which_track = 1;}
+      }
+      
+      if (tsos_ch.isValid()){
+	const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
+	const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
+	if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1) {
+	  tmp_has_prop = true;
+	  if (debug) {cout << "Delta to GEM = " << used_delta << "\tprop " << prop_type << std::endl;}
+	  pos_GP = tsos_ch.globalPosition();
+	  pos_startingPoint_GP = tsos_seg.globalPosition();
+	}
+      }
+    }
+  }
+
+
+    /*if (traj_measurement.isValid()){
+      cout << "valid trajecory measurement matched ot a muon" << endl;
+    }*/
+
+    //Towsifa: start of tsos for refit trajectory
+    //const TrajectoryMeasurement* traj_measurement = traj_of_muon->measurements();
+    /*std::vector<TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
+
+    for (std::vector<TrajectoryMeasurement>::const_iterator it_traj_measurement = traj_measurement.begin(); it_traj_measurement != traj_measurement.end(); ++it_traj_measurement){
+
+      TrajectoryMeasurement iTraj_measurement = *it_traj_measurement;
+      TrajectoryStateOnSurface tsos = TrajectoryStateCombiner().combine(iTraj_measurement.forwardPredictedState(), iTraj_measurement.backwardPredictedState());
+      //const TrajectoryStateOnSurface& tsos_forward = iTraj_measurement.forwardPredictedState();
+      //const TrajectoryStateOnSurface& tsos_backward = iTraj_measurement.backwardPredictedState();
+      //const TrajectoryStateOnSurface& tsos_updated = iTraj_measurement.updatedState();
+
+      if (tsos.isValid()){
+        if (debug) cout << "tsos global z from traj_measurement: " << tsos.globalPosition().z() << endl;
+        double tsosGlobalPositionR = sqrt(tsos.globalPosition().x() * tsos.globalPosition().x() +
+                                        tsos.globalPosition().y() * tsos.globalPosition().y());
+        if (debug) {
+          //cout << "TSOS trajectory local positions x:y " << tsos.localPosition().x() << ":" << tsos.localPosition().y() << endl;
+          //cout << "TSOS trajectory global positions x:y " << tsos.globalPosition().x() << ":" << tsos.globalPosition().y() << endl;
+        }
+
+        if (tsosGlobalPositionR > previous_trackTSOS_globalPositionR){
+          previous_trackTSOS = tsos;
+          previous_trackTSOS_globalPositionR = tsosGlobalPositionR;
+        }
+        //if (debug) cout << "tsos global z tsosGlobalPositionR > previous_trackTSOS_globalPositionR: " << tsos.globalPosition().z() << endl;
+        
+      }//tsos.isValid if statement
+    } //for loop trajectory measurement vector
+    */
+    //end of tsos for refit trajectory
+
+    //float inner_delta = abs(ttrack.innermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
+    //float inner_delta = abs(trajectoryStateTransform::innerStateOnSurface(ttrack).globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
+    //float outer_delta = abs(ttrack.outermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
+    //float used_delta = 0;
+    //if (debug) cout << "inner_delta:outer_delta:used_delta: " << inner_delta << ":" << outer_delta << ":" << used_delta << endl; 
+    /*
     if (inner_delta < outer_delta){
       tsos_seg = ttrack.innermostMeasurementState();
       tsos_ch = propagator->propagate(tsos_seg, ch->surface());
@@ -675,17 +794,26 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       if (prop_type==1){data_.which_track = 0;}
       else{data_.which_track = 1;}
     }
-    if (tsos_ch.isValid()){
-      const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
-      const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
-      if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1) {
-        tmp_has_prop = true;
-        if (debug) {cout << "Delta to GEM = " << used_delta << "\tprop " << prop_type << std::endl;}
-        pos_GP = tsos_ch.globalPosition();
-        pos_startingPoint_GP = tsos_seg.globalPosition();
-      }
-    }
-  }
+    if (debug) cout << "inner_delta:outer_delta:used_delta: " << inner_delta <<":" << outer_delta << ":" << used_delta<< endl;
+    */
+    //if (debug) cout << "tsos global z from traj_measurement: " << tsos.globalPosition().z() << endl;
+
+  //tsos_ch = propagator->propagate(previous_trackTSOS, ch->surface());
+
+  //if (tsos_ch.isValid()){
+  //const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
+  //    const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
+  //    if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1) {
+  //      tmp_has_prop = true;
+        //if (debug) {cout << "Delta to GEM = " << used_delta << "\tprop " << prop_type << std::endl;}
+  //      pos_GP = tsos_ch.globalPosition();
+  //      pos_startingPoint_GP = tsos_seg.globalPosition();
+  //    }
+  //  }
+  //}
+  //}
+
+
   if (prop_type == 3){
     LocalVector momentum_at_surface = ME11_segment->localDirection(); //No momentum for segments;
 
