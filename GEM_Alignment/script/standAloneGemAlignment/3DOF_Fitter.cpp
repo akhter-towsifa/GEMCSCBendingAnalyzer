@@ -187,7 +187,7 @@ int main() {
           }
           std::cout << "Entries are on chamber are " << tt_tmp->GetEntries() << std::endl;
 
-          if (tt_tmp->GetEntries()==0){continue;}
+          if (tt_tmp->GetEntries()<28){continue;}
 
           //New hist of RdPhi to get STD and MEAN
           TH1F *h1 = new TH1F("h1", "h1 title", 100, -20, 20);
@@ -205,6 +205,7 @@ int main() {
           std::cout << "Starting small copy" << std::endl;
           tt = tt_tmp->CopyTree(Form("RdPhi <= (%f + (1.6*%f)) && RdPhi >= (%f - (1.6*%f))", fitMean, fitStd, fitMean, fitStd));
 
+	  
           //If there are no events on the chamber it is skipped
           if (tt->GetEntries() == 0){
             myfile << detNum << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << "\n";
