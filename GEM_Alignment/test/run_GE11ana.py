@@ -10,16 +10,12 @@ process = cms.Process('analyzer', Phase2)
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 #process.load('Configuration.StandardSequences.MagneticField_0T_cff') #0T for cruzet runs
-
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
 process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-#process.load('TrackingTools.TrackRefitter.globalMuonTrajectories_cff') #TA
-
-#process.load('TrackingTools.TrackFitters.TrackFitters_cff') #for refitting -TA
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 
@@ -106,26 +102,17 @@ process.source = cms.Source("PoolSource",
 			)
 				)
 
-#testfile = "/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_83.root"
 outfile = "out_me11dir.root"
 #process.source.fileNames.append('file:'+testfile)
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root')
 process.source.fileNames.append("file:/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/230412_171008/0000/singleMuonGun_ReducedRECO_1.root")
-#process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_RECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_RECOSIM/230412_161049/0000/step3_RAW2DIGI_L1Reco_RECO_RECOSIM_1.root')
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
                         )
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(outfile)) #variable name set above
-
-#from TrackingTools.TrackRefitter.globalMuonTrajectories_cff import *
-#process.MuonAlignmentFromReferenceGlobalMuonRefit = globalMuons.clone()
-#process.MuonAlignmentFromReferenceGlobalMuonRefit.Tracks = cms.InputTag("ALCARECOMuAlCalIsolatedMu:TrackerOnly")
-#process.MuonAlignmentFromReferenceGlobalMuonRefit.TrackTransformer.RefitRPCHits = cms.bool(False)
-
-
 
 process.analyzer = cms.EDAnalyzer('analyzer', 
 	process.MuonServiceProxy,
@@ -144,5 +131,4 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 )
 
 #process.p = cms.EndPath(process.analyzer)
-#process.p = cms.Path(process.MuonAlignmentFromReferenceGlobalMuonRefit + process.analyzer)
 process.p = cms.Path(process.analyzer)
