@@ -1,14 +1,15 @@
 import FWCore.ParameterSet.Config as cms
 #from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
-from Configuration.Eras.Era_Run3_cff import Run3
+#from Configuration.Eras.Era_Run3_cff import Run3
+from Configuration.Eras.Era_Phase2_cff import Phase2
 
 #process = cms.Process('analyzer',Phase2C9)
-process = cms.Process('analyzer',Run3)
+#process = cms.Process('analyzer',Run3)
+process = cms.Process('analyzer', Phase2)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 #process.load('Configuration.StandardSequences.MagneticField_0T_cff') #0T for cruzet runs
-
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
@@ -20,8 +21,8 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 
 ### This is the misalignment part
-misalign = True
-do_GEM = True
+misalign = False
+do_GEM = False
 do_CSC = False
 if misalign:
   db_file = 'sqlite_file:dummy_dx1.db'
@@ -31,12 +32,12 @@ if misalign:
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
     cms.PSet(
-        connect = cms.string(db_file),
+        connect = cms.string(gem_db_file),
         record = cms.string('GEMAlignmentRcd'),
         tag = cms.string('GEMAlignmentRcd')
     ),
     cms.PSet(
-        connect = cms.string(db_file),
+        connect = cms.string(gem_db_file),
         record = cms.string('GEMAlignmentErrorExtendedRcd'),
         tag = cms.string('GEMAlignmentErrorExtendedRcd')
     )
@@ -58,20 +59,22 @@ if misalign:
     #)
   )
 
-  process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
+  #process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
   #process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
 ################################
-
+process.GEMGeometryESModule.applyAlignment = False
 
 
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '') #Antonello Comparison
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_frozen_v4', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_forReRecoCondition_v1', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v10', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '131X_mcRun4_realistic_v3', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, '130X_mcRun4_realistic_v3', '')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
@@ -99,20 +102,11 @@ process.source = cms.Source("PoolSource",
 			)
 				)
 
-#testfile = "/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_83.root"
-#testfile = "/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/348/776/00000/475b2a2f-673c-4104-a360-72ddee06377f.root"
-#testfile = "013a0b3d-c139-4f5d-baaa-d7bc01ef886b.root"
-#testfile = "/eos/cms/tier0/store/data/Run2022B/SingleMuon/RAW-RECO/ZMu-PromptReco-v1/000/355/769/00000/9d91894d-ece9-462b-a8cc-e11a17167415.root"
-outfile = "out_GE11ana_test_5.root"
+outfile = "out_me11dir.root"
 #process.source.fileNames.append('file:'+testfile)
-#process.source.fileNames.append('file:step2.root')
-#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Commissioning2021/Cosmics/AOD/PromptReco-v1/000/339/479/00000/72dc8a4a-a3cd-4eba-9f8b-7b38d3c3ec38.root')
-#process.source.fileNames.append('file:CRUZET_344064_testfile.root')
-#process.source.fileNames.append('file:2018runCtest.root')
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
-#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/RAW-RECO/ZMu-PromptReco-v2/000/357/734/00000/07a64f0e-25eb-40b6-b2a6-e8971a4e0ce8.root')
-#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022C/SingleMuon/RAW-RECO/ZMu-PromptReco-v1/000/356/386/00000/f9a2e6db-c5e9-4f5b-a690-28c67031b395.root')
-process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_109.root')
+#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root')
+process.source.fileNames.append("file:/eos/cms/store/group/alca_muonalign/DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/crab_DYToLL_M-50_13TeV_pythia8_cff_13_3_0_design_2K_ALCARECOSIM/230412_171008/0000/singleMuonGun_ReducedRECO_1.root")
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -126,11 +120,13 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("muons"),
+        #muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
+        #ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
 	vertexCollection = cms.InputTag("offlinePrimaryVertices"),
         tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(True),
         Segment_prop = cms.bool(True),
-                                  debug = cms.bool(True),
+        debug = cms.bool(True),
         isCosmic = cms.bool(False)
 )
 

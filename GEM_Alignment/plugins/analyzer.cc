@@ -16,6 +16,7 @@
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/InputTag.h" //check this -TA
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
@@ -25,7 +26,17 @@
 #include "TrackingTools/GeomPropagators/interface/Propagator.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
+/*#include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h" //from MK for Refit
+#include "TrackingTools/TrackFitters/interface/TrajectoryFitter.h" //TA: for refit
+#include "TrackingTools/KalmanUpdators/interface/Chi2MeasurementEstimator.h" //TA: for refit
+#include "TrackingTools/KalmanUpdators/interface/KFUpdator.h" //TA: for refit
+#include "TrackingTools/Records/interface/TransientRecHitRecord.h" //TA: for refit
+#include "TrackingTools/TrackFitters/interface/KFTrajectoryFitter.h" //TA: for refit
+#include "TrackingTools/TrackFitters/interface/KFTrajectorySmoother.h" //TA:for refit
+#include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h" //TA: for refit
 
+#include "Alignment/CommonAlignmentAlgorithm/interface/AlignmentAlgorithmBase.h" //TA: for refit:ConstTrajTrackPairs
+*/
 #include "MagneticField/Engine/interface/MagneticField.h"
 
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
@@ -41,6 +52,7 @@
 #include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigi.h"
 #include "DataFormats/GEMRecHit/interface/GEMRecHitCollection.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
+#include "DataFormats/TrackReco/interface/TrackFwd.h" //check this -TA
 
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 #include "Geometry/GEMGeometry/interface/GEMGeometry.h"
@@ -91,7 +103,7 @@ struct MuonData
   float ME11_Segment_Direction[3];
   float ME11_Segment_slope_dxdz;      float ME11_Segment_slope_dydz;
   int eighthStripDiff;
-  //============ Rechit Info =============//
+  //============ Rechit Info GE11 =============//
   float rechit_GP[3]; float rechit_LP[3];        bool has_rechit;
   float rechit_yroll; float rechit_localphi_rad; float rechit_localphi_deg;
   int rechit_first_strip;     int rechit_CLS;    int rechit_BunchX;
@@ -102,6 +114,17 @@ struct MuonData
   int rechit_location[5];
   int nRecHitsRpos1L1; int nRecHitsRpos1L2;
   int nRecHitsRneg1L1; int nRecHitsRneg1L2;
+  //============ Rechit Info GE21 =============//
+  float rechit_GP_GE21[3]; float rechit_LP_GE21[3];        bool has_rechit_GE21;
+  float rechit_yroll_GE21; float rechit_localphi_rad_GE21; float rechit_localphi_deg_GE21;
+  int rechit_first_strip_GE21;     int rechit_CLS_GE21;    int rechit_BunchX_GE21;
+  float RdPhi_GE21;        float RdPhi_Corrected_GE21;     int rechit_detId_GE21;
+  float dPhi_GE21;   float dPhi_Corrected_GE21;
+  float bending_angle_GE21;
+  int nRecHitsTot_GE21;    int nRecHits5_GE21;             int nRecHits2_GE21;
+  int rechit_location_GE21[5];
+  int nRecHitsRpos1L1_GE21; int nRecHitsRpos1L2_GE21;
+  int nRecHitsRneg1L1_GE21; int nRecHitsRneg1L2_GE21;
   //=========== Sim info for MC ==========//
   float sim_GP[3];   float sim_LP[3];
   float simDy;       float sim_yroll;            int nSim;
@@ -137,7 +160,7 @@ void MuonData::init()
   }
   ME11_Segment_slope_dxdz = 999999;    ME11_Segment_slope_dydz = 999999;
   eighthStripDiff = 99999;
-  //=========== Rechit Info ===========//
+  //=========== Rechit Info GE11 ===========//
   for (int i=0; i<3; ++i){
     rechit_GP[i] = 999999; rechit_LP[i] = 999999;
   }
@@ -153,6 +176,23 @@ void MuonData::init()
   }
   nRecHitsRpos1L1 = 999999; nRecHitsRpos1L2 = 999999;
   nRecHitsRneg1L1 = 999999; nRecHitsRneg1L2 = 999999;
+  //=========== Rechit Info GE21 ===========//
+  for (int i=0; i<3; ++i){
+    rechit_GP_GE21[i] = 999999; rechit_LP_GE21[i] = 999999;
+  }
+  rechit_yroll_GE21 = 999999; rechit_localphi_rad_GE21 = 999999; rechit_localphi_deg_GE21 = 999999;
+  has_rechit_GE21 = false;
+  rechit_first_strip_GE21 = 999999; rechit_CLS_GE21 = 999999; rechit_BunchX_GE21 = 999999;
+  RdPhi_GE21 = 999999; RdPhi_Corrected_GE21 = 999999; rechit_detId_GE21 = 999999;
+  dPhi_GE21 = 999999; dPhi_Corrected_GE21 = 999999;
+  bending_angle_GE21 = 999999;
+  nRecHitsTot_GE21 = 999999; nRecHits5_GE21 = 999999; nRecHits2_GE21 = 999999;
+  for (int i=0; i<5; ++i){
+    rechit_location_GE21[i] = 999999;
+  }
+  nRecHitsRpos1L1_GE21 = 999999; nRecHitsRpos1L2_GE21 = 999999;
+  nRecHitsRneg1L1_GE21 = 999999; nRecHitsRneg1L2_GE21 = 999999;
+
   //Sim info for MC
   for (int i=0; i<3; ++i){
     sim_GP[i] = 9999999; sim_LP[i] = 9999999;
@@ -206,7 +246,7 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("ME11_Segment_slope_dxdz", &ME11_Segment_slope_dxdz);
   t->Branch("ME11_Segment_slope_dydz", &ME11_Segment_slope_dydz);
   t->Branch("inner_or_outer_mom", &inner_or_outer_mom, "inner_or_outer_mom (0 = inner, 1 = outer)/I");
-  //========== Rechit Info ============//
+  //========== Rechit Info GE11 ============//
   t->Branch("rechit_GP", &rechit_GP, "rechit_GP[3] (x,y,z)/F");
   t->Branch("rechit_LP", &rechit_LP, "rechit_LP[3] (x,y,z)/F");
   t->Branch("rechit_yroll", &rechit_yroll);
@@ -230,6 +270,30 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("nRecHitsRpos1L2", &nRecHitsRpos1L2);
   t->Branch("nRecHitsRneg1L1", &nRecHitsRneg1L1);
   t->Branch("nRecHitsRneg1L2", &nRecHitsRneg1L2);
+  //========== Rechit Info GE21 ============//
+  t->Branch("rechit_GP_GE21", &rechit_GP_GE21, "rechit_GP_GE21[3] (x,y,z)/F");
+  t->Branch("rechit_LP_GE21", &rechit_LP_GE21, "rechit_LP_GE21[3] (x,y,z)/F");
+  t->Branch("rechit_yroll_GE21", &rechit_yroll_GE21);
+  t->Branch("rechit_localphi_rad_GE21", &rechit_localphi_rad_GE21);
+  t->Branch("rechit_localphi_deg_GE21", &rechit_localphi_deg_GE21);
+  t->Branch("has_rechit_GE21", &has_rechit_GE21);
+  t->Branch("rechit_first_strip_GE21", &rechit_first_strip_GE21);
+  t->Branch("rechit_CLS_GE21", &rechit_CLS_GE21);
+  t->Branch("rechit_BunchX_GE21", &rechit_BunchX_GE21);
+  t->Branch("RdPhi_GE21", &RdPhi_GE21);
+  t->Branch("RdPhi_Corrected_GE21", &RdPhi_Corrected_GE21);
+  t->Branch("dPhi_GE21", &dPhi_GE21);
+  t->Branch("dPhi_Corrected_GE21", &dPhi_Corrected_GE21);
+  t->Branch("rechit_detId_GE21", &rechit_detId_GE21);
+  t->Branch("bending_angle_GE21", &bending_angle_GE21);
+  t->Branch("nRecHitsTot_GE21", &nRecHitsTot_GE21);
+  t->Branch("nRecHits2_GE21", &nRecHits2_GE21);
+  t->Branch("nRecHits5_GE21", &nRecHits5_GE21);
+  t->Branch("rechit_location_GE21", &rechit_location_GE21, "rechit_location_GE21[5] (reg, sta, cha, lay, rol)/I");
+  t->Branch("nRecHitsRpos1L1_GE21", &nRecHitsRpos1L1_GE21);
+  t->Branch("nRecHitsRpos1L2_GE21", &nRecHitsRpos1L2_GE21);
+  t->Branch("nRecHitsRneg1L1_GE21", &nRecHitsRneg1L1_GE21);
+  t->Branch("nRecHitsRneg1L2_GE21", &nRecHitsRneg1L2_GE21);
   //========== Sim Info ==============//
   t->Branch("sim_GP", &sim_GP, "sim_GP[3] (x,y,z)/F");
   t->Branch("sim_LP", &sim_LP, "sim_LP[3] (x,y,z)/F");
@@ -256,8 +320,6 @@ private:
   void GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP, MuonData& data_);
   float RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm::ClonePolicy<GEMRecHit> >::const_iterator rechit, float prop_localx, float prop_localy, const GEMEtaPartition* ch);
   bool fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartition* ch);
-  //int eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A);
-  //int eightStripLCT(int hasME11, int hasME11A);
 
   edm::EDGetTokenT<GEMRecHitCollection> gemRecHits_;
   edm::Handle<GEMRecHitCollection> gemRecHits;
@@ -266,6 +328,8 @@ private:
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_; //check this -TA
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
+  //edm::Handle<TrajTrackAssociationCollection> ref_track; //check this later-TA
+  //edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_; //check this later-TA
 
   edm::Service<TFileService> fs;
   MuonServiceProxy* theService_;
@@ -286,13 +350,11 @@ private:
   MuonData data_;
   TTree* CSC_tree; TTree* Tracker_tree; TTree* Segment_tree;
   TH2D* nME11_col_vs_matches = new TH2D("nME11_test", "nME11_test", 5, 0, 5, 5, 0, 5);
+  TH1D* n_muons_size = new TH1D("n_muons", "n_muons", 20, 0, 20);
+  TH1D* n_track_size = new TH1D("n_track", "n_track", 20, 0, 20);
 
   bool isMC;
   const CSCSegment *ME11_segment;
-  //check below 3 lines for LCT 1/8 strip diff calculation
-  //const CSCCorrelatedLCTDigi* lct;
-  //const GEMInternalCluster* cluster;
-  //const bool isLayer2;
 
   const edm::ESGetToken<GEMGeometry, MuonGeometryRecord> gemGeomToken_;
   const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeomToken_;
@@ -315,6 +377,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
   cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
+  //ref_track_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_track"));
 
   tracker_prop = iConfig.getParameter<bool>("tracker_prop");
   CSC_prop = iConfig.getParameter<bool>("CSC_prop");
@@ -346,11 +409,33 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (isMC) {
     iEvent.getByToken(gemSimHits_, gemSimHits);
   }
-  edm::Handle<View<reco::Muon> > muons;
 
+  edm::Handle<View<reco::Muon> > muons;
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
+  /*//Towsifa: adding refit trajectory
+
+  edm::Handle<TrajTrackAssociationCollection> ref_track;
+  iEvent.getByToken(ref_track_, ref_track);
+
+  ConstTrajTrackPairs ref_track_pairs;
+  for (auto it = ref_track->begin(); it != ref_track->end(); ++it) {
+    ref_track_pairs.push_back(ConstTrajTrackPair(&(*(*it).key), &(*(*it).val)));
+  }
+
+  std::vector<const Trajectory*> trajTrack;
+  std::vector<const reco::Track*> trackTrack;
+  for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
+    trajTrack.push_back((*it).first);
+    trackTrack.push_back((*it).second);
+  }
+
+  n_muons_size->Fill(muons->size());
+  n_track_size->Fill(trajTrack.size());
+  if (debug) cout << "trajTrack size: " << trajTrack.size() << "\tmuons list size: " << muons->size() <<  "\tdiff in trajTrack and muons size = " << trajTrack.size()-muons->size() << endl;
+  //Towsifa: end of Refit trajectory
+  */
   edm::Handle<CSCSegmentCollection> cscSegments;
   if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
 
@@ -362,17 +447,31 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     if (not mu->isGlobalMuon()) continue;
     if (debug) cout << "new muon, i = " << i << endl;
     
+    /*//Towsifa: trajectory muon matching
+    const Trajectory* traj_of_muon;
+    const Trajectory* traj_of_Track;
+    const reco::Track* track_of_Track;
+    //const reco::Track* Track;
+    for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
+      traj_of_Track = (*it).first;
+      track_of_Track = (*it).second;
+      if (track_of_Track == mu->track().get()) {
+        const Trajectory* traj_of_muon = traj_of_Track;
+      }
+    }
+    //end of trajectory muon matching
+    */
     if (!(mu->passed(reco::Muon::PFIsoTight))) continue;
     //if (debug) cout << "passes PFIsoTight" << endl;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
-      propagate(mu, prop_type, iEvent, i);
+      propagate(mu, prop_type, iEvent, i);//, traj_of_muon);
     }
   }
 }
 
-void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i){
+void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& iEvent, int i){//, const Trajectory* traj_of_muon){
   const reco::Track* Track;
   reco::TransientTrack ttTrack;
   TTree* tree;
@@ -382,7 +481,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   bool isLayer2 = false;
   if (!cluster.isMatchingLayer1() and cluster.isMatchingLayer2()) {isLayer2 = true;}
   */
-  //===============start of vertex edit by TA
+  //===============start of vertex edit -Towsifa
   edm::Handle<reco::VertexCollection> vertexCollection;
   iEvent.getByToken(vertexCollection_, vertexCollection);
   reco::Vertex vertexSelection; //choose type of vertex needed
@@ -405,7 +504,10 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     if (!(mu->isTrackerMuon())) {return;}
     if (!(mu->track().isNonnull())) {return;}
     Track = mu->track().get();
+    //if (trajTrack.size() == 0) return;
+    //Track = trajTrack[0];
     ttTrack = ttrackBuilder_->build(Track);
+    
   }
   else if (prop_type == 3){
     tree = Segment_tree;
@@ -441,7 +543,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   for (const auto& ch : GEMGeometry_->etaPartitions()) {
     if (ch->id().station() != 1) continue; //only concerned about GE1/1
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
-    propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_);
+    propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_);//, traj_measurement);
     //if (prop_type==3 and debug) cout << "out of propagating to GEM function" << endl;
     if (tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
@@ -502,7 +604,8 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
           const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
           tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(ME11_segment->localPosition());
           data_.ME11_Segment_Direction[0] = tmp_me11_segment_x;   data_.ME11_Segment_Direction[1] = tmp_me11_segment_y; data_.ME11_Segment_Direction[2] = tmp_me11_segment_z;
-          if (debug) cout << "ME11 segment location endcap:station:ring:chamber:layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
+          if (debug) cout << "CSC Endcap:Station:Ring:SC:Layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
+
           if (debug) cout << "ME11 segment direction x:y:z " << data_.ME11_Segment_Direction[0] << ":" << data_.ME11_Segment_Direction[1] << ":" << data_.ME11_Segment_Direction[2] << endl;
           data_.ME11_Segment_slope_dxdz = tmp_me11_segment_slope_dxdz;  data_.ME11_Segment_slope_dydz= tmp_me11_segment_slope_dydz;
           if (debug) cout << "segment slope dx/dz:dy/dz " << data_.ME11_Segment_slope_dxdz << ":" << data_.ME11_Segment_slope_dydz << endl;
@@ -530,12 +633,9 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   data_.hasME11A = tmp_hasME11A;
   if (data_.n_ME11_segment >=1 and data_.n_ME11_segment < 1000) {data_.hasME11 = 1;}
   if (debug) cout << "data_.hasME11: " << data_.hasME11 << "\tdata_.n_ME11_segment: " << data_.n_ME11_segment << endl;
-  //data_.eighthStripDiff = eightStripLCT(&lct, &cluster, data_.hasME11, tmp_hasME11A);
-  //data_.eighthStripDiff = eightStripLCT(data_.hasME11, tmp_hasME11A);
-  //if (debug) cout << "data_.eighthStripDiff: " << data_.eighthStripDiff << endl;
 }
 
-void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){
+void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_){//, std::vector <TrajectoryMeasurement> traj_measurement){
   const reco::Track* Track;
   reco::TransientTrack ttrack;
   tmp_has_prop = false;
@@ -557,6 +657,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       Track = mu->track().get();
       ttrack = ttrackBuilder_->build(Track);
     }
+
     float inner_delta = abs(ttrack.innermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
     float outer_delta = abs(ttrack.outermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
     float used_delta = 0;
@@ -667,17 +768,17 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
 }
 
 void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP, MuonData& data_){
-  float tmp_rechit_GP_x; float tmp_rechit_GP_y; float tmp_rechit_GP_z;
-  float tmp_rechit_LP_x; float tmp_rechit_LP_y; float tmp_rechit_LP_z;
-  float tmp_rechit_yroll; float tmp_rechit_localphi_rad; float tmp_rechit_localphi_deg;
-  bool tmp_has_rechit = false;
-  int tmp_rechit_first_strip; int tmp_rechit_CLS; int tmp_rechit_BunchX;
-  float tmp_RdPhi = 9999.; float tmp_RdPhi_Corrected; int tmp_rechit_detId;
-  float tmp_dPhi = 9999.; float tmp_dPhi_Corrected;
-  float tmp_bending_angle = 9999.;
-  int tmp_nRecHitsTot = 0; int tmp_nRecHits5 = 0; int tmp_nRecHits2 = 0;
-  int tmp_rechit_region; int tmp_rechit_station; int tmp_rechit_chamber; int tmp_rechit_layer; int tmp_rechit_roll;
-  int tmp_nRecHitsRpos1L1 = 0; int tmp_nRecHitsRpos1L2 = 0; int tmp_nRecHitsRneg1L1 = 0; int tmp_nRecHitsRneg1L2 = 0;
+  float tmp_rechit_GP_x; float tmp_rechit_GP_y; float tmp_rechit_GP_z; float tmp_rechit_GP_x_GE21; float tmp_rechit_GP_y_GE21; float tmp_rechit_GP_z_GE21;
+  float tmp_rechit_LP_x; float tmp_rechit_LP_y; float tmp_rechit_LP_z; float tmp_rechit_LP_x_GE21; float tmp_rechit_LP_y_GE21; float tmp_rechit_LP_z_GE21;
+  float tmp_rechit_yroll; float tmp_rechit_localphi_rad; float tmp_rechit_localphi_deg; float tmp_rechit_yroll_GE21; float tmp_rechit_localphi_rad_GE21; float tmp_rechit_localphi_deg_GE21;
+  bool tmp_has_rechit = false; bool tmp_has_rechit_GE21 = false;
+  int tmp_rechit_first_strip; int tmp_rechit_CLS; int tmp_rechit_BunchX; int tmp_rechit_first_strip_GE21; int tmp_rechit_CLS_GE21; int tmp_rechit_BunchX_GE21;
+  float tmp_RdPhi = 9999.; float tmp_RdPhi_Corrected; int tmp_rechit_detId; float tmp_RdPhi_GE21 = 9999.; float tmp_RdPhi_Corrected_GE21; int tmp_rechit_detId_GE21;
+  float tmp_dPhi = 9999.; float tmp_dPhi_Corrected; float tmp_dPhi_GE21 = 9999.; float tmp_dPhi_Corrected_GE21;
+  float tmp_bending_angle = 9999.; float tmp_bending_angle_GE21 = 9999.;
+  int tmp_nRecHitsTot = 0; int tmp_nRecHits5 = 0; int tmp_nRecHits2 = 0; int tmp_nRecHitsTot_GE21 = 0; int tmp_nRecHits5_GE21 = 0; int tmp_nRecHits2_GE21 = 0;
+  int tmp_rechit_region; int tmp_rechit_station; int tmp_rechit_chamber; int tmp_rechit_layer; int tmp_rechit_roll; int tmp_rechit_region_GE21; int tmp_rechit_station_GE21; int tmp_rechit_chamber_GE21; int tmp_rechit_layer_GE21; int tmp_rechit_roll_GE21;
+  int tmp_nRecHitsRpos1L1 = 0; int tmp_nRecHitsRpos1L2 = 0; int tmp_nRecHitsRneg1L1 = 0; int tmp_nRecHitsRneg1L2 = 0; int tmp_nRecHitsRpos1L1_GE21 = 0; int tmp_nRecHitsRpos1L2_GE21 = 0; int tmp_nRecHitsRneg1L1_GE21 = 0; int tmp_nRecHitsRneg1L2_GE21 = 0;
   for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++) {
     if ((hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM) {
       GEMDetId gemid((hit)->geographicalId());
@@ -696,6 +797,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
         float rechit_y_to_center = etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp();
         float rechit_y_to_chamber = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2))).y();
         LocalPoint local_to_center((hit)->localPosition().x(), rechit_y_to_center + (hit)->localPosition().y(), 0);
+        //below is for GE1/1
         if (ch->id().station()==1 and ch->id().ring()==1 and fabs((hit)->localPosition().x() - prop_LP.x())<999.0) {
           tmp_nRecHitsTot++;
           if (abs(RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch)) < 5) {tmp_nRecHits5++;}
@@ -749,10 +851,60 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             if (debug) cout << "rechit_detId:RdPhi:RdPhi_Corrected:dPhi:dPhi_Corrected\t" << tmp_rechit_detId << ":" << tmp_RdPhi << ":" << tmp_RdPhi_Corrected << ":" << tmp_dPhi << ":" << tmp_dPhi_Corrected << endl;
           }
         }
+        //below is for GE2/1
+        if (ch->id().station()==2 and ch->id().ring()==1 and fabs((hit)->localPosition().x() - prop_LP.x())<999.0) {
+          tmp_nRecHitsTot_GE21++;
+          if (abs(RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch)) < 5) {tmp_nRecHits5_GE21++;}
+          if (abs(RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch)) < 2) {tmp_nRecHits2_GE21++;}
+          if (abs(tmp_RdPhi) > abs(RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch))) {
+            tmp_rechit_GP_x_GE21 = etaPart->toGlobal((hit)->localPosition()).x();
+            tmp_rechit_GP_y_GE21 = etaPart->toGlobal((hit)->localPosition()).y();
+            tmp_rechit_GP_z_GE21 = etaPart->toGlobal((hit)->localPosition()).z();
+            tmp_rechit_LP_x_GE21 = (hit)->localPosition().x();   tmp_rechit_LP_y_GE21 = rechit_y_to_chamber + (hit)->localPosition().y();    tmp_rechit_LP_z_GE21 = (hit)->localPosition().z();
+            tmp_rechit_yroll_GE21 = (hit)->localPosition().y();
+            float local_phi_GE21 = local_to_center.phi();
+            tmp_rechit_localphi_rad_GE21 = (3.14159265/2.) - local_phi_GE21;
+            tmp_rechit_localphi_deg_GE21 = ((3.14159265/2.) - local_phi_GE21)*(180./3.14159265);
+            tmp_has_rechit_GE21 = true;
+            tmp_rechit_first_strip_GE21 = (hit)->firstClusterStrip();
+            tmp_rechit_CLS_GE21 = (hit)->clusterSize();
+            tmp_rechit_BunchX_GE21 = (hit)->BunchX();
+
+            /*
+            //Calculating the bending angle = CSC segment phi - GEM rechit phi
+            if (data_.hasME21) {
+              DetId segDetId = ME21_segment->geographicalId();
+              const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
+              float CSC_segment_phi = (segDet->toGlobal(ME21_segment->localPosition())).phi();
+
+              float GEM_hit_phi = (etaPart->toGlobal(hit->localPosition())).phi();
+              tmp_bending_angle = CSC_segment_phi - GEM_hit_phi;
+              if (debug) cout << "Bending Angle = " << tmp_bending_angle << "\tpT = " << data_.muon_pt << endl;
+            }
+            */
+            tmp_RdPhi_GE21 = RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch);
+            tmp_RdPhi_Corrected_GE21 = tmp_RdPhi_GE21;
+            tmp_dPhi_GE21 = tmp_rechit_localphi_rad_GE21 - data_.prop_localphi_rad; //units of radian
+            tmp_dPhi_Corrected_GE21 = tmp_dPhi_GE21;
+            //check the sign convention below with GE2/1 Firmware
+            if ((gemid.region() == 1 and gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)) {
+              tmp_RdPhi_Corrected_GE21 = -1.0*tmp_RdPhi_Corrected_GE21;
+            }
+            if ((gemid.region() == -1 and gemid.chamber()%2 == 1) || (gemid.region() == 1 && gemid.chamber()%2 == 0)) {
+              tmp_dPhi_Corrected_GE21 = -1.0*tmp_dPhi_Corrected_GE21;
+            }
+            tmp_rechit_detId_GE21 = gemid.region()*(gemid.station()*100 + gemid.chamber());
+            tmp_rechit_region_GE21 = gemid.region();  tmp_rechit_station_GE21 = gemid.station();
+            tmp_rechit_chamber_GE21 = gemid.chamber();  tmp_rechit_layer_GE21 = gemid.layer();
+            tmp_rechit_roll_GE21 = gemid.roll();
+            if (debug) cout << "GE21 rechit_detId:RdPhi:RdPhi_Corrected:dPhi:dPhi_Corrected\t" << tmp_rechit_detId_GE21 << ":" << tmp_RdPhi_GE21 << ":" << tmp_RdPhi_Corrected_GE21 << ":" << tmp_dPhi_GE21 << ":" << tmp_dPhi_Corrected_GE21 << endl;
+          }
+        }
       }
     }
   }
   if (tmp_has_rechit){
+    //below is for GE11
     data_.rechit_GP[0] = tmp_rechit_GP_x; data_.rechit_GP[1] = tmp_rechit_GP_y; data_.rechit_GP[2] = tmp_rechit_GP_z;
     data_.rechit_LP[0] = tmp_rechit_LP_x; data_.rechit_LP[1] = tmp_rechit_LP_y; data_.rechit_LP[2] = tmp_rechit_LP_z;
     data_.rechit_yroll = tmp_rechit_yroll;
@@ -769,6 +921,23 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
     data_.nRecHitsTot = tmp_nRecHitsTot; data_.nRecHits5 = tmp_nRecHits5; data_.nRecHits2 = tmp_nRecHits2;
     data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
     data_.nRecHitsRpos1L1 = tmp_nRecHitsRpos1L1; data_.nRecHitsRpos1L2 = tmp_nRecHitsRpos1L2; data_.nRecHitsRneg1L1 = tmp_nRecHitsRneg1L1; data_.nRecHitsRneg1L2 = tmp_nRecHitsRneg1L2;
+    //below is for GE21
+    data_.rechit_GP_GE21[0] = tmp_rechit_GP_x_GE21; data_.rechit_GP_GE21[1] = tmp_rechit_GP_y_GE21; data_.rechit_GP_GE21[2] = tmp_rechit_GP_z_GE21;
+    data_.rechit_LP_GE21[0] = tmp_rechit_LP_x_GE21; data_.rechit_LP_GE21[1] = tmp_rechit_LP_y_GE21; data_.rechit_LP_GE21[2] = tmp_rechit_LP_z_GE21;
+    data_.rechit_yroll_GE21 = tmp_rechit_yroll_GE21;
+    data_.rechit_localphi_rad_GE21 = tmp_rechit_localphi_rad_GE21;
+    data_.rechit_localphi_deg_GE21 = tmp_rechit_localphi_deg_GE21;
+    data_.has_rechit_GE21 = tmp_has_rechit_GE21;
+    data_.rechit_first_strip_GE21 = tmp_rechit_first_strip_GE21;
+    data_.rechit_CLS_GE21 = tmp_rechit_CLS_GE21;
+    data_.rechit_BunchX_GE21 = tmp_rechit_BunchX_GE21;
+    data_.RdPhi_GE21 = tmp_RdPhi_GE21;                      data_.dPhi_GE21 = tmp_dPhi_GE21;
+    data_.RdPhi_Corrected_GE21 = tmp_RdPhi_Corrected_GE21;  data_.dPhi_Corrected_GE21 = tmp_dPhi_Corrected_GE21;
+    data_.rechit_detId_GE21 = tmp_rechit_detId_GE21;
+    data_.bending_angle_GE21 = tmp_bending_angle_GE21;
+    data_.nRecHitsTot_GE21 = tmp_nRecHitsTot_GE21; data_.nRecHits5_GE21 = tmp_nRecHits5_GE21; data_.nRecHits2_GE21 = tmp_nRecHits2_GE21;
+    data_.rechit_location_GE21[0] = tmp_rechit_region_GE21; data_.rechit_location_GE21[1] = tmp_rechit_station_GE21; data_.rechit_location_GE21[2] = tmp_rechit_chamber_GE21; data_.rechit_location_GE21[3] = tmp_rechit_layer_GE21; data_.rechit_location_GE21[4] = tmp_rechit_roll_GE21;
+    data_.nRecHitsRpos1L1_GE21 = tmp_nRecHitsRpos1L1_GE21; data_.nRecHitsRpos1L2_GE21 = tmp_nRecHitsRpos1L2_GE21; data_.nRecHitsRneg1L1_GE21 = tmp_nRecHitsRneg1L1_GE21; data_.nRecHitsRneg1L2_GE21 = tmp_nRecHitsRneg1L2_GE21;
   }
 }
 
@@ -832,29 +1001,7 @@ bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartit
     {return 1;}
   else {return 0;}
 }
-/*
-//int analyzer::eightStripLCT(const CSCCorrelatedLCTDigi& lct, const GEMInternalCluster& cluster, int hasME11, int hasME11A){
-int analyzer::eightStripLCT(int hasME11, int hasME11A){
-  //const CSCCorrelatedLCTDigi& lct;
-  const GEMInternalCluster& cluster;  
-  //bool isLayer2 = false;
-  int lct_strip = 999;
-  //if (!cluster.isMatchingLayer1() and cluster.isMatchingLayer2()) {isLayer2 = true;}
-  //if (debug) cout << "\teightStripLCT function isLayer2: " << isLayer2 << endl;
-  
-//  if (hasME11==1) {
-//    if (hasME11A==1) {lct_strip = cluster.getKeyStripME1a(8, isLayer2);}
-//    else {lct_strip = cluster.getKeyStrip(8, isLayer2);}
-//    }
 
-  //if (debug) cout << "\teightStripLCT function hasME11:hasME11A:lct_strip " << hasME11 << ":" << hasME11A << ":" << lct_strip << endl;
-  //int eighthStripDiff = lct_strip - lct.getStrip(8);
-  int eighthStripDiff = cluster.getKeyStripME1a(); //this is just a check
-  if (debug) cout << "\teightStripLCT function eighthStripDiff: " << eighthStripDiff << endl;
-  return eighthStripDiff;
-  
-}
-*/
 void analyzer::beginJob(){}
 void analyzer::endJob(){
   if (debug) nME11_col_vs_matches->Write();

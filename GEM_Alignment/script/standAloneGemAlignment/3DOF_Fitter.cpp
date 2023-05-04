@@ -104,12 +104,13 @@ int main() {
   //////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////
   //Input root file name
-  const char* input_name = "../../test/singleMuonGun_11_3_4_2021_design_idealGEMmisalignedME11_dx1cm.root";
+  const char* input_name = "../../test/out_ge11.root";
   //Tree name ***Make sure to use correct one***
   const char* tree_name = "analyzer/ME11Seg_Prop";   //"analyzer/ME11Seg_Prop" or "ME11ana/Inner_Prop" for example
   const char* Rdphi_name = "RdPhi";
   //Will only change the name of the output csv file
-  const char* outname_prefix = "GEMvalues_misalignedME11_dx1cm";
+  const char* outname_prefix = "out_ge11_backProp";
+
   //Cuts on full tree in first cloning step
   const char* cuts = "muon_pt > 5 && abs(RdPhi) < 100 && has_fidcut"; //n_ME11_segment == 1
   //Option to turn on or off 3 dof alignments and layer level vs chamber level
@@ -180,7 +181,7 @@ int main() {
           TFile* tmpTF = new TFile("tmp2.root","recreate");
           std::cout <<"About to copy tree" << std::endl;
           TTree* tt_tmp;
-          //if (j==-1 and i==25){continue;}
+          
           if(byLayer){
             tt_tmp = cutEn->CopyTree(Form("rechit_detId==%d && prop_location[3] == %d",detNum, k));		//Only fits 1 chamber at a time (det_id)
           }
@@ -188,6 +189,8 @@ int main() {
             tt_tmp = cutEn->CopyTree(Form("rechit_detId==%d", detNum));
           }
           std::cout << "Entries are on chamber are " << tt_tmp->GetEntries() << std::endl;
+
+          if (tt_tmp->GetEntries()<28){continue;}
 
           //New hist of RdPhi to get STD and MEAN
           TH1F *h1 = new TH1F("h1", "h1 title", 100, -20, 20);
@@ -205,6 +208,7 @@ int main() {
           std::cout << "Starting small copy" << std::endl;
           tt = tt_tmp->CopyTree(Form("RdPhi <= (%f + (1.6*%f)) && RdPhi >= (%f - (1.6*%f))", fitMean, fitStd, fitMean, fitStd));
 
+	  
           //If there are no events on the chamber it is skipped
           if (tt->GetEntries() == 0){
             myfile << detNum << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << "\n";
