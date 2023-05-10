@@ -23,25 +23,25 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 ### This is the misalignment part
 misalign = True
-do_GEM = False
+do_GEM = True
 do_CSC = False
 if misalign:
   #db_file = 'sqlite_file:dummy_dx1.db'
-  #gem_db_file = 'sqlite_file:GEMAllZeros.db' #'sqlite_file:output_geometry_2022C_v4.db' #for GEM
+  gem_db_file = 'sqlite_file:2022D_backPropModiefiedRefitTracker_alcareco_v0.db' #for GEM
   #csc_db_file = 'sqlite_file:Run3v1.db' #Run2022BC_v3_CSC_02.db' #for csc alignment only in this case
   #gpr_db_file = 'sqlite_file:Run3v1.db' #Run3GPRL4wRun3TBMAv2It2.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
-    #cms.PSet(
-    #    connect = cms.string(db_file),
-    #    record = cms.string('GEMAlignmentRcd'),
-    #    tag = cms.string('GEMAlignmentRcd')
-    #),
-    #cms.PSet(
-    #    connect = cms.string(db_file),
-    #    record = cms.string('GEMAlignmentErrorExtendedRcd'),
-    #    tag = cms.string('GEMAlignmentErrorExtendedRcd')
-    #)
+    cms.PSet(
+        connect = cms.string(gem_db_file),
+        record = cms.string('GEMAlignmentRcd'),
+        tag = cms.string('GEMAlignmentRcd')
+    ),
+    cms.PSet(
+        connect = cms.string(gem_db_file),
+        record = cms.string('GEMAlignmentErrorExtendedRcd'),
+        tag = cms.string('GEMAlignmentErrorExtendedRcd')
+    )
     #ME11 rec/tag
     #cms.PSet(
     #    connect = cms.string(db_file),
@@ -129,10 +129,10 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
 	vertexCollection = cms.InputTag("offlinePrimaryVertices"),
         tracker_prop = cms.bool(True),
-        CSC_prop = cms.bool(True),
+                                  CSC_prop = cms.bool(False),
         Segment_prop = cms.bool(True),
         trackerRefit_prop = cms.bool(True),
-        debug = cms.bool(True),
+                                  debug = cms.bool(False),
         isCosmic = cms.bool(False)
 )
 

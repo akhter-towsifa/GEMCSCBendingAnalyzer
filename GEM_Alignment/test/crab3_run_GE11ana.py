@@ -3,8 +3,8 @@ from CRABClient.UserUtilities import config
 config = config()
 ###2018runA  314472-318876
 #section general
-config.General.requestName = 'Run2022D_ZMu_PromptReco_RAWRECO_globalMu_pfisotight_aligned_v6' #'singleMuonGun_11_3_4_2021_design_dx_v1' #'Run2022C_ZMu_PromptReco_RAWRECO_prealigned_v4'
-config.General.workArea = 'Run2022BCD_crabLogs'#working dir 
+config.General.requestName = 'Run2022D_ALCARECO_aligned_v0'
+config.General.workArea = 'crabLogs'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
 
@@ -21,7 +21,7 @@ config.JobType.numCores = 1
 
 misalign = True  #Make sure to change the run_GE11ana.py too!!!
 if misalign:
-  config.JobType.inputFiles =  ['./2022D_globalmu_pfisotight_v6.db']
+  config.JobType.inputFiles =  ['./2022D_backPropModiefiedRefitTracker_alcareco_v0.db']
 
 #section Data
 #config.Data.inputDataset = '/singleMuonGun_MuAl_pT-30to200_1102_phase1_2021_realistic/hyunyong-crab_singleMuonGun_pT-30to200_1102_phase1_2021_realistic_RAW2DIGI_FullRECOv4-1b4eba2dcd577d6bb642bb3e45609e5f/USER'
@@ -33,9 +33,10 @@ if misalign:
 #config.Data.inputDataset = '/Cosmics/Commissioning2022-CosmicTP-PromptReco-v1/RAW-RECO'
 #config.Data.inputDataset = '/ExpressCosmics/Commissioning2022-Express-v1/FEVT' #ExpressCosmics is bigger than Cosmics
 #config.Data.runRange = '348776,348773,349073'
-#config.Data.inputDataset = '/Muon/Run2022D-MuAlCalIsolatedMu-PromptReco-v2/ALCARECO'
-config.Data.inputDataset = '/Muon/Run2022D-ZMu-PromptReco-v2/RAW-RECO'
+config.Data.inputDataset = '/Muon/Run2022D-MuAlCalIsolatedMu-PromptReco-v2/ALCARECO'
+#config.Data.inputDataset = '/Muon/Run2022D-ZMu-PromptReco-v2/RAW-RECO'
 
+#config.Data.userInputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root'
 #config.Data.userInputFiles = open('singleMuonGun_11_3_4_2021_design.list').readlines()
 #config.Data.runRange = '347072' #Antonello comparison
 
@@ -48,7 +49,7 @@ config.Data.splitting = 'FileBased'
 #config.Data.splitting = 'LumiBased'
 #config.Data.splitting = 'Automatic'
 config.Data.unitsPerJob = 1
-config.Data.outLFNDirBase = '/store/user/toakhter/Run2022BCD_GEM_GPR'
+config.Data.outLFNDirBase = '/store/user/toakhter/Run3_ALCARECO'
 #config.Data.outLFNDirBase = '/store/group/lpcgem/'
 config.Data.publication = False
 #import FWCore.PythonUtilities.LumiList as LumiList

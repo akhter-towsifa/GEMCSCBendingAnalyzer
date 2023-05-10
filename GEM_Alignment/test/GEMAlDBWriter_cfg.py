@@ -12,7 +12,7 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 #process.GlobalTag = GlobalTag(process.GlobalTag, "auto:run3_data_prompt", '')
 process.GlobalTag = GlobalTag(process.GlobalTag, "auto:phase1_2022_design")
-#process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_frozen_v4', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v14', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v10', '')
 
 process.maxEvents = cms.untracked.PSet(
@@ -28,18 +28,18 @@ process.DTGeometryMuonMisalignedProducer.applyAlignment = cms.bool(False)
 import Geometry.CSCGeometryBuilder.cscGeometryDB_cfi
 process.CSCGeometryMuonMisalignedProducer = Geometry.CSCGeometryBuilder.cscGeometryDB_cfi.CSCGeometryESModule.clone()
 process.CSCGeometryMuonMisalignedProducer.appendToDataLabel = 'idealForMuonMisalignedProducer'
-process.CSCGeometryMuonMisalignedProducer.applyAlignment = cms.bool(True) #by default, in the GT, this is True. if this is set to False, need to comment it out. set to True when doing alignment for CSC specificlly 
+#process.CSCGeometryMuonMisalignedProducer.applyAlignment = cms.bool(False) #by default, in the GT, this is True. if this is set to False, need to comment it out. set to True when doing alignment for CSC specificlly 
 import Geometry.GEMGeometryBuilder.gemGeometryDB_cfi
 process.GEMGeometryMuonMisalignedProducer = Geometry.GEMGeometryBuilder.gemGeometryDB_cfi.GEMGeometryESModule.clone()
 process.GEMGeometryMuonMisalignedProducer.appendToDataLabel = 'idealForMuonMisalignedProducer'
-process.GEMGeometryMuonMisalignedProducer.applyAlignment = cms.bool(False) #set to true when GEM alignment is needed. otherwise False during CSC alignment
+process.GEMGeometryMuonMisalignedProducer.applyAlignment = cms.bool(True) #set to true when GEM alignment is needed. otherwise False during CSC alignment
 
 process.GEMAlDBWriter = cms.EDAnalyzer("GEMAlDBWriter",
-                                       doChamber = cms.untracked.bool(False),
+                                       doChamber = cms.untracked.bool(True),
                                        doEndcap = cms.untracked.bool(False),
-                                       doME11Chamber = cms.untracked.bool(True),
+                                       doME11Chamber = cms.untracked.bool(False),
                                        doCSCEndcap = cms.untracked.bool(False),
-                                       chamberFile = cms.untracked.string('../script/standAloneGemAlignment/dummy_Fitter_dphiz1.csv'),          # GEM Chamber Alignment csv
+                                       chamberFile = cms.untracked.string('../script/standAloneGemAlignment/2022D_backPropModiefiedRefitTracker_alcareco_v0.csv'),          # GEM Chamber Alignment csv
                                        endcapFile = cms.untracked.string('gemEndcap.csv'),       # GEM Endcap Alignment csv
                                        ME11ChamberFile = cms.untracked.string('../script/standAloneGemAlignment/ME11_misalignment_dphiz.csv'),      # ME1/1 Chamber Alignment csv
                                        CSCEndcapFile = cms.untracked.string('cscEndcap.csv')     # ME1/1 Endcap Alignment csv
@@ -109,7 +109,7 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
         )
     ),
 
-    connect = cms.string('sqlite_file:ME11_misalignment_dphiz_5mrad.db')
+    connect = cms.string('sqlite_file:2022D_backPropModiefiedRefitTracker_alcareco_v0.db')
 )
 process.p1 = cms.Path(process.GEMAlDBWriter)
 process.MessageLogger.cout = cms.untracked.PSet(

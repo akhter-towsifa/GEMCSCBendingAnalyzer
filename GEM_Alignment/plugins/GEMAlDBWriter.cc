@@ -4,6 +4,9 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
+#include "FWCore/Utilities/interface/InputTag.h" //check this -TA
+#include "FWCore/Framework/interface/EventSetupRecordImplementation.h" //check this-TA
+#include "Geometry/Records/interface/GEMRecoGeometryRcd.h" //check this-TA
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
