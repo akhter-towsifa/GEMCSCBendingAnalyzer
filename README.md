@@ -3,7 +3,7 @@
 ## how to check out cmssw and this package
 cmsrel CMSSW_13_0_3
 
-cd CMSSW_12_0_3/src/
+cd CMSSW_13_0_3/src/
 
 cmsenv
 
