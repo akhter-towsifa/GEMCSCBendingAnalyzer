@@ -3,7 +3,7 @@ from CRABClient.UserUtilities import config
 config = config()
 ###2018runA  314472-318876
 #section general
-config.General.requestName = 'Run2022D_ALCARECO_aligned_v0'
+config.General.requestName = 'Run2023B_ALCARECO_v1'
 config.General.workArea = 'crabLogs'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
@@ -19,7 +19,7 @@ config.JobType.numCores = 1
 #config.JobType.pyCfgParams
 #config.JobType.inputFiles
 
-misalign = True  #Make sure to change the run_GE11ana.py too!!!
+misalign = False  #Make sure to change the run_GE11ana.py too!!!
 if misalign:
   config.JobType.inputFiles =  ['./2022D_backPropModiefiedRefitTracker_alcareco_v0.db']
 
@@ -33,11 +33,11 @@ if misalign:
 #config.Data.inputDataset = '/Cosmics/Commissioning2022-CosmicTP-PromptReco-v1/RAW-RECO'
 #config.Data.inputDataset = '/ExpressCosmics/Commissioning2022-Express-v1/FEVT' #ExpressCosmics is bigger than Cosmics
 #config.Data.runRange = '348776,348773,349073'
-config.Data.inputDataset = '/Muon/Run2022D-MuAlCalIsolatedMu-PromptReco-v2/ALCARECO'
+#config.Data.inputDataset = '/Muon/Run2022D-MuAlCalIsolatedMu-PromptReco-v2/ALCARECO'
 #config.Data.inputDataset = '/Muon/Run2022D-ZMu-PromptReco-v2/RAW-RECO'
 
 #config.Data.userInputFiles = 'root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root'
-#config.Data.userInputFiles = open('singleMuonGun_11_3_4_2021_design.list').readlines()
+config.Data.userInputFiles = open('Run2023B-MuAlCalIsolatedMu-PromptReco-v1-exp-2023-08-05.list').readlines()
 #config.Data.runRange = '347072' #Antonello comparison
 
 #config.Data.runRange = '342810,342966,343034,343082,343171,343266,343387,344134,344186,344266,344366'
@@ -49,7 +49,7 @@ config.Data.splitting = 'FileBased'
 #config.Data.splitting = 'LumiBased'
 #config.Data.splitting = 'Automatic'
 config.Data.unitsPerJob = 1
-config.Data.outLFNDirBase = '/store/user/toakhter/Run3_ALCARECO'
+config.Data.outLFNDirBase = '/store/user/toakhter/tamu_mual/2023/2023B'
 #config.Data.outLFNDirBase = '/store/group/lpcgem/'
 config.Data.publication = False
 #import FWCore.PythonUtilities.LumiList as LumiList
@@ -61,8 +61,8 @@ config.Data.publication = False
 #process.source.lumisToProcess = LumiList.LumiList(filename = 'goodList.json').getVLuminosityBlockRange()
 #config.Data.runRange = '%d-%d'%(runstart, runend)#'315257-315270'#'278820-278820' # '193093-194075'
 config.Data.outputDatasetTag = config.General.requestName
-config.Site.storageSite = 'T3_US_FNALLPC'
-#config.Site.storageSite = 'T3_CH_CERNBOX'
+#config.Site.storageSite = 'T3_US_FNALLPC'
+config.Site.storageSite = 'T3_CH_CERNBOX'
 #config.Site.ignoreGlobalBlacklist = True
 #config.Site.whitelist = ["T2_KR_KISTI"]
 #config.Site.whitelist = ["T0_CH_CERN_MSS"]
