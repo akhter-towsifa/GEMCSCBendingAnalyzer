@@ -132,7 +132,7 @@ process.analyzer = cms.EDAnalyzer('analyzer',
                                   CSC_prop = cms.bool(False),
         Segment_prop = cms.bool(True),
         trackerRefit_prop = cms.bool(True),
-                                  debug = cms.bool(True),
+                                  debug = cms.bool(False),
         isCosmic = cms.bool(False)
 )
 
