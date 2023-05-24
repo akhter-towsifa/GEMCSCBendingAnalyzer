@@ -5,7 +5,7 @@ high_pt=200
 endcap = 1
 layer=1
 supch_cut = "both" #0 even, 1 odd, for both "both"
-par_folder = "Residual"
+par_folder = "Residuals"
 x_var = "rdphi" #"BA" or "rdphi" 
 
 f = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2023/2023BC/Run2023BC_MuAlCalIsolatedMu_ALCARECO_v2.root")
@@ -119,15 +119,14 @@ elif supch_cut==1:
   cut = odd_cut
   ch_string = "Odd"
 elif supch_cut=="both":
-  cut = even_cut + " || " + odd_cut
   ch_string = "All"
 #layer = prop_location[3]
 #chamber = prop_location[2]
 #region or endcap = prop_location[0]
 
-event.Project("h", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && {cut}".format(low=low_pt, high=40, reg=endcap, lay=layer, cut=cut))
-event.Project("h1", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && {cut}".format(low=40, high=75, reg=endcap, lay=layer, cut=cut))
-event.Project("h2", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && {cut}".format(low=75, high=high_pt, reg=endcap, lay=layer, cut=cut))
+event.Project("h", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay}".format(low=low_pt, high=40, reg=endcap, lay=layer))
+event.Project("h1", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay}".format(low=40, high=75, reg=endcap, lay=layer))
+event.Project("h2", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay}".format(low=75, high=high_pt, reg=endcap, lay=layer))
 
 #h.ResetStats()
 #h.GetSumOfWeights()
