@@ -104,12 +104,12 @@ int main() {
   //////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////
   //Input root file name
-  const char* input_name = "../../test/Run2022D_ALCARECO_v0.root";
+  const char* input_name = "/eos/user/t/toakhter/tamu_mual/2023/2023BC/Run2023BC_MuAlCalIsolatedMu_ALCARECO_aligned_v2.root";
   //Tree name ***Make sure to use correct one***
-  const char* tree_name = "analyzer/InnerRefit_Prop";   //"analyzer/ME11Seg_Prop" or "ME11ana/Inner_Prop" for example
+  const char* tree_name = "analyzer/ME11Seg_Prop";   //"analyzer/ME11Seg_Prop" or "ME11ana/Inner_Prop" for example
   const char* Rdphi_name = "RdPhi";
   //Will only change the name of the output csv file
-  const char* outname_prefix = "2022D_trackerRefitProp_alcareco_v0";
+  const char* outname_prefix = "2023BC_backProp_alcareco_aligned_v2";
   //Cuts on full tree in first cloning step
   const char* cuts = "muon_pt > 5 && abs(RdPhi) < 100 && has_fidcut"; //n_ME11_segment == 1
   //Option to turn on or off 3 dof alignments and layer level vs chamber level
@@ -178,7 +178,6 @@ int main() {
           TFile* tmpTF = new TFile("tmp2.root","recreate");
           std::cout <<"About to copy tree" << std::endl;
           TTree* tt_tmp;
-          if (j==-1 and i==25){continue;}
           if(byLayer){
             tt_tmp = cutEn->CopyTree(Form("rechit_detId==%d && prop_location[3] == %d",detNum, k));		//Only fits 1 chamber at a time (det_id)
           }
@@ -186,7 +185,7 @@ int main() {
             tt_tmp = cutEn->CopyTree(Form("rechit_detId==%d", detNum));
           }
           std::cout << "Entries are on chamber are " << tt_tmp->GetEntries() << std::endl;
-
+          if (tt_tmp->GetEntries()==0){continue;}
           //New hist of RdPhi to get STD and MEAN
           TH1F *h1 = new TH1F("h1", "h1 title", 100, -20, 20);
           tt_tmp->Project("h1", "RdPhi", "");
@@ -202,10 +201,10 @@ int main() {
           //Copy only RdPhi within 1.6sigma of mean
           std::cout << "Starting small copy" << std::endl;
           tt = tt_tmp->CopyTree(Form("RdPhi <= (%f + (1.6*%f)) && RdPhi >= (%f - (1.6*%f))", fitMean, fitStd, fitMean, fitStd));
-
+          int detNum_st = j*(i+1101);
           //If there are no events on the chamber it is skipped
           if (tt->GetEntries() == 0){
-            myfile << detNum << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << "\n";
+            myfile << detNum_st << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << "\n";
             delete tmpTF;
             delete tt_tmp;
             continue;
@@ -223,16 +222,29 @@ int main() {
 
           //Save alignment solutions to csv
           if(byLayer){
-            myfile << detNum << k << ", " << dx << ", " << dy << ", " << dz << ", " << dphix << ", " << dphiy << ", " << dphiz << ", " << mEvents << "\n";
+            myfile << detNum_st << k << ", " << dx << ", " << dy << ", " << dz << ", " << dphix << ", " << dphiy << ", " << dphiz << ", " << mEvents << "\n";
           }
           else{
-            myfile << detNum << ", " << dx << ", " << dy << ", " << dz << ", " << dphix << ", " << dphiy << ", " << dphiz << ", " << mEvents << "\n";
+            myfile << detNum_st << ", " << dx << ", " << dy << ", " << dz << ", " << dphix << ", " << dphiy << ", " << dphiz << ", " << mEvents << "\n";
           }
           delete tt_tmp;
           delete tmpTF;
         }
       }
     }
+    for (int l = -1; l < 2; l = l + 2){             // Region loop
+      for (int m = 1; m<19; m++){                    // Chamber loop
+        for (int n = 1; n < 3; n++){
+          if (m < 10){
+            myfile << l << "20" << m << n << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 5000 << "\n";
+	  }
+          else{
+	    myfile << l << "2" << m << n << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << "," << 5000 << "\n";
+          }
+        }
+      }
+    }
+
     myfile.close();
   }
   //tf->Close();
