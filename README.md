@@ -1,15 +1,15 @@
 # GEMCSCBendingAnalyzer
 
 ## how to check out cmssw and this package
-cmsrel CMSSW_13_0_0_pre1
+cmsrel CMSSW_12_4_6 #or if you want to name your work environment differently: scram p -n Your_Choice_of_Name CMSSW CMSSW_12_4_6
 
-cd CMSSW_13_0_0_pre1/src/
+cd CMSSW_12_4_6/src/
 
 cmsenv
 
 git cms-init
 
-git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 13_X
+git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 12_4_0
 
 scram b -j 8
 
@@ -40,4 +40,5 @@ cd GEMCSCBendingAnalyzer/GEM_Alignment/script/standAloneGemAlignment
 
 
 The package is inherited from Jason Lee's MuonPerformance and it is used for GEM related analysis at TAMU group. The major target is to analyze
+The previous working version (extensively tested with cosmic data) can be found at https://github.com/aebid/GEMCSCBendingAnalyzer
 GEM-CSC bending angle in real data from CMS.
