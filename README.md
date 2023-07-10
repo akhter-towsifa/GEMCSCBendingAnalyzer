@@ -35,8 +35,7 @@ cd GEMCSCBendingAnalyzer/GEM_Alignment/script/standAloneGemAlignment
 
 ./run_3DOF_Fitter.sh
 
-
-
+![alignment_cfg_flowchart](https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer/assets/51368122/e4141fa9-64f3-4be7-b0d0-6a545466a1dd)
 
 
 
