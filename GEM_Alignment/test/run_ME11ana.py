@@ -20,7 +20,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 
 ### This is the misalignment part
-misalign = True
+misalign = False
 db_file = 'sqlite_file:CRAFT2022_ME11Only_Iter2.db'
 if misalign:
   process.GlobalTag.toGet = cms.VPSet(
@@ -46,8 +46,9 @@ if misalign:
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T15', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_design', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '') #Antonello Comparison
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '') #Antonello Comparison
+process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v10', '')
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
@@ -76,11 +77,11 @@ process.source = cms.Source("PoolSource",
 				)
 
 #testfile = "/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_83.root"
-testfile = "/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/348/776/00000/475b2a2f-673c-4104-a360-72ddee06377f.root"
+#testfile = "/eos/cms/store/express/Commissioning2022/ExpressCosmics/FEVT/Express-v1/000/348/776/00000/475b2a2f-673c-4104-a360-72ddee06377f.root"
 outfile = "out_ME11ana_test.root"
-process.source.fileNames.append('file:'+testfile)
+#process.source.fileNames.append('file:'+testfile)
 #process.source.fileNames.append('file:step2.root')
-#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Commissioning2021/Cosmics/AOD/PromptReco-v1/000/339/479/00000/72dc8a4a-a3cd-4eba-9f8b-7b38d3c3ec38.root')
+process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root')
 #process.source.fileNames.append('file:CRUZET_344064_testfile.root')
 #process.source.fileNames.append('file:2018runCtest.root')
 
@@ -95,9 +96,9 @@ process.ME11ana = cms.EDAnalyzer('ME11ana',
         csc2DRecHits = cms.InputTag("csc2DRecHits"), 
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
-        muons = cms.InputTag("muons"),
+        muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
 	vertexCollection = cms.InputTag("offlinePrimaryVerticies"),
-        debug = cms.bool(False),
+        debug = cms.bool(True),
         isCosmic = cms.bool(True)
 )
 

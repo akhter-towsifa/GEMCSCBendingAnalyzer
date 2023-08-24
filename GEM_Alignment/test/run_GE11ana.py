@@ -1,14 +1,15 @@
 import FWCore.ParameterSet.Config as cms
 #from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
-from Configuration.Eras.Era_Run3_cff import Run3
+#from Configuration.Eras.Era_Run3_cff import Run3
+from Configuration.Eras.Era_Phase2_cff import Phase2
 
 #process = cms.Process('analyzer',Phase2C9)
-process = cms.Process('analyzer',Run3)
+#process = cms.Process('analyzer',Run3)
+process = cms.Process('analyzer', Phase2)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 #process.load('Configuration.StandardSequences.MagneticField_0T_cff') #0T for cruzet runs
-
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
@@ -20,7 +21,9 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 
 ### This is the misalignment part
+
 misalign = True
+
 do_GEM = False
 do_CSC = False
 if misalign:
@@ -58,14 +61,18 @@ if misalign:
     )
   )
 
+
   process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
   process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
+
 ################################
+
 
 
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
 process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10', '')
+
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
@@ -93,9 +100,11 @@ process.source = cms.Source("PoolSource",
 			)
 				)
 
+
 outfile = "out_GE11ana_test.root"
 process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022G/Muon/RAW-RECO/ZMu-PromptReco-v1/000/362/433/00000/092d015c-b786-4834-a4f5-d10d793432d4.root')
 #process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_109.root')
+
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -108,6 +117,8 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("muons"),
+        #muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
+        #ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
 	vertexCollection = cms.InputTag("offlinePrimaryVertices"),
         tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(True),

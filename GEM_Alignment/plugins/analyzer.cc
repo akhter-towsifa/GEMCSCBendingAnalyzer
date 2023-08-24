@@ -365,6 +365,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   TTree* tree;
   if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
 
+
   //===============start of vertex edit by TA
   edm::Handle<reco::VertexCollection> vertexCollection;
   iEvent.getByToken(vertexCollection_, vertexCollection);
@@ -375,7 +376,6 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
       break; //selecting the first valid vertex
     }
   }
-  //================end of Vertex edit by TA
   if (prop_type == 1){
     tree = CSC_tree;
     if (!(mu->isGlobalMuon())) {return;} //if(!(mu->isStandAloneMuon())){return;}
@@ -420,6 +420,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock(); data_.muonIdx = data_.evtNum*100 + i;
   data_.runNum = iEvent.run();
   data_.has_TightID = muon::isTightMuon(*mu, vertexSelection);
+
   //=====================Track Info=======================
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
   CSCSegmentCounter(mu, data_);
@@ -636,12 +637,17 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
       const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
       const LocalVector direction_local_ch = ch->toLocal(tsos_ch.globalDirection());
+
       if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1) {
         tmp_has_prop = true;
         //if (debug) cout << "tmp_has_prop is true now" << endl;
         pos_GP = tsos_ch.globalPosition();
         pos_startingPoint_GP = tsos_seg.globalPosition();
         prop_dxdz = direction_local_ch.x()/direction_local_ch.z();
+        if (debug){ 
+          cout << "calculating R = sqrt(x^2 + y^2) = " << pow( pow(pos_GP.x(), 2) + pow(pos_GP.y(), 2), 0.5) << endl;
+        }
+
       }
     }
   }
@@ -661,11 +667,13 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     data_.prop_localphi_rad = (3.14159265/2.) - local_phi;
     data_.prop_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
     data_.prop_globalphi_rad = pos_GP.phi();
+    if (debug) cout << "propagation local x: local y: local phi [rad]" << data_.prop_LP[0] << ":" << data_.prop_LP[1] << ":" << data_.prop_localphi_rad << endl;
     data_.has_prop = tmp_has_prop;
     data_.has_fidcut = fidcutCheck(tmp_prop_LP.y(), ((3.14159265/2.) - local_phi)*(180./3.14159265), ch);
     data_.prop_location[0] = ch->id().region(); data_.prop_location[1] = ch->id().station(); data_.prop_location[2] = ch->id().chamber(); data_.prop_location[3] = ch->id().layer(); data_.prop_location[4] = ch->id().roll();
     if (debug) cout << "prop region:station:chamber:layer:roll " << data_.prop_location[0] << ":" << data_.prop_location[1] << ":"<< data_.prop_location[2] << ":" << data_.prop_location[3] << ":" << data_.prop_location[4] << endl; 
     data_.inner_or_outer_mom = tmp_inner_or_outer_mom;
+    if (debug) cout << "prop_localphi_rad:prop_localphi_deg:prop_globalphi_rad: " << data_.prop_localphi_rad << ":" << data_.prop_localphi_deg << ":" << data_.prop_globalphi_rad << endl;
     if (debug) cout << "bunch of data.branches filled" << endl;
   }
 }
@@ -718,14 +726,16 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
 	    tmp_rechit_CLS = (hit)->clusterSize();
 	    tmp_rechit_BunchX = (hit)->BunchX();
 
+            if (debug) cout << "cluster size of recHit: " << tmp_rechit_CLS << endl;
+
             //Calculating the bending angle = CSC segment phi - GEM rechit phi
             if (data_.hasME11) {
               DetId segDetId = ME11_segment->geographicalId();
               const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
               float CSC_segment_phi = (segDet->toGlobal(ME11_segment->localPosition())).phi();
-
               float GEM_hit_phi = (etaPart->toGlobal(hit->localPosition())).phi();
               tmp_bending_angle = CSC_segment_phi - GEM_hit_phi;
+              if (debug) cout << "CSC_segment_phi=" << CSC_segment_phi << " GEM_hit_phi=" << GEM_hit_phi << endl;
               if (debug) cout << "Bending Angle = " << tmp_bending_angle << "\tpT = " << data_.muon_pt << endl;
             }
             
@@ -811,6 +821,7 @@ float analyzer::RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm
   const auto& etaPart = GEMGeometry_->etaPartition(gemid); //eta partition of the reconstructed hit location
   const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id()); //eta partition of the propagated hit location
   float deltay_roll = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp() - etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp(); //global position of the center of the propagated y and subtract the rechit chamber center eta
+  if (debug) cout << "prop_localx:prop_localy " << prop_localx << ":" << prop_localy << "\tstripAngle: " << stripAngle << endl;
   return cos(stripAngle) * (prop_localx - (rechit)->localPosition().x()) - sin(stripAngle) * (prop_localy + deltay_roll);
   /*
   RdPhi clarification: The residual calculation is RdPhi = cos(Angle) * delta_x + sin(Angle) * delta_y.

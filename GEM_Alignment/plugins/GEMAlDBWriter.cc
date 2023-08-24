@@ -80,7 +80,7 @@ void GEMAlDBWriter::analyze(const edm::Event& event, const edm::EventSetup& even
     throw cms::Exception("TypeMismatch") << "Argument is not an AlignableMuon";
   if (doChamber) {
     const auto& GEMChambers = theAlignableMuon->GEMChambers();
-    int detNum, endcap;
+    int detNum, endcap, station;
     std::string line, DetNum, dx, dy, dz, dphix, dphiy, dphiz;
     std::ifstream maptype(chamberFile);
     std::map<GEMDetId, std::vector<float>> alPar;
@@ -102,8 +102,10 @@ void GEMAlDBWriter::analyze(const edm::Event& event, const edm::EventSetup& even
       float rotY = (float)atof(dphiy.c_str());
       float rotZ = (float)atof(dphiz.c_str());
       endcap = (detNum > 0) ? 1 : -1;
-      std::cout << "endcap is " << endcap << std::endl;
-      GEMDetId id = GEMDetId(endcap, 1, abs(detNum/1000), abs(detNum%10), abs((detNum/10)%100), 0);
+      station = (abs(detNum)/1000)%10;
+      std::cout << "endcap is " << endcap << ", station is " << station << std::endl;
+      //GEMDetId(int region, int ring, int station, int layer, int chamber, int ieta)
+      GEMDetId id = GEMDetId(endcap, 1, station, abs(detNum%10), abs((detNum/10)%100), 0);
       std::vector<float> tmp = {xShift, yShift, zShift, rotX, rotY, rotZ};
       alPar[id.rawId()] = tmp;
       std::cout << "detNum:" << detNum << " rawId: " << id.rawId()<<  " xShift:" << xShift << " yShift:" << yShift << " zShift:" << zShift << " rotX:" << rotX << " rotY:" << rotY << " rotZ:" << rotZ << std::endl;
@@ -112,10 +114,10 @@ void GEMAlDBWriter::analyze(const edm::Event& event, const edm::EventSetup& even
       auto gemId = chamber->id();
       const GEMChamber* gemChamber = theGEMGeometry->chamber(chamber->geomDetId());
       std::cout << "Doing chamber " << gemChamber->id().region() << gemChamber->id().ring() << gemChamber->id().station() << gemChamber->id().chamber() << gemChamber->id().layer() << std::endl;
-      if ((gemChamber->id()).station() == 2){
-        std::cout << "Station 2 GEM, skip for now, FIX THIS LATER IF YOU USE DATA" << std::endl;
-        continue;
-      }
+      //if ((gemChamber->id()).station() == 2){
+      //  std::cout << "Station 2 GEM, skip for now, FIX THIS LATER IF YOU USE DATA" << std::endl;
+      //  continue;
+      //}
       //std::cout << "Testing! new gemId = " << gemId << std::endl;
       if (alPar.count(gemId) < 1){
         std::cout << "Skipping detId " << GEMDetId(gemId) << std::endl;
@@ -180,6 +182,8 @@ void GEMAlDBWriter::analyze(const edm::Event& event, const edm::EventSetup& even
     }
     for (const auto& chamber : CSCChambers) {
       auto cscId = chamber->id();
+      const CSCChamber* cscChamber = theCSCGeometry->chamber(chamber->geomDetId());
+      std::cout << "Starting chamber " << cscChamber->id().endcap() << cscChamber->id().station() << cscChamber->id().ring() << cscChamber->id().chamber() << cscChamber->id().layer() << std::endl;
       if (alPar.count(cscId) < 1)
         //throw cms::Exception("NotAvailable") << "can't find detId " << GEMDetId(gemId) ;
         continue;
