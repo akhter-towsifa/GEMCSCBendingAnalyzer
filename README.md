@@ -5,6 +5,7 @@
 cmsrel CMSSW_12_4_6 
 ```
 or if you want to name your work environment differently: 
+
 ```scram p -n Your_Choice_of_Name CMSSW CMSSW_12_4_6```
 
 ```
