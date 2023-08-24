@@ -15,7 +15,7 @@ cd CMSSW_12_4_6/src/
 cmsenv
 git cms-init
 
-git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 12_4_0
+git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 12_X_RawReco
 
 scram b -j 8
 ```
