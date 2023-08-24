@@ -30,7 +30,7 @@
 
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
-#include "DataFormats/MuonReco/interface/Muon.h" //check this -TA
+#include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/DetId/interface/DetId.h"
@@ -257,7 +257,7 @@ private:
   edm::EDGetTokenT<vector<PSimHit> > gemSimHits_;
   edm::Handle<vector<PSimHit> > gemSimHits;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
-  edm::EDGetTokenT<reco::VertexCollection> vertexCollection_; //check this -TA
+  edm::EDGetTokenT<reco::VertexCollection> vertexCollection_;
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
 
   edm::Service<TFileService> fs;
@@ -300,7 +300,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
   theService_ = new MuonServiceProxy(serviceParameters, consumesCollector());
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
-  vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection")); //check this -TA
+  vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection")); 
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
   cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
@@ -365,10 +365,6 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   TTree* tree;
   if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
 
-  /*  //======LCT check for layer2 in GEM internal cluster
-  bool isLayer2 = false;
-  if (!cluster.isMatchingLayer1() and cluster.isMatchingLayer2()) {isLayer2 = true;}
-  */
   //===============start of vertex edit by TA
   edm::Handle<reco::VertexCollection> vertexCollection;
   iEvent.getByToken(vertexCollection_, vertexCollection);
@@ -415,9 +411,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   data_.muon_momentum = mu->momentum().mag2();                 data_.evtNum = iEvent.eventAuxiliary().event();
   data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock(); data_.muonIdx = data_.evtNum*100 + i;
   data_.runNum = iEvent.run();
-  data_.has_TightID = muon::isTightMuon(*mu, vertexSelection); //check this -TA
-  //data_.isPFIsoTightMu = muon::Selector(mu, "PFIsoTight");    //check this -TA
-
+  data_.has_TightID = muon::isTightMuon(*mu, vertexSelection);
   //if (debug) cout << "data_.has_TightID: " << data_.has_TightID << "\tdata_.isPFIsoTightMu: " << data_.isPFIsoTightMu << endl;
   //=====================Track Info=======================
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
@@ -787,7 +781,7 @@ float analyzer::RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm
   float deltay_roll = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp() - etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp(); //global position of the center of the propagated y and subtract the rechit chamber center eta
   return cos(stripAngle) * (prop_localx - (rechit)->localPosition().x()) - sin(stripAngle) * (prop_localy + deltay_roll);
   /*
-  RdPhi clarification (Towsifa): The residual calculation is RdPhi = cos(Angle) * delta_x + sin(Angle) * delta_y.
+  RdPhi clarification: The residual calculation is RdPhi = cos(Angle) * delta_x + sin(Angle) * delta_y.
   Mapping of the angle in GEM is clockwise, whereas this equation considers counterclockwise strip angle to be positive.
   Since cosine is an even function, no sign change is needed for the first part of residual calculation.
   But to the second part, for sine being an odd function, we add the minus sign to account for the CW angles. 
@@ -801,7 +795,9 @@ bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartit
   auto& parameters(ch->specs()->parameters());
   float height(parameters[2]);
   if ((abs(localphi_deg) < cut_angle) &&
-      ((local_y < (height - cut_chamber) && ch->id().roll() == 1) || (local_y > -1.0*(height - cut_chamber) && ch->id().roll() == 8) || (ch->id().roll() != 1 && ch->id().roll() != 8))
+      ((local_y < (height - cut_chamber) && ch->id().roll() == 1) || 
+       (local_y > -1.0*(height - cut_chamber) && ch->id().roll() == 8) ||
+       (ch->id().roll() != 1 && ch->id().roll() != 8))
      )
     {return 1;}
   else {return 0;}
