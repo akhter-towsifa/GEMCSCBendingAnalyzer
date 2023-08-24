@@ -1,6 +1,7 @@
 # GEMCSCBendingAnalyzer
 
 ## how to check out cmssw and this package
+
 ```
 cmsrel CMSSW_12_4_6 
 ```
@@ -8,11 +9,14 @@ or if you want to name your work environment differently:
 
 ```scram p -n Your_Choice_of_Name CMSSW CMSSW_12_4_6```
 
+
 ```
 cd CMSSW_12_4_6/src/
 cmsenv
 git cms-init
+
 git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 12_4_0
+
 scram b -j 8
 ```
 
