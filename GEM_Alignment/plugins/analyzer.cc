@@ -392,11 +392,19 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   }
   else if (prop_type == 3){
     tree = Segment_tree;
-    //for cosmic study, use Lines 683-689,694 from Devin's code
-    if (!(mu->isTrackerMuon())) {return;}
-    if (!(mu->track().isNonnull())) {return;}
-    Track = mu->track().get();
-    ttTrack = ttrackBuilder_->build(Track);
+
+    if (isCosmic){
+      if (!(mu->isStandAloneMuon())){return;}
+      if (!(mu->outerTrack().isNonnull())){return;}
+      Track = mu->outerTrack().get();
+      ttTrack = ttrackBuilder_->build(Track);
+    }
+    else{ 
+      if (!(mu->isTrackerMuon())) {return;}
+      if (!(mu->track().isNonnull())) {return;}
+      Track = mu->track().get();
+      ttTrack = ttrackBuilder_->build(Track);
+    }
   }
   else{
     if (debug) cout << "Bad prop type, failure, not one of the 3" << endl;
@@ -422,7 +430,6 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     if (ch->id().station() != 1) continue; //only concerned about GE1/1
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
     propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_);
-    //if (prop_type==3 and debug) cout << "out of propagating to GEM function" << endl;
     if (tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
       //==============RecHit Info======================
@@ -733,9 +740,8 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
               tmp_dPhi_Corrected = -1.0*tmp_dPhi_Corrected;
             }
             /*
-            Big comment time (Towsifa): notice that for the residual calculation in phi we have dphi = rechit_phi - prop_phi.
-            Also dphi_corrected is flipped from what rdphi_corrected was. these are because in firmware, the -endcap's phi
-            matches the global phi.
+            comment on sign convention: notice that for the residual calculation in phi we have dphi = rechit_phi - prop_phi.
+            Also dphi_corrected is flipped from what rdphi_corrected was. these are because in firmware, the -endcap's phi matches the global phi.
 	     */
             tmp_rechit_detId = gemid.region()*(gemid.station()*100 + gemid.chamber());
             tmp_rechit_region = gemid.region();  tmp_rechit_station = gemid.station();
