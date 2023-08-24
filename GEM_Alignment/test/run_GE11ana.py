@@ -1,11 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 #from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
-#from Configuration.Eras.Era_Run3_cff import Run3
-from Configuration.Eras.Era_Phase2_cff import Phase2
+from Configuration.Eras.Era_Run3_cff import Run3
 
 #process = cms.Process('analyzer',Phase2C9)
-#process = cms.Process('analyzer',Run3)
-process = cms.Process('analyzer', Phase2)
+process = cms.Process('analyzer',Run3)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
@@ -23,7 +21,6 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 ### This is the misalignment part
 
 misalign = True
-
 do_GEM = False
 do_CSC = False
 if misalign:
@@ -117,13 +114,11 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("muons"),
-        #muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
-        #ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
 	vertexCollection = cms.InputTag("offlinePrimaryVertices"),
         tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(True),
         Segment_prop = cms.bool(True),
-        debug = cms.bool(True),
+        debug = cms.bool(True), #set to False before submitting a crab job
         isCosmic = cms.bool(False)
 )
 
