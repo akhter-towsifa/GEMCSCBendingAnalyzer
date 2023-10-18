@@ -2,7 +2,7 @@
 from CRABClient.UserUtilities import config
 config = config()
 #section general
-config.General.requestName = 'Run2022D_ALCARECO_aligned_v0'
+config.General.requestName = 'Run2023B_ALCARECO_v7'
 config.General.workArea = 'crabLogs'#working dir 
 config.General.transferOutputs = True
 config.General.transferLogs = True
@@ -12,20 +12,20 @@ config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'run_GE11ana.py'
 config.JobType.numCores = 1
 
-misalign = True  #Make sure to change the run_GE11ana.py too!!!
+misalign = False  #Make sure to change the run_GE11ana.py too!!!
 if misalign:
   config.JobType.inputFiles =  ['./2022D_backPropModiefiedRefitTracker_alcareco_v0.db']
 
 #section Data
 #config.Data.runRange = '348776,348773,349073'
 config.Data.inputDataset = '/Muon/Run2022D-MuAlCalIsolatedMu-PromptReco-v2/ALCARECO'
-#config.Data.userInputFiles = open('singleMuonGun_11_3_4_2021_design.list').readlines()
 
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'FileBased'
-config.Data.unitsPerJob = 1
+
 config.Data.outLFNDirBase = '/store/user/your_username/Run3_ALCARECO'
 config.Data.publication = False
 config.Data.outputDatasetTag = config.General.requestName
+
 config.Site.storageSite = 'T3_US_FNALLPC'
 #config.Site.storageSite = 'T3_CH_CERNBOX'

@@ -21,8 +21,8 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 
 ### This is the misalignment part
-misalign = True
-do_GEM = True
+misalign = False
+do_GEM = False
 do_CSC = False
 if misalign:
   #db_file = 'sqlite_file:dummy_dx1.db'
@@ -67,7 +67,12 @@ if misalign:
 
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v14', '')
+
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '') #Antonello Comparison
+#process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_frozen_v4', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_forReRecoCondition_v1', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_v1', '')
+
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
@@ -98,7 +103,9 @@ process.source = cms.Source("PoolSource",
 #testfile = "/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_83.root"
 outfile = "out_ge11.root"
 #process.source.fileNames.append('file:'+testfile)
-process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2022D/Muon/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/357/734/00000/20e6e175-9a53-4d4a-b233-8cb4fae82b0b.root')
+
+#process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
+process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2023B/Muon0/ALCARECO/MuAlCalIsolatedMu-PromptReco-v1/000/366/504/00000/21932b7c-9a15-49ea-abf5-ea084cf635d5.root')
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')

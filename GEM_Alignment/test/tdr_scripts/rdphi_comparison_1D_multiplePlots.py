@@ -1,27 +1,22 @@
 import ROOT, tdrstyle, sys, os, array
 
-# ARGUMENTS ************ file, shift (-.1cm), direction (X), Zlow, Zhigh
-
 low_pt=30
-high_pt=40
+high_pt=200
 supch_cut = 0 #0=even, 1=odd superchamber cut
-endcap = -1
+endcap = 1
 layer = 1
 #charge = -1
 
-year = "2023B" #change between 2022B and 2022C for example
-prealign = "MuAlCalIsolatedMu_ALCARECO_v0" #File version
-postalign = "MuAlCalIsolatedMu_ALCARECO_aligned_v0"
-version = "Bending_Angle/1D_BA/chamberLevel"
+year = "2023BC" #change between 2022B and 2022C for example
+version0 = "MuAlCalIsolatedMu_ALCARECO_v2" #File version
+version = "Residuals/1D_rdphi/chamberLevel"
 
-#f = ROOT.TFile("{}".format(sys.argv[1]))
-f0 = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2023/2023B/Run{run}_{version}.root".format(run=year, version=prealign))
-f1 = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2023/2023B/Run{run}_{version}.root".format(run=year, version=postalign))
-#f2 = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2022/singleMuonGun_11_3_4_2021_design_v0.root")
+f0 = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2023/2023BC/Run{run}_{version}.root".format(run=year, version=version0))
+#f1 = ROOT.TFile("../Run{run}_{version}.root".format(run=year, version=version1))
+#f2 = ROOT.TFile("../../../../../../BeamCommissioning_12_4_6/src/GEMCSCBendingAnalyzer/GEM_Alignment/test/singleMuonGun_11_3_4_2021_design_v0.root")
 
 event0 = f0.Get("analyzer/ME11Seg_Prop")
-event1 = f1.Get("analyzer/ME11Seg_Prop")
-#event2 = f2.Get("analyzer/ME11Seg_Prop")
+event1 = f0.Get("analyzer/InnerRefit_Prop")
 #event = f.Get("analyzer/Inner_Prop")
 ROOT.gROOT.SetBatch(1)
 tdrstyle.setTDRStyle()
@@ -50,8 +45,8 @@ R = 0.08*W_ref
 
 xbins = 100
 ybins = 100
-xlow = 0
-xhigh = 5
+xlow = -2
+xhigh = 2
 ylow = -300
 yhigh = 300
 zlow = -2
@@ -77,9 +72,9 @@ h1 = ROOT.TH1D("h1", "h1", xbins, xlow, xhigh)
 xAxis = h.GetXaxis()
 xAxis.SetTitleOffset(0)
 xAxis.SetTitleSize(0.05)
-xAxis.SetNdivisions(-505)
-#xAxis.SetTitle("#DeltaR#phi [cm]")
-xAxis.SetTitle("|bending angle| [mrad]")
+#xAxis.SetNdivisions(-505)
+xAxis.SetTitle("#DeltaR#phi [cm]")
+#xAxis.SetTitle("|bending angle| [mrad]")
 #xAxis.SetTitle("p_{T} [GeV]")
 #xAxis.CenterTitle()
 
@@ -120,21 +115,22 @@ elif supch_cut==1:
 
 for ch in range(1, 37):
   if ch % 2 == supch_cut: #odd chambers ch % 2 ==1; even chambers ch % 2 ==0;
-    event0.Project("h", "abs(1000*bending_angle)", "abs(RdPhi_Corrected) < 2 && n_ME11_segment == 1 && muon_pt>{low} && muon_pt<{high} && has_fidcut && prop_location[2]=={ch} && prop_location[0]=={reg} && prop_location[3]=={lay}".format(low=low_pt, high=high_pt, ch=ch, reg=endcap, lay=layer))
-    event1.Project("h1", "abs(1000*bending_angle)", "abs(RdPhi_Corrected) < 2 && n_ME11_segment == 1 && muon_pt>{low} && muon_pt<{high} && has_fidcut && prop_location[2]=={ch} && prop_location[0]=={reg} && prop_location[3]=={lay}".format(low=low_pt, high=high_pt, ch=ch, reg=endcap, lay=layer))
-    #event2.Project("h2", "abs(1000*bending_angle)", "abs(RdPhi_Corrected) < 2 && n_ME11_segment == 1 && muon_pt>{low} && muon_pt<{high} && has_fidcut && prop_location[2]=={ch} && prop_location[0]=={reg} && prop_location[3]=={lay}".format(low=low_pt, high=high_pt, ch=ch, reg=endcap, lay=layer))
+    event0.Project("h", "RdPhi_Corrected", "abs(RdPhi_Corrected) < 2 && n_ME11_segment == 1 && muon_pt>{low} && muon_pt<{high} && has_fidcut && prop_location[2]=={ch} && prop_location[0]=={reg} && prop_location[3]=={lay}".format(low=low_pt, high=high_pt, ch=ch, reg=endcap, lay=layer))
+    event1.Project("h1", "RdPhi_Corrected", "abs(RdPhi_Corrected) < 2 && n_ME11_segment == 1 && muon_pt>{low} && muon_pt<{high} && has_fidcut && prop_location[2]=={ch} && prop_location[0]=={reg} && prop_location[3]=={lay}".format(low=low_pt, high=high_pt, ch=ch, reg=endcap, lay=layer))
 
     if (h.Integral()==0 or h1.Integral()==0):
       continue
 
+
 #h0.SetLineColor(ROOT.kViolet+1)
-    h.SetLineColor(ROOT.kGreen+2)
-    h1.SetLineColor(ROOT.kBlue)
-    #h2.SetLineColor(ROOT.kRed)
+    #h.SetLineColor(ROOT.kGreen+2)
+    h.SetLineColor(ROOT.kBlue)
+    h1.SetLineColor(ROOT.kRed)
+    #h2.SetLineColor(ROOT.kRed+3)
 
     h.SetLineStyle(1)
-    h1.SetLineStyle(2)
-    #h2.SetLineStyle(9)
+    h1.SetLineStyle(1)
+    #h2.SetLineStyle(2)
 #h0.Scale(1/h0.Integral())
     h.Scale(1/h.Integral())
     h1.Scale(1/h1.Integral())
@@ -160,24 +156,24 @@ for ch in range(1, 37):
     h1.Draw("HIST SAME")
     #h2.Draw("HIST SAME")
 
-    colorPal = [ROOT.kGreen+2, ROOT.kBlue]#, ROOT.kRed]
-    histList = [h, h1]#, h2]
-    lineList = ["l", "l1"]#, "l2"]
+    colorPal = [ROOT.kBlue, ROOT.kRed]
+    histList = [h, h1]
+    lineList = ["l", "l1"]
 
     for i in range(2):
       mean = round(histList[i].GetMean(),3)
       lineList[i] = ROOT.TLine(mean, 0, mean, yList[i])
       lineList[i].SetLineColor(colorPal[i])
-      if i==0:
+      if i<2:
         lineList[i].SetLineStyle(1)
-      elif i=1:
+      else:
         lineList[i].SetLineStyle(2)
       lineList[i].Draw()
 
     rootkde = ROOT.TLegend(0.5,0.73,0.9,0.85)
-    rootkde.AddEntry(h,"Pre-Alignment")
-    rootkde.AddEntry(h1,"Post-Alignment")
-    #rootkde.AddEntry(h2,"2021 Design")
+    rootkde.AddEntry(h,"Segment Back Prop")
+    #rootkde.AddEntry(h1,"Tracker Prop")
+    rootkde.AddEntry(h1,"Tracker Refit Prop")
     rootkde.SetBorderSize(0)
     rootkde.Draw()
 
@@ -190,8 +186,7 @@ for ch in range(1, 37):
     latex.SetTextSize(0.35*canvas.GetTopMargin())
 
     latex.SetTextAlign(32)
-#latex.SetTextColor(ROOT.kViolet+1)
-#latex.SetTextColor(ROOT.kRed)
+
 #latex.DrawLatex(1-1.1*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-0.3*canvas.GetTopMargin(), "Entries: {entries}".format(entries = int(h.GetEntries())+int(h1.GetEntries())))
 #latex.DrawLatex(1-1.1*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-0.7*canvas.GetTopMargin(), "Mean: {mean}".format(mean = round(h.GetMean(),3)))
 #latex.DrawLatex(1-1.1*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-1.1*canvas.GetTopMargin(), "Std Dev: {stddev}".format(stddev = round(h.GetStdDev(),3)))
@@ -209,7 +204,6 @@ for ch in range(1, 37):
     latex.SetTextFont(52)
     latex.SetTextSize(0.4*canvas.GetTopMargin())
     latex.DrawLatex(1.9*canvas.GetLeftMargin(), 1-canvas.GetTopMargin()+0.2*canvas.GetTopMargin(), "Preliminary")
-    #latex.DrawLatex(1.9*canvas.GetLeftMargin(), 1-canvas.GetTopMargin()+0.2*canvas.GetTopMargin(), "Simulation Preliminary")
     #latex.DrawLatex(1.9*canvas.GetLeftMargin(), 1-canvas.GetTopMargin()+0.2*canvas.GetTopMargin(), "Work in Progress")
 
     latex.SetTextFont(42)
@@ -219,6 +213,6 @@ for ch in range(1, 37):
     frame.Draw()
 
 
-    if os.path.exists("Run{run}/{version}".format(run=year, version=version)) == False:
-      os.mkdir("Run{run}/{version}".format(run=year, version=version))
-    canvas.SaveAs("Run{run}/{version}/pt{low}to{high}_{ch_str}SC{ch}_R{reg}L{lay}.png".format(run=year, version=version, low=low_pt, high=high_pt, ch_str=ch_string, ch=ch, reg=endcap, lay=layer))
+    if os.path.exists("Run{run}/{version}/{version0}".format(run=year, version=version, version0=version0)) == False:
+      os.mkdir("Run{run}/{version}/{version0}".format(run=year, version=version, version0=version0))
+    canvas.SaveAs("Run{run}/{version}/{version0}/pt{low}to{high}_{ch_str}SC{ch}_R{reg}L{lay}.png".format(run=year, version=version, version0=version0, low=low_pt, high=high_pt, ch_str=ch_string, ch=ch, reg=endcap, lay=layer))
