@@ -16,7 +16,7 @@
 #include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Utilities/interface/InputTag.h" //check this -TA
+#include "FWCore/Utilities/interface/InputTag.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
@@ -27,23 +27,23 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "TrackingTools/PatternTools/interface/TrajTrackAssociation.h"
-#include "TrackingTools/TrackFitters/interface/TrajectoryFitter.h" //TA: for refit
-#include "TrackingTools/KalmanUpdators/interface/Chi2MeasurementEstimator.h" //TA: for refit
-#include "TrackingTools/KalmanUpdators/interface/KFUpdator.h" //TA: for refit
-#include "TrackingTools/Records/interface/TransientRecHitRecord.h" //TA: for refit
-#include "TrackingTools/TrackFitters/interface/KFTrajectoryFitter.h" //TA: for refit
-#include "TrackingTools/TrackFitters/interface/KFTrajectorySmoother.h" //TA:for refit
-#include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h" //TA: for refit
+#include "TrackingTools/TrackFitters/interface/TrajectoryFitter.h"
+#include "TrackingTools/KalmanUpdators/interface/Chi2MeasurementEstimator.h"
+#include "TrackingTools/KalmanUpdators/interface/KFUpdator.h"
+#include "TrackingTools/Records/interface/TransientRecHitRecord.h"
+#include "TrackingTools/TrackFitters/interface/KFTrajectoryFitter.h"
+#include "TrackingTools/TrackFitters/interface/KFTrajectorySmoother.h"
+#include "TrackingTools/TransientTrackingRecHit/interface/TransientTrackingRecHit.h"
 #include "TrackingTools/TrackFitters/interface/TrajectoryStateCombiner.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
 
-#include "Alignment/CommonAlignmentAlgorithm/interface/AlignmentAlgorithmBase.h" //TA: for refit:ConstTrajTrackPairs
+#include "Alignment/CommonAlignmentAlgorithm/interface/AlignmentAlgorithmBase.h"
 
 #include "MagneticField/Engine/interface/MagneticField.h"
 
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
-#include "DataFormats/MuonReco/interface/Muon.h" //check this -TA
+#include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/DetId/interface/DetId.h"
@@ -54,7 +54,7 @@
 #include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigi.h"
 #include "DataFormats/GEMRecHit/interface/GEMRecHitCollection.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
-#include "DataFormats/TrackReco/interface/TrackFwd.h" //check this -TA
+#include "DataFormats/TrackReco/interface/TrackFwd.h"
 
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 #include "Geometry/GEMGeometry/interface/GEMGeometry.h"
@@ -63,11 +63,6 @@
 #include "Geometry/CommonTopologies/interface/StripTopology.h"
 
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
-
-//The header files below are specifically for LCT 1/8 strip calculation. regroup these later if code works
-#include "L1Trigger/CSCTriggerPrimitives/interface/CSCGEMMatcher.h"
-#include "L1Trigger/CSCTriggerPrimitives/interface/GEMInternalCluster.h"
-//end of LCT 1/8 strip header files.
 
 #include "TTree.h"
 #include "TH1D.h"
@@ -331,7 +326,7 @@ private:
   edm::EDGetTokenT<vector<PSimHit> > gemSimHits_;
   edm::Handle<vector<PSimHit> > gemSimHits;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
-  edm::EDGetTokenT<reco::VertexCollection> vertexCollection_; //check this -TA
+  edm::EDGetTokenT<reco::VertexCollection> vertexCollection_;
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
   edm::Handle<TrajTrackAssociationCollection> ref_track;
   edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_;
@@ -355,8 +350,6 @@ private:
   MuonData data_;
   TTree* CSC_tree; TTree* Tracker_tree; TTree* Segment_tree; TTree* TrackerRefit_tree;
   TH2D* nME11_col_vs_matches = new TH2D("nME11_test", "nME11_test", 5, 0, 5, 5, 0, 5);
-  TH1D* n_muons_size = new TH1D("n_muons", "n_muons", 20, 0, 20);
-  TH1D* n_track_size = new TH1D("n_track", "n_track", 20, 0, 20);
 
   bool isMC;
   const CSCSegment *ME11_segment;
@@ -378,7 +371,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   edm::ParameterSet serviceParameters = iConfig.getParameter<edm::ParameterSet>("ServiceParameters");
   theService_ = new MuonServiceProxy(serviceParameters, consumesCollector());
   muons_ = consumes<View<reco::Muon> >(iConfig.getParameter<InputTag>("muons"));
-  vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection")); //check this -TA
+  vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection")); 
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
   cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
@@ -421,7 +414,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (! iEvent.getByToken(muons_, muons)) return;
   if (muons->size() == 0) return;
 
-  //Towsifa: adding refit trajectory
+  //adding refit trajectory
 
   edm::Handle<TrajTrackAssociationCollection> ref_track;
   iEvent.getByToken(ref_track_, ref_track);
@@ -430,18 +423,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   for (auto it = ref_track->begin(); it != ref_track->end(); ++it) {
     ref_track_pairs.push_back(ConstTrajTrackPair(&(*(*it).key), &(*(*it).val)));
   } //the loop goes over tracks and saves the key and value of each track as a pair in ref_track_pairs.
-
-  std::vector<const Trajectory*> trajTrack; //declaring a vector trajectory of the track "trajTrack"
-  std::vector<const reco::Track*> trackTrack; //declaring a reconstructed track vector "trackTrack" 
-  for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
-    trajTrack.push_back((*it).first); //for each track stored in ref_track_pairs (key, value), the trajectory is stored in the vector trajTrack
-    trackTrack.push_back((*it).second); //for each track stored in ref_track_pairs (key, value), the track is stored in the vector trackTrack
-  }
-
-  n_muons_size->Fill(muons->size());
-  n_track_size->Fill(trajTrack.size());
-  if (debug) cout << "trajTrack size: " << trajTrack.size() << "\tmuons list size: " << muons->size() <<  "\tdiff in trajTrack and muons size = " << trajTrack.size()-muons->size() << endl;
-  //Towsifa: end of Refit trajectory
+  //end of Refit trajectory
 
   edm::Handle<CSCSegmentCollection> cscSegments;
   if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
@@ -454,23 +436,12 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     if (not mu->isGlobalMuon()) continue;
     if (debug) cout << "new muon, i = " << i << endl;
     
-    //Towsifa: trajectory muon matching--we want to match muons with the tracks
+    //trajectory muon matching--we want to match muons with the tracks
     const Trajectory* traj_of_muon;
     const Trajectory* traj_of_Track;
     const reco::Track* track_of_Track;
-    //const reco::Track* Track;
-    //for (ConstTrajTrackPairs::const_iterator it = ref_track_pairs.begin(); it != ref_track_pairs.end(); ++it) {
-    //  traj_of_Track = (*it).first; //similar to before, storing the trajectory of track from the ref_track_pairs.
-    //  track_of_Track = (*it).second; //again similar to before, storing the track from the ref_track_pairs
-    //  if (track_of_Track == mu->track().get()) { //checking if this track matches with the muon's track
-    //    traj_of_muon = traj_of_Track; //once we have a matched track to muon track, saving the trajectory of that track as this particular muon's trajectory.
-    //  }
-    //  if (debug) cout << "traj_of_muon in analyze function after the loop" << traj_of_muon << endl;
-    //}
-    //end of trajectory muon matching
 
     if (!(mu->passed(reco::Muon::PFIsoTight))) continue;
-    //if (debug) cout << "passes PFIsoTight" << endl;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
@@ -493,11 +464,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   TTree* tree;
   if (debug) cout << "\tGetting tree, Track, ttTrack " << endl;
 
-  /*  //======LCT check for layer2 in GEM internal cluster
-  bool isLayer2 = false;
-  if (!cluster.isMatchingLayer1() and cluster.isMatchingLayer2()) {isLayer2 = true;}
-  */
-  //===============start of vertex edit -Towsifa
+  //===============Vertex selection
   edm::Handle<reco::VertexCollection> vertexCollection;
   iEvent.getByToken(vertexCollection_, vertexCollection);
   reco::Vertex vertexSelection; //choose type of vertex needed
@@ -507,7 +474,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
       break; //selecting the first valid vertex
     }
   }
-  //================end of Vertex edit by TA
+  //================end of Vertex selection
   if (prop_type == 1){
     tree = CSC_tree;
     if (!(mu->isGlobalMuon())) {return;} //if(!(mu->isStandAloneMuon())){return;}
@@ -521,17 +488,22 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     if (!(mu->isTrackerMuon())) {return;}
     if (!(mu->track().isNonnull())) {return;}
     Track = mu->track().get();
-    //if (trajTrack.size() == 0) return;
-    //Track = trajTrack[0];
     ttTrack = ttrackBuilder_->build(Track);
   }
   else if (prop_type == 3){
     tree = Segment_tree;
-    //for cosmic study, use Lines 683-689,694 from Devin's code
-    if (!(mu->isTrackerMuon())) {return;}
-    if (!(mu->track().isNonnull())) {return;}
-    Track = mu->track().get();
-    ttTrack = ttrackBuilder_->build(Track);
+    if(isCosmic){
+      if(!(mu->isStandAloneMuon())){return;}
+      if(!(mu->outerTrack().isNonnull())){return;}
+      Track = mu->outerTrack().get();
+      ttTrack = ttrackBuilder_->build(Track);
+    }
+    else{
+      if (!(mu->isTrackerMuon())) {return;}
+      if (!(mu->track().isNonnull())) {return;}
+      Track = mu->track().get();
+      ttTrack = ttrackBuilder_->build(Track);
+    }
   }
   else{
     if (debug) cout << "Bad prop type, failure, not one of the 3" << endl;
@@ -546,10 +518,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   data_.muon_momentum = mu->momentum().mag2();                 data_.evtNum = iEvent.eventAuxiliary().event();
   data_.lumiBlock = iEvent.eventAuxiliary().luminosityBlock(); data_.muonIdx = data_.evtNum*100 + i;
   data_.runNum = iEvent.run();
-  data_.has_TightID = muon::isTightMuon(*mu, vertexSelection); //check this -TA
-  //data_.isPFIsoTightMu = muon::Selector(mu, "PFIsoTight");    //check this -TA
-
-  //if (debug) cout << "data_.has_TightID: " << data_.has_TightID << "\tdata_.isPFIsoTightMu: " << data_.isPFIsoTightMu << endl;
+  data_.has_TightID = muon::isTightMuon(*mu, vertexSelection);
   //=====================Track Info=======================
   data_.track_chi2 = Track->chi2(); data_.track_ndof = Track->ndof();
   CSCSegmentCounter(mu, data_);
@@ -578,63 +547,90 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
 void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   if (!(mu->isGlobalMuon())) {return;} //!(mu->isStandAloneMuon())
   if (!(mu->globalTrack().isNonnull())) {return;} //!(mu->outerTrack().isNonnull())
-  //if (debug) cout << "mu is GlobalMuon" << endl;
   const reco::Track* Track = mu->globalTrack().get();
-  //if (debug) cout << "mu has globalTrack" << endl;
   int tmp_CSC_counter = 0;   int tmp_DT_counter = 0;   int tmp_ME11_counter = 0;
   int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999;
   int tmp_ME11_strip = 99999; bool tmp_hasME11A = 0;
   float tmp_me11_segment_x; float tmp_me11_segment_y; float tmp_me11_segment_z;
   float tmp_me11_segment_slope_dxdz; float tmp_me11_segment_slope_dydz;
-  //add lines 361-386, 415 if cosmics is needed.
-  //if (debug) cout << "Track->validFraction() " << Track->validFraction() << "\t Track->recHitsSize(): " << Track->recHitsSize() << endl;
-  //if (Track->validFraction() > 0.0) return;
-  //if (debug) cout << "checking if Track->validFraction() > 0.0 passes here" << endl;
-  if (debug) cout << "Track->recHitsSize(): " << Track->recHitsSize() << endl;
-  for (size_t RecHit_iter = 0; RecHit_iter != Track->recHitsSize(); RecHit_iter++){
-    const TrackingRecHit* RecHit = (Track->recHit(RecHit_iter)).get();
-    //if (debug) cout << "rechit is selected" << endl;
-    DetId RecHitId = RecHit->geographicalId();
-    uint16_t RecHitDetId = RecHitId.det();
 
-    if (RecHitDetId == DetId::Muon){
-      uint16_t RecHitSubDet = RecHitId.subdetId();
-      if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
-        if (CSCDetId(RecHitId).station() == 1 and (CSCDetId(RecHitId).ring() == 1 or CSCDetId(RecHitId).ring() == 4) and RecHit->dimension() == 4){
+  //Below part is for Cosmic Muon Study
+  if(isCosmic){
+    tmp_CSC_counter = mu->numberOfSegments(1,2) + mu->numberOfSegments(2,2) + mu->numberOfSegments(3,2) + mu->numberOfSegments(4,2);
+    tmp_DT_counter = mu->numberOfSegments(1,1) + mu->numberOfSegments(2,1) + mu->numberOfSegments(3,1) + mu->numberOfSegments(4,1);
+    auto matches = mu->matches();
+    for (auto MCM : matches){
+      if(MCM.detector() != 2) continue;
+      for(auto MSM : MCM.segmentMatches){
+        auto cscSegRef = MSM.cscSegmentRef;
+        auto cscDetID = cscSegRef->cscDetId();
+        if(cscDetID.station() == 1 and (cscDetID.ring() == 1 or cscDetID.ring() == 4)){
+          if(cscDetID.ring() == 4){tmp_hasME11A = 1;}
           tmp_ME11_counter++;
-          if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
-          if (debug) cout << "tmp_hasME11A: " << tmp_hasME11A << endl;
-          RecSegment* Rec_segment = (RecSegment*)RecHit;
-          ME11_segment = (CSCSegment*)Rec_segment;
-          tmp_me11_segment_x = ME11_segment->localDirection().x();
-          tmp_me11_segment_y = ME11_segment->localDirection().y();
-          tmp_me11_segment_z = ME11_segment->localDirection().z();
-          tmp_me11_segment_slope_dxdz = tmp_me11_segment_x / tmp_me11_segment_z;
-          tmp_me11_segment_slope_dydz = tmp_me11_segment_y / tmp_me11_segment_z;
-          //if (debug) cout << "ME11segment direction x:y:z" << tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
-          tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
-          auto cscDetID_FAKE = CSCDetId(CSCDetId(RecHitId).endcap(), CSCDetId(RecHitId).station(), CSCDetId(RecHitId).ring(), CSCDetId(RecHitId).chamber(), 3);
+          if (debug){std::cout << "isCosmic = True! Getting ME11 Segment" << std::endl;}
+          ME11_segment = cscSegRef.get();
+          tmp_ME11RecHit_counter = (cscSegRef.get())->nRecHits(); // Find the real function for this. Bad if multiple segments.
+          tmp_ME11_BunchX = ME11_segment->time();
+          auto cscDetID_FAKE = CSCDetId(cscDetID.endcap(), cscDetID.station(), cscDetID.ring(), cscDetID.chamber(), 3);
           const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
           const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
           tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(ME11_segment->localPosition());
-          data_.ME11_Segment_Direction[0] = tmp_me11_segment_x;   data_.ME11_Segment_Direction[1] = tmp_me11_segment_y; data_.ME11_Segment_Direction[2] = tmp_me11_segment_z;
-          if (debug) cout << "CSC Endcap:Station:Ring:SC:Layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
-          if (debug) cout << "ME11 segment direction x:y:z " << data_.ME11_Segment_Direction[0] << ":" << data_.ME11_Segment_Direction[1] << ":" << data_.ME11_Segment_Direction[2] << endl;
-          data_.ME11_Segment_slope_dxdz = tmp_me11_segment_slope_dxdz;  data_.ME11_Segment_slope_dydz= tmp_me11_segment_slope_dydz;
-          if (debug) cout << "segment slope dx/dz:dy/dz " << data_.ME11_Segment_slope_dxdz << ":" << data_.ME11_Segment_slope_dydz << endl;
-          data_.ME11_location[0] = CSCDetId(RecHitId).endcap();
-          data_.ME11_location[1] = CSCDetId(RecHitId).station();
-          data_.ME11_location[2] = CSCDetId(RecHitId).ring();
-          data_.ME11_location[3] = CSCDetId(RecHitId).chamber();
-          data_.ME11_location[4] = CSCDetId(RecHitId).layer();
+          data_.ME11_location[0] = cscDetID.endcap(); data_.ME11_location[1] = cscDetID.station(); data_.ME11_location[2] = cscDetID.ring(); data_.ME11_location[3] = cscDetID.chamber(); data_.ME11_location[4] = cscDetID.layer();
         }
-        if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1){tmp_ME11RecHit_counter++;}
-        //if (debug) cout << "tmp_ME11RecHit_counter: " << tmp_ME11RecHit_counter << endl;
-        if (RecHit->dimension() == 4) {tmp_CSC_counter++;}
-        if (debug) cout << "tmp_CSC_counter: " << tmp_CSC_counter << endl;
       }
-      if (RecHitSubDet == (uint16_t)MuonSubdetId::DT){
-        if (RecHit->dimension() > 1) {tmp_DT_counter++;}
+    }
+  }
+  //end of Cosmics
+  
+  else{
+    //if (debug) cout << "Track->validFraction() " << Track->validFraction() << "\t Track->recHitsSize(): " << Track->recHitsSize() << endl;
+    //if (Track->validFraction() > 0.0) return;
+    //if (debug) cout << "checking if Track->validFraction() > 0.0 passes here" << endl;
+    if (debug) cout << "Track->recHitsSize(): " << Track->recHitsSize() << endl;
+    for (size_t RecHit_iter = 0; RecHit_iter != Track->recHitsSize(); RecHit_iter++){
+      const TrackingRecHit* RecHit = (Track->recHit(RecHit_iter)).get();
+      //if (debug) cout << "rechit is selected" << endl;
+      DetId RecHitId = RecHit->geographicalId(); 
+      uint16_t RecHitDetId = RecHitId.det();
+
+      if (RecHitDetId == DetId::Muon){
+        uint16_t RecHitSubDet = RecHitId.subdetId();
+        if (RecHitSubDet == (uint16_t)MuonSubdetId::CSC){
+          if (CSCDetId(RecHitId).station() == 1 and (CSCDetId(RecHitId).ring() == 1 or CSCDetId(RecHitId).ring() == 4) and RecHit->dimension() == 4){
+            tmp_ME11_counter++;
+            if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
+            if (debug) cout << "tmp_hasME11A: " << tmp_hasME11A << endl;
+            RecSegment* Rec_segment = (RecSegment*)RecHit;
+            ME11_segment = (CSCSegment*)Rec_segment;
+            tmp_me11_segment_x = ME11_segment->localDirection().x();
+            tmp_me11_segment_y = ME11_segment->localDirection().y();
+            tmp_me11_segment_z = ME11_segment->localDirection().z();
+            tmp_me11_segment_slope_dxdz = tmp_me11_segment_x / tmp_me11_segment_z;
+            tmp_me11_segment_slope_dydz = tmp_me11_segment_y / tmp_me11_segment_z;
+            //if (debug) cout << "ME11segment direction x:y:z" << tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
+            tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
+            auto cscDetID_FAKE = CSCDetId(CSCDetId(RecHitId).endcap(), CSCDetId(RecHitId).station(), CSCDetId(RecHitId).ring(), CSCDetId(RecHitId).chamber(), 3);
+            const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
+            const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
+            tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(ME11_segment->localPosition());
+            data_.ME11_Segment_Direction[0] = tmp_me11_segment_x;   data_.ME11_Segment_Direction[1] = tmp_me11_segment_y; data_.ME11_Segment_Direction[2] = tmp_me11_segment_z;
+            if (debug) cout << "CSC Endcap:Station:Ring:SC:Layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
+            if (debug) cout << "ME11 segment direction x:y:z " << data_.ME11_Segment_Direction[0] << ":" << data_.ME11_Segment_Direction[1] << ":" << data_.ME11_Segment_Direction[2] << endl;
+            data_.ME11_Segment_slope_dxdz = tmp_me11_segment_slope_dxdz;  data_.ME11_Segment_slope_dydz= tmp_me11_segment_slope_dydz;
+            if (debug) cout << "segment slope dx/dz:dy/dz " << data_.ME11_Segment_slope_dxdz << ":" << data_.ME11_Segment_slope_dydz << endl;
+            data_.ME11_location[0] = CSCDetId(RecHitId).endcap();
+            data_.ME11_location[1] = CSCDetId(RecHitId).station();
+            data_.ME11_location[2] = CSCDetId(RecHitId).ring();
+            data_.ME11_location[3] = CSCDetId(RecHitId).chamber();
+            data_.ME11_location[4] = CSCDetId(RecHitId).layer();
+          }
+          if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1){tmp_ME11RecHit_counter++;}
+          if (RecHit->dimension() == 4) {tmp_CSC_counter++;}
+          if (debug) cout << "tmp_CSC_counter: " << tmp_CSC_counter << endl;
+        }
+        if (RecHitSubDet == (uint16_t)MuonSubdetId::DT){
+          if (RecHit->dimension() > 1) {tmp_DT_counter++;}
+        }
       }
     }
   }
@@ -656,13 +652,13 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
   const BoundPlane& bps(ch->surface());
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
   const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
-  TrajectoryStateOnSurface tsos; //Towsifa
+  TrajectoryStateOnSurface tsos;
   TrajectoryStateOnSurface tsos_ch; TrajectoryStateOnSurface tsos_seg;
   GlobalPoint pos_startingPoint_GP;
   float prop_dxdz = 99999;
 
-  TrajectoryStateOnSurface previous_trackTSOS; //Towsifa
-  double previous_trackTSOS_globalPositionR = 0.0; //Towsifa
+  TrajectoryStateOnSurface previous_trackTSOS;
+  double previous_trackTSOS_globalPositionR = 0.0; 
   std::vector<TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
 
   if (prop_type==1 or prop_type==2 or prop_type==4){
@@ -736,83 +732,6 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       }
     }
   }
-
-
-    /*if (traj_measurement.isValid()){
-      cout << "valid trajecory measurement matched ot a muon" << endl;
-    }*/
-
-    //Towsifa: start of tsos for refit trajectory
-    //const TrajectoryMeasurement* traj_measurement = traj_of_muon->measurements();
-    /*std::vector<TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
-
-    for (std::vector<TrajectoryMeasurement>::const_iterator it_traj_measurement = traj_measurement.begin(); it_traj_measurement != traj_measurement.end(); ++it_traj_measurement){
-
-      TrajectoryMeasurement iTraj_measurement = *it_traj_measurement;
-      TrajectoryStateOnSurface tsos = TrajectoryStateCombiner().combine(iTraj_measurement.forwardPredictedState(), iTraj_measurement.backwardPredictedState());
-      //const TrajectoryStateOnSurface& tsos_forward = iTraj_measurement.forwardPredictedState();
-      //const TrajectoryStateOnSurface& tsos_backward = iTraj_measurement.backwardPredictedState();
-      //const TrajectoryStateOnSurface& tsos_updated = iTraj_measurement.updatedState();
-
-      if (tsos.isValid()){
-        if (debug) cout << "tsos global z from traj_measurement: " << tsos.globalPosition().z() << endl;
-        double tsosGlobalPositionR = sqrt(tsos.globalPosition().x() * tsos.globalPosition().x() +
-                                        tsos.globalPosition().y() * tsos.globalPosition().y());
-        if (debug) {
-          //cout << "TSOS trajectory local positions x:y " << tsos.localPosition().x() << ":" << tsos.localPosition().y() << endl;
-          //cout << "TSOS trajectory global positions x:y " << tsos.globalPosition().x() << ":" << tsos.globalPosition().y() << endl;
-        }
-
-        if (tsosGlobalPositionR > previous_trackTSOS_globalPositionR){
-          previous_trackTSOS = tsos;
-          previous_trackTSOS_globalPositionR = tsosGlobalPositionR;
-        }
-        //if (debug) cout << "tsos global z tsosGlobalPositionR > previous_trackTSOS_globalPositionR: " << tsos.globalPosition().z() << endl;
-        
-      }//tsos.isValid if statement
-    } //for loop trajectory measurement vector
-    */
-    //end of tsos for refit trajectory
-
-    //float inner_delta = abs(ttrack.innermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
-    //float inner_delta = abs(trajectoryStateTransform::innerStateOnSurface(ttrack).globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
-    //float outer_delta = abs(ttrack.outermostMeasurementState().globalPosition().z() - GEMGeometry_->etaPartition(ch->id())->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).z());
-    //float used_delta = 0;
-    //if (debug) cout << "inner_delta:outer_delta:used_delta: " << inner_delta << ":" << outer_delta << ":" << used_delta << endl; 
-    /*
-    if (inner_delta < outer_delta){
-      tsos_seg = ttrack.innermostMeasurementState();
-      tsos_ch = propagator->propagate(tsos_seg, ch->surface());
-      used_delta = inner_delta;
-      if (prop_type==1){data_.which_track = 1;}
-      else{data_.which_track = 0;}
-    }
-    else{
-      tsos_seg = ttrack.outermostMeasurementState();
-      tsos_ch = propagator->propagate(tsos_seg, ch->surface());
-      used_delta = outer_delta;
-      if (prop_type==1){data_.which_track = 0;}
-      else{data_.which_track = 1;}
-    }
-    if (debug) cout << "inner_delta:outer_delta:used_delta: " << inner_delta <<":" << outer_delta << ":" << used_delta<< endl;
-    */
-    //if (debug) cout << "tsos global z from traj_measurement: " << tsos.globalPosition().z() << endl;
-
-  //tsos_ch = propagator->propagate(previous_trackTSOS, ch->surface());
-
-  //if (tsos_ch.isValid()){
-  //const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
-  //    const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
-  //    if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1) {
-  //      tmp_has_prop = true;
-        //if (debug) {cout << "Delta to GEM = " << used_delta << "\tprop " << prop_type << std::endl;}
-  //      pos_GP = tsos_ch.globalPosition();
-  //      pos_startingPoint_GP = tsos_seg.globalPosition();
-  //    }
-  //  }
-  //}
-  //}
-
 
   if (prop_type == 3){
     LocalVector momentum_at_surface = ME11_segment->localDirection(); //No momentum for segments;
@@ -959,9 +878,8 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
               tmp_dPhi_Corrected = -1.0*tmp_dPhi_Corrected;
             }
             /*
-            Big comment time (Towsifa): notice that for the residual calculation in phi we have dphi = rechit_phi - prop_phi.
-            Also dphi_corrected is flipped from what rdphi_corrected was. these are because in firmware, the -endcap's phi
-            matches the global phi.
+            Comment on SIgn Convention: notice that for the residual calculation in phi we have dphi = rechit_phi - prop_phi.
+            Also dphi_corrected is flipped from what rdphi_corrected was. these are because in firmware, the -endcap's phi matches the global phi.
 	     */
             tmp_rechit_detId = gemid.region()*(gemid.station()*100 + gemid.chamber());
             tmp_rechit_region = gemid.region();  tmp_rechit_station = gemid.station();
@@ -970,7 +888,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             if (debug) cout << "rechit_detId:RdPhi:RdPhi_Corrected:dPhi:dPhi_Corrected\t" << tmp_rechit_detId << ":" << tmp_RdPhi << ":" << tmp_RdPhi_Corrected << ":" << tmp_dPhi << ":" << tmp_dPhi_Corrected << endl;
           }
         }
-        //below is for GE2/1
+        //below is for GE2/1:(incomplete)
         if (ch->id().station()==2 and ch->id().ring()==1 and fabs((hit)->localPosition().x() - prop_LP.x())<999.0) {
           tmp_nRecHitsTot_GE21++;
           if (abs(RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch)) < 5) {tmp_nRecHits5_GE21++;}
@@ -989,18 +907,6 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             tmp_rechit_CLS_GE21 = (hit)->clusterSize();
             tmp_rechit_BunchX_GE21 = (hit)->BunchX();
 
-            /*
-            //Calculating the bending angle = CSC segment phi - GEM rechit phi
-            if (data_.hasME21) {
-              DetId segDetId = ME21_segment->geographicalId();
-              const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
-              float CSC_segment_phi = (segDet->toGlobal(ME21_segment->localPosition())).phi();
-
-              float GEM_hit_phi = (etaPart->toGlobal(hit->localPosition())).phi();
-              tmp_bending_angle = CSC_segment_phi - GEM_hit_phi;
-              if (debug) cout << "Bending Angle = " << tmp_bending_angle << "\tpT = " << data_.muon_pt << endl;
-            }
-            */
             tmp_RdPhi_GE21 = RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch);
             tmp_RdPhi_Corrected_GE21 = tmp_RdPhi_GE21;
             tmp_dPhi_GE21 = tmp_rechit_localphi_rad_GE21 - data_.prop_localphi_rad; //units of radian
@@ -1100,7 +1006,7 @@ float analyzer::RdPhi_func(float stripAngle, const edm::OwnVector<GEMRecHit, edm
   float deltay_roll = etaPart_ch->toGlobal(etaPart_ch->centreOfStrip(etaPart_ch->nstrips()/2)).perp() - etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2)).perp(); //global position of the center of the propagated y and subtract the rechit chamber center eta
   return cos(stripAngle) * (prop_localx - (rechit)->localPosition().x()) - sin(stripAngle) * (prop_localy + deltay_roll);
   /*
-  RdPhi clarification (Towsifa): The residual calculation is RdPhi = cos(Angle) * delta_x + sin(Angle) * delta_y.
+  RdPhi clarification: The residual calculation is RdPhi = cos(Angle) * delta_x + sin(Angle) * delta_y.
   Mapping of the angle in GEM is clockwise, whereas this equation considers counterclockwise strip angle to be positive.
   Since cosine is an even function, no sign change is needed for the first part of residual calculation.
   But to the second part, for sine being an odd function, we add the minus sign to account for the CW angles. 
@@ -1123,8 +1029,6 @@ bool analyzer::fidcutCheck(float local_y, float localphi_deg, const GEMEtaPartit
 void analyzer::beginJob(){}
 void analyzer::endJob(){
   if (debug) nME11_col_vs_matches->Write();
-  n_muons_size->Write();
-  n_track_size->Write();
 }
 
 DEFINE_FWK_MODULE(analyzer);
