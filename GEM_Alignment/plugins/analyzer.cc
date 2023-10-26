@@ -56,6 +56,8 @@
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 
+#include "RecoLocalMuon/CSCSegment/src/CSCSegmentProducer.h"
+
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 #include "Geometry/GEMGeometry/interface/GEMGeometry.h"
 #include "Geometry/GEMGeometry/interface/GEMEtaPartitionSpecs.h"
@@ -328,6 +330,7 @@ private:
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_;
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
+  edm::EDGetTokenT<CSCSegmentCollection> cscSegmentsReco_;
   edm::Handle<TrajTrackAssociationCollection> ref_track;
   edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_;
 
@@ -375,6 +378,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
   cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
+  cscSegmentsReco_ = consumes<CSCSegmentCollection>(iConfig.getParameter<edm::InputTag>("cscSegmentsReco"));
   ref_track_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_track"));
 
   tracker_prop = iConfig.getParameter<bool>("tracker_prop");
@@ -428,6 +432,8 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   edm::Handle<CSCSegmentCollection> cscSegments;
   if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
 
+  edm::Handle<CSCSegmentCollection> cscSegmentsReco;
+  
   if (debug) cout << "New! EventNumber = " << iEvent.eventAuxiliary().event() << " LumiBlock = " << iEvent.eventAuxiliary().luminosityBlock() << " RunNumber = " << iEvent.run() << endl;
 
   for (size_t i = 0; i < muons->size(); ++i){
@@ -548,6 +554,8 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   if (!(mu->isGlobalMuon())) {return;} //!(mu->isStandAloneMuon())
   if (!(mu->globalTrack().isNonnull())) {return;} //!(mu->outerTrack().isNonnull())
   const reco::Track* Track = mu->globalTrack().get();
+  //const CSCSegmentCollection* ME11_segment_reco;
+
   int tmp_CSC_counter = 0;   int tmp_DT_counter = 0;   int tmp_ME11_counter = 0;
   int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999;
   int tmp_ME11_strip = 99999; bool tmp_hasME11A = 0;
@@ -600,9 +608,16 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
             tmp_ME11_counter++;
             if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
             if (debug) cout << "tmp_hasME11A: " << tmp_hasME11A << endl;
+
             RecSegment* Rec_segment = (RecSegment*)RecHit;
+            const CSCSegment* ME11_segment_reco;
+            ME11_segment_reco = (CSCSegment*)Rec_segment;
+            float tmp_reco_me11_segment_x = ME11_segment_reco->localDirection().x();
+            
             ME11_segment = (CSCSegment*)Rec_segment;
             tmp_me11_segment_x = ME11_segment->localDirection().x();
+	    std::cout << "tmp_reco_me11_segment_x:tmp_me11_segment_x " << tmp_reco_me11_segment_x << ":" << tmp_me11_segment_x << std::endl; 
+            
             tmp_me11_segment_y = ME11_segment->localDirection().y();
             tmp_me11_segment_z = ME11_segment->localDirection().z();
             tmp_me11_segment_slope_dxdz = tmp_me11_segment_x / tmp_me11_segment_z;
