@@ -329,7 +329,7 @@ private:
   edm::Handle<vector<PSimHit> > gemSimHits;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_;
-  edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
+  //edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentsReco_;
   edm::Handle<CSCSegmentCollection> cscSegmentsReco;
   edm::Handle<TrajTrackAssociationCollection> ref_track;
@@ -378,7 +378,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection")); 
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
-  cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
+  //cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
   cscSegmentsReco_ = consumes<CSCSegmentCollection>(iConfig.getParameter<edm::InputTag>("cscSegmentsReco"));
   ref_track_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_track"));
 
@@ -430,12 +430,12 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   } //the loop goes over tracks and saves the key and value of each track as a pair in ref_track_pairs.
   //end of Refit trajectory
 
-  edm::Handle<CSCSegmentCollection> cscSegments;
-  if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
+  //edm::Handle<CSCSegmentCollection> cscSegments;
+  //if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
 
   iEvent.getByToken(cscSegmentsReco_, cscSegmentsReco);
   std::cout << "cscSegmentsReco->size() " << cscSegmentsReco->size() << std::endl;
-
+  if (! iEvent.getByToken(cscSegmentsReco_, cscSegmentsReco)){std::cout << "Bad segments" << std::endl;}
   
   if (debug) cout << "New! EventNumber = " << iEvent.eventAuxiliary().event() << " LumiBlock = " << iEvent.eventAuxiliary().luminosityBlock() << " RunNumber = " << iEvent.run() << endl;
 
@@ -610,10 +610,12 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
             for (RecoSeg = cscSegmentsReco->begin(); RecoSeg !=cscSegmentsReco->end(); ++RecoSeg){
               RecSegment* Rec_segment = (RecSegment*)RecHit;
               ME11_segment = (CSCSegment*)Rec_segment;
-              LocalVector ME11_RecoSeg = RecoSeg->localDirection(); 
-              float tmp_old_seg_x = ME11_segment->localDirection().x();
-              float tmp_recoSeg_x = ME11_RecoSeg.x();
-              cout << "old seg: new reco seg x " << tmp_old_seg_x << ":" << tmp_recoSeg_x << endl;
+              if (ME11_segment->cscDetId() == RecoSeg->cscDetId()){
+                LocalVector ME11_RecoSeg = RecoSeg->localDirection(); 
+                float tmp_old_seg_x = ME11_segment->localDirection().x();
+                float tmp_recoSeg_x = ME11_RecoSeg.x();
+                cout << "old seg: new reco seg x " << tmp_old_seg_x << ":" << tmp_recoSeg_x << endl;
+              }
             }
 
             RecSegment* Rec_segment = (RecSegment*)RecHit;
