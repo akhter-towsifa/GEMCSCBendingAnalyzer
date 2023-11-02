@@ -331,6 +331,7 @@ private:
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_;
   edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentsReco_;
+  edm::Handle<CSCSegmentCollection> cscSegmentsReco;
   edm::Handle<TrajTrackAssociationCollection> ref_track;
   edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_;
 
@@ -432,7 +433,9 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   edm::Handle<CSCSegmentCollection> cscSegments;
   if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
 
-  edm::Handle<CSCSegmentCollection> cscSegmentsReco;
+  iEvent.getByToken(cscSegmentsReco_, cscSegmentsReco);
+  std::cout << "cscSegmentsReco->size() " << cscSegmentsReco->size() << std::endl;
+
   
   if (debug) cout << "New! EventNumber = " << iEvent.eventAuxiliary().event() << " LumiBlock = " << iEvent.eventAuxiliary().luminosityBlock() << " RunNumber = " << iEvent.run() << endl;
 
@@ -534,9 +537,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   for (const auto& ch : GEMGeometry_->etaPartitions()) {
     if (ch->id().station() != 1) continue; //only concerned about GE1/1
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
-    if (debug and prop_type==4) cout << "prop_type=4, before prop_to_gem"<< endl;
     propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_, traj_of_muon);
-    if (prop_type==4 and debug) cout << "prop_type=4, after prop_to_gem" << endl;
     if (tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
       //==============RecHit Info======================
@@ -554,7 +555,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   if (!(mu->isGlobalMuon())) {return;} //!(mu->isStandAloneMuon())
   if (!(mu->globalTrack().isNonnull())) {return;} //!(mu->outerTrack().isNonnull())
   const reco::Track* Track = mu->globalTrack().get();
-  //const CSCSegmentCollection* ME11_segment_reco;
+  const CSCSegmentCollection* ME11_segmentReco_collection;
 
   int tmp_CSC_counter = 0;   int tmp_DT_counter = 0;   int tmp_ME11_counter = 0;
   int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999;
@@ -591,13 +592,9 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
   //end of Cosmics
   
   else{
-    //if (debug) cout << "Track->validFraction() " << Track->validFraction() << "\t Track->recHitsSize(): " << Track->recHitsSize() << endl;
-    //if (Track->validFraction() > 0.0) return;
-    //if (debug) cout << "checking if Track->validFraction() > 0.0 passes here" << endl;
     if (debug) cout << "Track->recHitsSize(): " << Track->recHitsSize() << endl;
     for (size_t RecHit_iter = 0; RecHit_iter != Track->recHitsSize(); RecHit_iter++){
       const TrackingRecHit* RecHit = (Track->recHit(RecHit_iter)).get();
-      //if (debug) cout << "rechit is selected" << endl;
       DetId RecHitId = RecHit->geographicalId(); 
       uint16_t RecHitDetId = RecHitId.det();
 
@@ -609,15 +606,19 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
             if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
             if (debug) cout << "tmp_hasME11A: " << tmp_hasME11A << endl;
 
+	    CSCSegmentCollection::const_iterator RecoSeg;
+            for (RecoSeg = cscSegmentsReco->begin(); RecoSeg !=cscSegmentsReco->end(); ++RecoSeg){
+              RecSegment* Rec_segment = (RecSegment*)RecHit;
+              ME11_segment = (CSCSegment*)Rec_segment;
+              LocalVector ME11_RecoSeg = RecoSeg->localDirection(); 
+              float tmp_old_seg_x = ME11_segment->localDirection().x();
+              float tmp_recoSeg_x = ME11_RecoSeg.x();
+              cout << "old seg: new reco seg x " << tmp_old_seg_x << ":" << tmp_recoSeg_x << endl;
+            }
+
             RecSegment* Rec_segment = (RecSegment*)RecHit;
-            const CSCSegment* ME11_segment_reco;
-            ME11_segment_reco = (CSCSegment*)Rec_segment;
-            float tmp_reco_me11_segment_x = ME11_segment_reco->localDirection().x();
-            
             ME11_segment = (CSCSegment*)Rec_segment;
             tmp_me11_segment_x = ME11_segment->localDirection().x();
-	    std::cout << "tmp_reco_me11_segment_x:tmp_me11_segment_x " << tmp_reco_me11_segment_x << ":" << tmp_me11_segment_x << std::endl; 
-            
             tmp_me11_segment_y = ME11_segment->localDirection().y();
             tmp_me11_segment_z = ME11_segment->localDirection().z();
             tmp_me11_segment_slope_dxdz = tmp_me11_segment_x / tmp_me11_segment_z;

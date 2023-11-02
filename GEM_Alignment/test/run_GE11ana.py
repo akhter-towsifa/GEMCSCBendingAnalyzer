@@ -13,7 +13,7 @@ process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('TrackingTools.TrackRefitter.globalMuonTrajectories_cff')
 process.load('TrackingTools.TrackFitters.TrackFitters_cff')
-#process.load('RecoLocalMuon.CSCSegment.cscSegments_cfi')
+process.load('RecoLocalMuon.CSCSegment.cscSegments_cfi')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 
@@ -122,6 +122,7 @@ process.cscSegments = cscSegments.clone()
 process.analyzer = cms.EDAnalyzer('analyzer', 
 	process.MuonServiceProxy,
         #process.cscSegments,
+        cscSegments = cms.InputTag("cscSegments"),
         cscSegmentsReco = cms.InputTag("cscSegments"),
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
