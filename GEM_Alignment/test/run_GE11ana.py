@@ -121,8 +121,6 @@ process.cscSegments = cscSegments.clone()
 
 process.analyzer = cms.EDAnalyzer('analyzer', 
 	process.MuonServiceProxy,
-        #process.cscSegments,
-        cscSegments = cms.InputTag("cscSegments"),
         cscSegmentsReco = cms.InputTag("cscSegments"),
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
@@ -132,7 +130,8 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         tracker_prop = cms.bool(False),
         CSC_prop = cms.bool(False),
         Segment_prop = cms.bool(True),
-        trackerRefit_prop = cms.bool(True),
+        trackerRefit_prop = cms.bool(False),
+        SegmentReco_prop = cms.bool(True),
         debug = cms.bool(False),
         isCosmic = cms.bool(False)
 )
