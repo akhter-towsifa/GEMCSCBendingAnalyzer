@@ -868,7 +868,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
           prop_dxdz = direction_local_ch.x()/direction_local_ch.z();
         }
       }
-      //break; //selecting the first segment in the collection
+      break; //selecting the first segment in the collection
     }
   }
   //end of testing region
@@ -975,7 +975,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
                   const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
                   CSC_segment_phi = (segDet->toGlobal(RecoSeg->localPosition())).phi();
                   if (debug) cout<< "CSC_segment_phi: " << CSC_segment_phi << endl;
-                  //break; //selecting the first segment only
+                  break; //selecting the first segment only
                 }
               }
 
