@@ -17,28 +17,27 @@ process.load('RecoLocalMuon.CSCSegment.cscSegments_cfi')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 
-
 ### This is the misalignment part
-misalign = False
-do_GEM = False
-do_CSC = False
+misalign = True
+do_GEM = True
+do_CSC = True
 if misalign:
   #db_file = 'sqlite_file:dummy_dx1.db'
-  gem_db_file = 'sqlite_file:2022D_backPropModiefiedRefitTracker_alcareco_v0.db' #for GEM
-  #csc_db_file = 'sqlite_file:Run3v1.db' #for csc alignment only in this case
-  #gpr_db_file = 'sqlite_file:Run3v1.db' #for gpr only in this case
+  #gem_db_file = 'sqlite_file:2022D_backPropModiefiedRefitTracker_alcareco_v0.db' #for GEM
+  csc_db_file = 'sqlite_file:CSC_Layer_Rcd_2023D_1DOF_v4.db' #for csc alignment only in this case
+  gpr_db_file = 'sqlite_file:GlobalAlignment_Run2_Run3_v1_ZeroMuonGPR.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
-    cms.PSet(
-        connect = cms.string(gem_db_file),
-        record = cms.string('GEMAlignmentRcd'),
-        tag = cms.string('GEMAlignmentRcd')
-    ),
-    cms.PSet(
-        connect = cms.string(gem_db_file),
-        record = cms.string('GEMAlignmentErrorExtendedRcd'),
-        tag = cms.string('GEMAlignmentErrorExtendedRcd')
-    ),
+    #cms.PSet(
+    #    connect = cms.string(gem_db_file),
+    #    record = cms.string('GEMAlignmentRcd'),
+    #    tag = cms.string('GEMAlignmentRcd')
+    #),
+    #cms.PSet(
+    #    connect = cms.string(gem_db_file),
+    #    record = cms.string('GEMAlignmentErrorExtendedRcd'),
+    #    tag = cms.string('GEMAlignmentErrorExtendedRcd')
+    #),
     #ME11 rec/tag
     cms.PSet(
         connect = cms.string(csc_db_file),
@@ -58,7 +57,7 @@ if misalign:
   )
 
   process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
-  #process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
+  process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
 ################################
 
 
@@ -67,8 +66,7 @@ if misalign:
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '') #Antonello Comparison
-#process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_frozen_v4', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_forReRecoCondition_v1', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_v1', '')
 process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_Prompt_v4', '')
 
 
@@ -103,7 +101,7 @@ outfile = "out_ge11.root"
 #process.source.fileNames.append('file:'+testfile)
 
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
-process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2023D/Muon1/ALCARECO/MuAlCalIsolatedMu-PromptReco-v1/000/369/869/00000/c7b4746d-f9c1-4d5a-984f-4ac0656b61be.root')
+process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2023D/Muon0/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/370/665/00000/d173c8e1-bc56-490b-8472-a46b1d86872b.root')
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -131,9 +129,9 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         CSC_prop = cms.bool(False),
         Segment_prop = cms.bool(True),
         trackerRefit_prop = cms.bool(False),
-        SegmentReco_prop = cms.bool(True),
-        debug = cms.bool(False),
+                                  SegmentReco_prop = cms.bool(True),
+        debug = cms.bool(True),
         isCosmic = cms.bool(False)
 )
 
-process.p = cms.Path(process.MuonAlignmentFromReferenceGlobalMuonRefit + process.cscSegments * process.analyzer)
+process.p = cms.Path(process.MuonAlignmentFromReferenceGlobalMuonRefit + process.cscSegments + process.analyzer)
