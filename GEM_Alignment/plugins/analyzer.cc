@@ -332,7 +332,7 @@ private:
   edm::Handle<vector<PSimHit> > gemSimHits;
   edm::EDGetTokenT<edm::View<reco::Muon> > muons_;
   edm::EDGetTokenT<reco::VertexCollection> vertexCollection_;
-  //edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
+  edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentsReco_;
   edm::Handle<CSCSegmentCollection> cscSegmentsReco;
   edm::Handle<TrajTrackAssociationCollection> ref_track;
@@ -381,7 +381,7 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   vertexCollection_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexCollection")); 
   gemRecHits_ = consumes<GEMRecHitCollection>(iConfig.getParameter<edm::InputTag>("gemRecHits"));
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
-  //cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
+  cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
   cscSegmentsReco_ = consumes<CSCSegmentCollection>(iConfig.getParameter<edm::InputTag>("cscSegmentsReco"));
   ref_track_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_track"));
 
@@ -435,8 +435,8 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   } //the loop goes over tracks and saves the key and value of each track as a pair in ref_track_pairs.
   //end of Refit trajectory
 
-  //edm::Handle<CSCSegmentCollection> cscSegments;
-  //if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
+  edm::Handle<CSCSegmentCollection> cscSegments;
+  if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
 
   iEvent.getByToken(cscSegmentsReco_, cscSegmentsReco);
   if (debug) std::cout << "cscSegmentsReco->size() " << cscSegmentsReco->size() << std::endl;
@@ -637,7 +637,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
               }
             }
 
-	    if (prop_type==3){
+	    if (prop_type!=5){
               ME11_segment = (CSCSegment*)Rec_segment;
               //if (debug) cout<< "ME11_segment type after type casting: "<< typeid(ME11_segment).name() << endl;
               tmp_me11_segment_x = ME11_segment->localDirection().x();
@@ -656,7 +656,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
             }
 	    
 	    data_.ME11_Segment_Direction[0] = tmp_me11_segment_x;   data_.ME11_Segment_Direction[1] = tmp_me11_segment_y; data_.ME11_Segment_Direction[2] = tmp_me11_segment_z;
-            //if (debug) cout << "CSC Endcap:Station:Ring:SC:Layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
+            if (debug) cout << "CSC Endcap:Station:Ring:SC:Layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
             //if (debug) cout << "ME11 segment direction x:y:z " << data_.ME11_Segment_Direction[0] << ":" << data_.ME11_Segment_Direction[1] << ":" << data_.ME11_Segment_Direction[2] << endl;
             data_.ME11_Segment_slope_dxdz = tmp_me11_segment_slope_dxdz;  data_.ME11_Segment_slope_dydz= tmp_me11_segment_slope_dydz;
             //if (debug) cout << "segment slope dx/dz:dy/dz " << data_.ME11_Segment_slope_dxdz << ":" << data_.ME11_Segment_slope_dydz << endl;
