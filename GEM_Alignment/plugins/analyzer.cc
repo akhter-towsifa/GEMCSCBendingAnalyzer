@@ -614,32 +614,49 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
             RecSegment* Rec_segment = (RecSegment*)RecHit;
 
             if (prop_type==5){
+              //LocalVector mutrack = RecHit->localDirection();
+              float tmp_mutrack_x = RecHit->localPosition().x(); float tmp_mutrack_y = RecHit->localPosition().y(); float tmp_mutrack_z = RecHit->localPosition().z();
        	      CSCSegmentCollection::const_iterator RecoSeg;
               for (RecoSeg = cscSegmentsReco->begin(); RecoSeg !=cscSegmentsReco->end(); RecoSeg++){
+                LocalVector ME11_RecoSeg = RecoSeg->localDirection();
                 //CSCSegment* RecoSeg = (CSCSegment*)Rec_segment;
                 DetId RecoSegId = RecoSeg->geographicalId(); uint16_t RecoSegDetId = RecoSegId.det();
                 float tmp_min_distance_seg = 99999;
+		if (RecoSegDetId==(uint16_t)MuonSubdetId::CSC){
+                  if (CSCDetId(RecHitId).endcap()==CSCDetId(RecoSegId).endcap() and
+                      CSCDetId(RecHitId).station()==CSCDetId(RecoSegId).station() and
+                      CSCDetId(RecHitId).ring()==CSCDetId(RecoSegId).ring() and
+                      CSCDetId(RecHitId).chamber()==CSCDetId(RecoSegId).chamber() and
+		      CSCDetId(RecHitId).layer()==CSCDetId(RecoSegId).layer() ){
+                      
+		    float reco_segment_x = ME11_RecoSeg.x(); float reco_segment_y = ME11_RecoSeg.y(); float reco_segment_z = ME11_RecoSeg.z();
+		    float tmp_distance = sqrt((tmp_mutrack_x-reco_segment_x)*(tmp_mutrack_x-reco_segment_x)
+                                              +(tmp_mutrack_y-reco_segment_y)*(tmp_mutrack_y-reco_segment_y)
+                                              +(tmp_mutrack_z-reco_segment_z)*(tmp_mutrack_z-reco_segment_z));
+                    if (tmp_distance < tmp_min_distance_seg){
+                      tmp_me11_segment_x = ME11_RecoSeg.x();
+                      tmp_me11_segment_y = ME11_RecoSeg.y();
+		      tmp_me11_segment_z = ME11_RecoSeg.z();
+                      tmp_me11_segment_slope_dxdz = tmp_me11_segment_x / tmp_me11_segment_z;
+                      tmp_me11_segment_slope_dydz = tmp_me11_segment_y / tmp_me11_segment_z;
 
+                      tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
+                      auto cscDetID_FAKE = CSCDetId(CSCDetId(RecHitId).endcap(), CSCDetId(RecHitId).station(), CSCDetId(RecHitId).ring(), CSCDetId(RecHitId).chamber(), 3);
+                      const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
+		      const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
+		      tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(RecoSeg->localPosition());
+
+                      if (debug) cout << "test reco seg x:y:z "<< tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
+                    }
+		  }
+                }
                 if (debug){
                   cout << "mu endcap:station:ring:chamber:layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
                   if (RecoSegDetId==(uint16_t)MuonSubdetId::CSC) cout << "RecoSeg endcap:station:ring:chamber:layer" << CSCDetId(RecoSegId).endcap() << ":" << CSCDetId(RecoSegId).station() << ":" << CSCDetId(RecoSegId).ring() << ":" << CSCDetId(RecoSegId).chamber() << ":" << CSCDetId(RecoSegId).layer() << endl;
                 }
-                LocalVector ME11_RecoSeg = RecoSeg->localDirection(); 
-                tmp_me11_segment_x = ME11_RecoSeg.x();
-                tmp_me11_segment_y = ME11_RecoSeg.y();
-                tmp_me11_segment_z = ME11_RecoSeg.z();
-		if (debug) cout << "new reco seg x:y:z "<< tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
+       	      } //end of the csc segment collection loop
+	      if (debug) cout << "new reco seg x:y:z "<< tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
 
-                tmp_me11_segment_slope_dxdz = tmp_me11_segment_x / tmp_me11_segment_z;
-                tmp_me11_segment_slope_dydz = tmp_me11_segment_y / tmp_me11_segment_z;
-                tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
-		auto cscDetID_FAKE = CSCDetId(CSCDetId(RecHitId).endcap(), CSCDetId(RecHitId).station(), CSCDetId(RecHitId).ring(), CSCDetId(RecHitId).chamber(), 3);
-		const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
-		const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
-		tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(RecoSeg->localPosition());
-                
-		//break; //selecting the first segment in the collection
-              }
             }
 
 	    if (prop_type!=5){
