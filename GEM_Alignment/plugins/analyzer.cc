@@ -464,7 +464,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
         track_of_Track = (*it).second;
         if (track_of_Track == mu->track().get()) {
           traj_of_muon = traj_of_Track;
-          if (debug) cout << "mu, prop_type, i, traj_of_muon: " << mu << "," << prop_type << "," << i << "," << traj_of_muon << endl;
+          if (debug) cout << "mu, prop_type, i, cscSegmentsReco->size(): " << mu << "," << prop_type << "," << i << "," << cscSegmentsReco->size() << endl;
           propagate(mu, prop_type, iEvent, i, traj_of_muon); //taking the matched trajectory of muon to the propagate function
         }
       }
@@ -616,9 +616,14 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
             if (prop_type==5){
        	      CSCSegmentCollection::const_iterator RecoSeg;
               for (RecoSeg = cscSegmentsReco->begin(); RecoSeg !=cscSegmentsReco->end(); RecoSeg++){
-                //if (debug) cout << "RecoSeg type before type casting: " << typeid(RecoSeg).name() << endl;
-                CSCSegment* RecoSeg = (CSCSegment*)Rec_segment;
-                //if (debug) cout<< "RecoSeg type after type casting: "<< typeid(RecoSeg).name() << endl;
+                //CSCSegment* RecoSeg = (CSCSegment*)Rec_segment;
+                DetId RecoSegId = RecoSeg->geographicalId(); uint16_t RecoSegDetId = RecoSegId.det();
+                float tmp_min_distance_seg = 99999;
+
+                if (debug){
+                  cout << "mu endcap:station:ring:chamber:layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
+                  if (RecoSegDetId==(uint16_t)MuonSubdetId::CSC) cout << "RecoSeg endcap:station:ring:chamber:layer" << CSCDetId(RecoSegId).endcap() << ":" << CSCDetId(RecoSegId).station() << ":" << CSCDetId(RecoSegId).ring() << ":" << CSCDetId(RecoSegId).chamber() << ":" << CSCDetId(RecoSegId).layer() << endl;
+                }
                 LocalVector ME11_RecoSeg = RecoSeg->localDirection(); 
                 tmp_me11_segment_x = ME11_RecoSeg.x();
                 tmp_me11_segment_y = ME11_RecoSeg.y();
@@ -632,8 +637,8 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
 		const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
 		const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
 		tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(RecoSeg->localPosition());
-		
-		break; //selecting the first segment in the collection
+                
+		//break; //selecting the first segment in the collection
               }
             }
 
@@ -868,7 +873,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
           prop_dxdz = direction_local_ch.x()/direction_local_ch.z();
         }
       }
-      break; //selecting the first segment in the collection
+      //break; //selecting the first segment in the collection
     }
   }
   //end of testing region
@@ -961,7 +966,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             //Calculating the bending angle = CSC segment phi - GEM rechit phi
             if (data_.hasME11) {
               float CSC_segment_phi;
-              if (prop_type==3){
+              if (prop_type!=5){
                 DetId segDetId = ME11_segment->geographicalId();
                 const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
                 CSC_segment_phi = (segDet->toGlobal(ME11_segment->localPosition())).phi();
