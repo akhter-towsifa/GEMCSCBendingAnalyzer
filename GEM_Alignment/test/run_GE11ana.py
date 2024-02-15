@@ -19,11 +19,11 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 ### This is the misalignment part
 misalign = True
-do_GEM = True
+do_GEM = False
 do_CSC = True
 if misalign:
   #db_file = 'sqlite_file:dummy_dx1.db'
-  #gem_db_file = 'sqlite_file:2022D_backPropModiefiedRefitTracker_alcareco_v0.db' #for GEM
+  #gem_db_file = 'sqlite_file:2023D_me11segreco_v0.db' #for GEM
   csc_db_file = 'sqlite_file:CSC_Layer_Rcd_2023D_1DOF_v4.db' #for csc alignment only in this case
   gpr_db_file = 'sqlite_file:GlobalAlignment_Run2_Run3_v1_ZeroMuonGPR.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
@@ -130,7 +130,7 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         Segment_prop = cms.bool(True),
         trackerRefit_prop = cms.bool(False),
                                   SegmentReco_prop = cms.bool(True),
-        debug = cms.bool(True),
+                                  debug = cms.bool(False),
         isCosmic = cms.bool(False)
 )
 

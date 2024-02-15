@@ -861,7 +861,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
   }
 
   //testing region:
-  if (prop_type == 5){
+  if (prop_type == 5 and RecoSegment.size()>0){
     if (debug) cout << "prop 5 loop in propagate_to_gem, RecoSegment size:" << RecoSegment.size() << endl;
     //CSCSegmentCollection::const_iterator RecoSeg;
     //for (RecoSeg = cscSegmentsReco->begin(); RecoSeg !=cscSegmentsReco->end(); RecoSeg++){
