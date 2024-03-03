@@ -19,25 +19,25 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 ### This is the misalignment part
 misalign = True
-do_GEM = False
+do_GEM = True
 do_CSC = True
 if misalign:
   #db_file = 'sqlite_file:dummy_dx1.db'
-  #gem_db_file = 'sqlite_file:2023D_me11segreco_v0.db' #for GEM
+  gem_db_file = 'sqlite_file:2023D_me11segreco_v2.db' #for GEM
   csc_db_file = 'sqlite_file:CSC_Layer_Rcd_2023D_1DOF_v4.db' #for csc alignment only in this case
   gpr_db_file = 'sqlite_file:GlobalAlignment_Run2_Run3_v1_ZeroMuonGPR.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
-    #cms.PSet(
-    #    connect = cms.string(gem_db_file),
-    #    record = cms.string('GEMAlignmentRcd'),
-    #    tag = cms.string('GEMAlignmentRcd')
-    #),
-    #cms.PSet(
-    #    connect = cms.string(gem_db_file),
-    #    record = cms.string('GEMAlignmentErrorExtendedRcd'),
-    #    tag = cms.string('GEMAlignmentErrorExtendedRcd')
-    #),
+    cms.PSet(
+        connect = cms.string(gem_db_file),
+        record = cms.string('GEMAlignmentRcd'),
+        tag = cms.string('GEMAlignmentRcd')
+    ),
+    cms.PSet(
+        connect = cms.string(gem_db_file),
+        record = cms.string('GEMAlignmentErrorExtendedRcd'),
+        tag = cms.string('GEMAlignmentErrorExtendedRcd')
+    ),
     #ME11 rec/tag
     cms.PSet(
         connect = cms.string(csc_db_file),
@@ -105,6 +105,7 @@ process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run20
 
 process.options = cms.untracked.PSet(
                         SkipEvent = cms.untracked.vstring('ProductNotFound')
+#TryToContinue = cms.untracked.vstring('ProductNotFound') #SkipEvent parameter does not work for CMSSW_13_3_X and above
                         )
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(outfile)) 
