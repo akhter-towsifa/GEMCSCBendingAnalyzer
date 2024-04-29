@@ -401,8 +401,9 @@ analyzer::analyzer(const edm::ParameterSet& iConfig)
   gemSimHits_ = consumes<vector<PSimHit> >(iConfig.getParameter<edm::InputTag>("gemSimHits"));
   //cscSegments_ = consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
   cscSegmentsReco_ = consumes<CSCSegmentCollection>(iConfig.getParameter<edm::InputTag>("cscSegmentsReco"));
-  ref_track_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_track"));
-
+  //ref_track_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<InputTag>("ref_track"));
+  //uncomment ref_track_ above if doing inner tracker refitted propagation
+  
   tracker_prop = iConfig.getParameter<bool>("tracker_prop");
   CSC_prop = iConfig.getParameter<bool>("CSC_prop");
   Segment_prop = iConfig.getParameter<bool>("Segment_prop");
@@ -443,16 +444,20 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   if (muons->size() == 0) return;
 
   //adding refit trajectory
+  //uncomment below when doing refitted inner tracker propagation
+  /*
+  if (trackerRefit_prop){
+    edm::Handle<TrajTrackAssociationCollection> ref_track;
+    iEvent.getByToken(ref_track_, ref_track);
 
-  edm::Handle<TrajTrackAssociationCollection> ref_track;
-  iEvent.getByToken(ref_track_, ref_track);
-
-  ConstTrajTrackPairs ref_track_pairs;
-  for (auto it = ref_track->begin(); it != ref_track->end(); ++it) {
-    ref_track_pairs.push_back(ConstTrajTrackPair(&(*(*it).key), &(*(*it).val)));
-  } //the loop goes over tracks and saves the key and value of each track as a pair in ref_track_pairs.
+    ConstTrajTrackPairs ref_track_pairs;
+    for (auto it = ref_track->begin(); it != ref_track->end(); ++it) {
+      ref_track_pairs.push_back(ConstTrajTrackPair(&(*(*it).key), &(*(*it).val)));
+    } //the loop goes over tracks and saves the key and value of each track as a pair in ref_track_pairs.
   //end of Refit trajectory
-
+  }    
+  */
+  
   //edm::Handle<CSCSegmentCollection> cscSegments;
   //if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
 
@@ -477,15 +482,23 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
       //if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
-      for (ConstTrajTrackPairs::const_iterator iter = ref_track_pairs.begin(); iter != ref_track_pairs.end(); ++iter) {
-        traj_of_Track = (*iter).first;
-        track_of_Track = (*iter).second;
-        if (track_of_Track == mu->track().get()) {
-          traj_of_muon = traj_of_Track;
-          if (debug) cout << "mu, prop_type, i, cscSegmentsReco->size(): " << mu << "," << prop_type << "," << i << "," << cscSegmentsReco->size() << endl;
-          propagate(mu, prop_type, iEvent, i, traj_of_muon); //taking the matched trajectory of muon to the propagate function
+      //uncomment the if loop below if doing refitted inner tracker propagation
+      /*
+      if (trackerRefit_prop){//(prop_type== 4){ //this loop is when we want refit trajectory for inner tracker propaagation
+        for (ConstTrajTrackPairs::const_iterator iter = ref_track_pairs.begin(); iter != ref_track_pairs.end(); ++iter) {
+          traj_of_Track = (*iter).first;
+          track_of_Track = (*iter).second;
+          if (track_of_Track == mu->track().get()) {
+            traj_of_muon = traj_of_Track;
+            if (debug) cout << "mu, prop_type, i, cscSegmentsReco->size(): " << mu << "," << prop_type << "," << i << "," << cscSegmentsReco->size() << endl;
+            propagate(mu, prop_type, iEvent, i, traj_of_muon); //taking the matched trajectory of muon to the propagate function
+          }
         }
       }
+      */
+      //else{ //without refit trajectory this loop
+        propagate(mu, prop_type, iEvent, i, traj_of_muon);
+      //}
     }
   }
 }
@@ -573,7 +586,9 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
       if (isMC){
         GEM_simhit_matcher(ch, tmp_prop_GP, data_);
       }
+      std::cout << "tree fill " << std::endl;
       tree->Fill();
+      std::cout << "tree fill data_.hasME21: " << data_.hasME21 << std::endl;      
     }
   }
 }
@@ -853,9 +868,9 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
   GlobalPoint pos_startingPoint_GP;
   float prop_dxdz = 99999;
 
-  TrajectoryStateOnSurface previous_trackTSOS;
-  double previous_trackTSOS_globalPositionR = 0.0; 
-  std::vector<TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
+  //TrajectoryStateOnSurface previous_trackTSOS;
+  //double previous_trackTSOS_globalPositionR = 0.0; 
+  //std::vector<TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
 
   if (prop_type==1 or prop_type==2 or prop_type==4){
     if (prop_type==1){
@@ -869,6 +884,9 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       ttrack = ttrackBuilder_->build(Track);
     } 
     if (prop_type==4){
+      TrajectoryStateOnSurface previous_trackTSOS;
+      double previous_trackTSOS_globalPositionR = 0.0;
+      std::vector<TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
       for (std::vector<TrajectoryMeasurement>::const_iterator it_traj_measurement = traj_measurement.begin(); it_traj_measurement != traj_measurement.end(); ++it_traj_measurement){
         TrajectoryMeasurement iTraj_measurement = *it_traj_measurement;
         TrajectoryStateOnSurface tsos = TrajectoryStateCombiner().combine(iTraj_measurement.forwardPredictedState(), iTraj_measurement.backwardPredictedState());
