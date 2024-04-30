@@ -104,8 +104,8 @@ process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run20
 
 process.options = cms.untracked.PSet(
                         #SkipEvent = cms.untracked.vstring('ProductNotFound')
-                        TryToContinue = cms.untracked.vstring('ProductNotFound') #SkipEvent parameter does not work for CMSSW_13_3_X and above
-                        )
+                        TryToContinue = cms.untracked.vstring('ProductNotFound')#, 'InvalidDetId', 'StdException') #SkipEvent parameter does not work for CMSSW_13_3_X and above
+)
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(outfile)) 
 
@@ -123,7 +123,7 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
-        #ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
+        ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
 	vertexCollection = cms.InputTag("offlinePrimaryVertices"),
         tracker_prop = cms.bool(False),
         CSC_prop = cms.bool(False),
@@ -134,5 +134,5 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         isCosmic = cms.bool(False)
 )
 
-#process.p = cms.Path(process.MuonAlignmentFromReferenceGlobalMuonRefit + process.cscSegments + process.analyzer)
-process.p = cms.Path(process.cscSegments + process.analyzer)
+process.p = cms.Path(process.MuonAlignmentFromReferenceGlobalMuonRefit + process.cscSegments + process.analyzer)
+#process.p = cms.Path(process.cscSegments + process.analyzer)
