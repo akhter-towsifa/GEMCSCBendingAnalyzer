@@ -704,12 +704,14 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
                     }
 		  }
                 }
+		/*
                 if (debug){
                   cout << "mu endcap:station:ring:chamber:layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
                   if (RecoSegDetId==(uint16_t)MuonSubdetId::CSC) cout << "RecoSeg endcap:station:ring:chamber:layer" << CSCDetId(RecoSegId).endcap() << ":" << CSCDetId(RecoSegId).station() << ":" << CSCDetId(RecoSegId).ring() << ":" << CSCDetId(RecoSegId).chamber() << ":" << CSCDetId(RecoSegId).layer() << endl;
                 }
+		*/
        	      } //end of the csc segment collection loop
-	      if (debug) cout << "new reco seg x:y:z "<< tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
+	      //if (debug) cout << "new reco seg x:y:z "<< tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
 
             }
 
@@ -785,12 +787,14 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
                     }
 		  }
                 }
+		/*
                 if (debug){
                   cout << "mu endcap:station:ring:chamber:layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
                   if (RecoSegDetId==(uint16_t)MuonSubdetId::CSC) cout << "RecoSeg endcap:station:ring:chamber:layer" << CSCDetId(RecoSegId).endcap() << ":" << CSCDetId(RecoSegId).station() << ":" << CSCDetId(RecoSegId).ring() << ":" << CSCDetId(RecoSegId).chamber() << ":" << CSCDetId(RecoSegId).layer() << endl;
                 }
+		*/
        	      } //end of the csc segment collection loop
-	      if (debug) cout << "new reco seg x:y:z "<< tmp_me21_segment_x << ":" << tmp_me21_segment_y << ":" << tmp_me21_segment_z << endl;
+	      //if (debug) cout << "new reco seg x:y:z "<< tmp_me21_segment_x << ":" << tmp_me21_segment_y << ":" << tmp_me21_segment_z << endl;
 
             }
 
@@ -1194,6 +1198,32 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             tmp_rechit_CLS_GE21 = (hit)->clusterSize();
             tmp_rechit_BunchX_GE21 = (hit)->BunchX();
 
+            //Calculating the bending angle = CSC segment phi - GEM rechit phi
+            if (data_.hasME21) {
+              float CSC_segment_phi;
+              if (prop_type!=5){
+                DetId segDetId = ME11_segment->geographicalId();
+                const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
+                CSC_segment_phi = (segDet->toGlobal(ME11_segment->localPosition())).phi();
+                if (debug) cout << "CSC_segment_phi: " << CSC_segment_phi << endl;
+              }
+
+              if (prop_type==5){
+		//CSCSegmentCollection::const_iterator RecoSeg;
+                //for (RecoSeg = cscSegmentsReco->begin(); RecoSeg !=cscSegmentsReco->end(); RecoSeg++){
+                //DetId segDetId = RecoSegment->geographicalId();
+                DetId segDetId = RecoSegment[0]->geographicalId();
+                const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
+                //CSC_segment_phi = (segDet->toGlobal(RecoSegment->localPosition())).phi();
+                CSC_segment_phi = (segDet->toGlobal(RecoSegment[0]->localPosition())).phi();
+                //if (debug) cout<< "CSC_segment_phi: " << CSC_segment_phi << endl;
+              }
+
+              float GEM_hit_phi = (etaPart->toGlobal(hit->localPosition())).phi();
+              tmp_bending_angle = CSC_segment_phi - GEM_hit_phi;
+              if (debug) cout << "Bending Angle = " << tmp_bending_angle << "\tpT = " << data_.muon_pt << endl;
+            }
+	    
             tmp_RdPhi_GE21 = RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch);
             tmp_RdPhi_Corrected_GE21 = tmp_RdPhi_GE21;
             tmp_dPhi_GE21 = tmp_rechit_localphi_rad_GE21 - data_.prop_localphi_rad; //units of radian
