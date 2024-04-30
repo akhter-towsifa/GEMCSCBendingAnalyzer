@@ -581,6 +581,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   if (debug) cout << "starting chamber loop" << endl;
   for (const auto& ch : GEMGeometry_->etaPartitions()) {
     if (ch->id().station() > 2) continue; //only concerned about GE1/1 and GE2/1
+    if (debug and ch->id().station()==2) {cout << "GE21 information" << endl;}
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
     propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_, traj_of_muon, RecoSegment);
     if (tmp_has_prop){
@@ -1180,7 +1181,9 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
           }
         }
         //below is for GE2/1:(incomplete)
+	if (debug and ch->id().station()==2) cout << "GE2 fabs((hit)->localPosition().x() " << fabs((hit)->localPosition().x()) << endl; 
         if (ch->id().station()==2 and ch->id().ring()==1 and fabs((hit)->localPosition().x() - prop_LP.x())<999.0) {
+	  if (debug) cout << "GE21 with hit cut" << endl;
           tmp_nRecHitsTot_GE21++;
           if (abs(RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch)) < 5) {tmp_nRecHits5_GE21++;}
           if (abs(RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch)) < 2) {tmp_nRecHits2_GE21++;}
@@ -1191,6 +1194,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             tmp_rechit_LP_x_GE21 = (hit)->localPosition().x();   tmp_rechit_LP_y_GE21 = rechit_y_to_chamber + (hit)->localPosition().y();    tmp_rechit_LP_z_GE21 = (hit)->localPosition().z();
             tmp_rechit_yroll_GE21 = (hit)->localPosition().y();
             float local_phi_GE21 = local_to_center.phi();
+	    if (debug) cout << "GE21 local_phi_GE21 " << local_phi_GE21 << endl;
             tmp_rechit_localphi_rad_GE21 = (3.14159265/2.) - local_phi_GE21;
             tmp_rechit_localphi_deg_GE21 = ((3.14159265/2.) - local_phi_GE21)*(180./3.14159265);
             tmp_has_rechit_GE21 = true;
@@ -1200,6 +1204,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
 
             //Calculating the bending angle = CSC segment phi - GEM rechit phi
             if (data_.hasME21) {
+	      if (debug) cout << "GE21, data has ME21 " << endl;
               float CSC_segment_phi;
               if (prop_type!=5){
                 DetId segDetId = ME11_segment->geographicalId();
@@ -1221,7 +1226,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
 
               float GEM_hit_phi = (etaPart->toGlobal(hit->localPosition())).phi();
               tmp_bending_angle = CSC_segment_phi - GEM_hit_phi;
-              if (debug) cout << "Bending Angle = " << tmp_bending_angle << "\tpT = " << data_.muon_pt << endl;
+              if (debug) cout << "GE21 Bending Angle = " << tmp_bending_angle << "\tpT = " << data_.muon_pt << endl;
             }
 	    
             tmp_RdPhi_GE21 = RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch);
