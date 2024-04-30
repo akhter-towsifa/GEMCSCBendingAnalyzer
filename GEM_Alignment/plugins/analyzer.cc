@@ -559,7 +559,7 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   //CSCSegment* RecoSegment;
   std::vector<const CSCSegment*> RecoSegment;
   CSCSegmentCounter(mu, data_, prop_type, RecoSegment);
-  if ((prop_type == 3 or prop_type == 5) and data_.hasME11 != 1) {
+  if (prop_type == 3 or prop_type == 5) {
     if (data_.ME11_location[1]==1){
       if (data_.hasME11 != 1) {
         cout << "data_.ME11_location[1]==1 and data_.hasME11 == 0 " << data_.ME11_location[1] << " " << data_.hasME11 << endl;
@@ -576,8 +576,6 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
       cout << "data_.ME11_location[1] and data_.ME21_location[1] " << data_.ME11_location[1] << " " << data_.ME21_location[1] << endl;
       return;
     }
-
-
   }
   //================Propagation Info===================
   if (debug) cout << "starting chamber loop" << endl;
@@ -609,6 +607,12 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
   float tmp_me11_segment_x; float tmp_me11_segment_y; float tmp_me11_segment_z;
   float tmp_me11_segment_slope_dxdz; float tmp_me11_segment_slope_dydz;
 
+  //ME2/1
+  int tmp_ME21_counter = 0; int tmp_ME21RecHit_counter = 0; float tmp_ME21_BunchX = 99999;
+  int tmp_ME21_strip = 99999;
+  float tmp_me21_segment_x; float tmp_me21_segment_y; float tmp_me21_segment_z;
+  float tmp_me21_segment_slope_dxdz; float tmp_me21_segment_slope_dydz;
+  
   //Below part is for Cosmic Muon Study
   if(isCosmic){
     tmp_CSC_counter = mu->numberOfSegments(1,2) + mu->numberOfSegments(2,2) + mu->numberOfSegments(3,2) + mu->numberOfSegments(4,2);
@@ -682,7 +686,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
                       //CSCSegment* RecoSegment = *RecoSeg;
                       //const CSCSegment* RecoSegment = ((CSCSegment*)RecoSeg).get();
                       RecoSegment.push_back(&(*RecoSeg));
-                      if (debug) cout << "RecoSegment: " <<RecoSegment[0]<< endl;
+                      //if (debug) cout << "RecoSegment: " <<RecoSegment[0]<< endl;
 
                       tmp_me11_segment_x = reco_segment_x;
 		      tmp_me11_segment_y = reco_segment_y;
@@ -738,6 +742,11 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
             data_.ME11_location[3] = CSCDetId(RecHitId).chamber();
             data_.ME11_location[4] = CSCDetId(RecHitId).layer();
           }
+          //ME2/1 below
+          if(CSCDetId(RecHitId).station() == 2 and CSCDetId(RecHitId).ring() == 1 and RecHit->dimension() == 4){
+            tmp_ME21_counter++;
+          }
+	  
           if (CSCDetId(RecHitId).station() == 1 and CSCDetId(RecHitId).ring() == 1){tmp_ME11RecHit_counter++;}
           if (RecHit->dimension() == 4) {tmp_CSC_counter++;}
           //if (debug) cout << "tmp_CSC_counter: " << tmp_CSC_counter << endl;
@@ -759,7 +768,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
 }
 
 void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_, const Trajectory* traj_of_muon, std::vector<const CSCSegment*> RecoSegment){//const CSCSegment* RecoSegment){
-  if (debug) cout << "propagate_to_gem ch: station,chamber, layer,roll,region" << ch->id().station() << ch->id().chamber() << ch->id().layer() << ch->id().roll() << ch->id().region() << endl;
+  //if (debug) cout << "propagate_to_gem ch: station,chamber, layer,roll,region" << ch->id().station() << ch->id().chamber() << ch->id().layer() << ch->id().roll() << ch->id().region() << endl;
   const reco::Track* Track;
   reco::TransientTrack ttrack;
   tmp_has_prop = false;
@@ -900,7 +909,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
 
   //testing region:
   if (prop_type == 5 and RecoSegment.size()>0){
-    if (debug) cout << "prop 5 loop in propagate_to_gem, RecoSegment size:" << RecoSegment.size() << endl;
+    //if (debug) cout << "prop 5 loop in propagate_to_gem, RecoSegment size:" << RecoSegment.size() << endl;
     //CSCSegmentCollection::const_iterator RecoSeg;
     //for (RecoSeg = cscSegmentsReco->begin(); RecoSeg !=cscSegmentsReco->end(); RecoSeg++){
     //LocalVector momentum_at_surface = RecoSegment->localDirection();
@@ -908,7 +917,7 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     LocalVector momentum_at_surface = RecoSegment[0]->localDirection();
     DetId segDetId = RecoSegment[0]->geographicalId();
     const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
-    if (debug) cout << "RecoSegment[0]->localDirection().x(): " <<  momentum_at_surface.x() << endl;
+    //if (debug) cout << "RecoSegment[0]->localDirection().x(): " <<  momentum_at_surface.x() << endl;
     if (mu->isTrackerMuon()){
       Track = mu->track().get();
       if (Track != 0) {
