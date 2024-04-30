@@ -104,12 +104,12 @@ int main() {
   //////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////
   //Input root file name
-  const char* input_name = "/eos/user/t/toakhter/tamu_mual/2023/2023BC/Run2023BC_MuAlCalIsolatedMu_ALCARECO_aligned_v2.root";
+  const char* input_name = "/eos/user/t/toakhter/tamu_mual/2024/2024C/Run2024C_withoutCSClayerlevelalign_v1.root";
   //Tree name ***Make sure to use correct one***
   const char* tree_name = "analyzer/ME11Seg_Prop";   //"analyzer/ME11Seg_Prop" or "ME11ana/Inner_Prop" for example
   const char* Rdphi_name = "RdPhi";
   //Will only change the name of the output csv file
-  const char* outname_prefix = "2023BC_backProp_alcareco_aligned_v2";
+  const char* outname_prefix = "2024C_me11seg_v1";
   //Cuts on full tree in first cloning step
   const char* cuts = "muon_pt > 5 && abs(RdPhi) < 100 && has_fidcut"; //n_ME11_segment == 1
   //Option to turn on or off 3 dof alignments and layer level vs chamber level
@@ -232,15 +232,17 @@ int main() {
         }
       }
     }
+    std::cout << "starting chamber loop for station 2 " << std::endl;
     for (int l = -1; l < 2; l = l + 2){             // Region loop
-      for (int m = 1; m<19; m++){                    // Chamber loop
-        for (int n = 1; n < 3; n++){
-          if (m < 10){
-            myfile << l << "20" << m << n << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 5000 << "\n";
-	  }
-          else{
-	    myfile << l << "2" << m << n << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << "," << 5000 << "\n";
-          }
+      for (int m = 0; m<18; m++){                    // Chamber loop
+        for (int n = 1; n < max_layer; n++){                //layer loop
+	  detNum = l*(m+201);
+          //if (m < 10){
+          //  myfile << l << "20" << m << n << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 5000 << "\n";
+	  //}
+          //else{
+	  //  myfile << l << "2" << m << n << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << ", " << 0 << "," << 5000 << "\n";
+          //}
         }
       }
     }
