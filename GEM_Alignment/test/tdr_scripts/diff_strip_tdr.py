@@ -20,8 +20,8 @@ event23 = f23.Get("analyzer/ME11Seg_Prop")
 event22 = f22.Get("analyzer/ME11Seg_Prop")
 
 
-def strip_conversion(phi): #0.37 [mRad] = 1 [strip(8)]
-  strip = round(phi/0.37, 0)
+def strip_conversion(phi): #0.346 [mRad] = 1 [strip(8)]
+  strip = round(phi/0.346, 0)
   return strip
 
 if y_var == "BA":
