@@ -50,8 +50,8 @@ canvas.SetBottomMargin( B/H )
 canvas.SetTickx(0)
 canvas.SetTicky(0)
 
-def strip_conversion(phi): #0.37 [mRad] = 1 [strip(8)]
-  strip = round(phi/0.37, 0)
+def strip_conversion(phi): #0.346 [mRad] = 1 [strip(8)]
+  strip = round(phi/0.346, 0)
   return strip
 
 '''#below excerpt is for all plots on one canvas is needed
