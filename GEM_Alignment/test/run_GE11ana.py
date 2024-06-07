@@ -24,7 +24,7 @@ do_CSC = True
 if misalign:
   #db_file = 'sqlite_file:dummy_dx1.db'
   #gem_db_file = 'sqlite_file:2023D_me11segreco_v2.db' #for GEM
-  csc_db_file = 'sqlite_file:Run2024_prompt_CSC_zeroGPR_v1_03.db' #for csc alignment only in this case
+  #csc_db_file = 'sqlite_file:Run2024_prompt_CSC_zeroGPR_v1_03.db' #for csc alignment only in this case
   #gpr_db_file = 'sqlite_file:GlobalAlignment_Run2_Run3_v1_ZeroMuonGPR.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
@@ -39,16 +39,16 @@ if misalign:
     #    tag = cms.string('GEMAlignmentErrorExtendedRcd')
     #),
     #ME11 rec/tag
-    cms.PSet(
-        connect = cms.string(csc_db_file),
-        record = cms.string('CSCAlignmentRcd'),
-        tag = cms.string('CSCAlignmentRcd')
-    ),
-    cms.PSet(
-        connect = cms.string(csc_db_file),
-        record = cms.string('CSCAlignmentErrorExtendedRcd'),
-        tag = cms.string('CSCAlignmentErrorExtendedRcd')
-    )
+    #cms.PSet(
+    #    connect = cms.string(csc_db_file),
+    #    record = cms.string('CSCAlignmentRcd'),
+    #    tag = cms.string('CSCAlignmentRcd')
+    #),
+    #cms.PSet(
+    #    connect = cms.string(csc_db_file),
+    #    record = cms.string('CSCAlignmentErrorExtendedRcd'),
+    #    tag = cms.string('CSCAlignmentErrorExtendedRcd')
+    #)
     #cms.PSet(
     #    connect = cms.string(gpr_db_file), 
     #    record = cms.string('GlobalPositionRcd'), 
@@ -100,7 +100,7 @@ outfile = "out_ge11.root"
 #process.source.fileNames.append('file:'+testfile)
 
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
-process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024C/Muon1/ALCARECO/MuAlCalIsolatedMu-PromptReco-v1/000/379/416/00000/f53a39fd-521c-4cd9-9172-227769aca0fb.root')
+process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024D/Muon0/ALCARECO/MuAlCalIsolatedMu-PromptReco-v1/000/380/513/00000/000ad45f-dc64-4bd9-a982-61ccce0689df.root')
 
 process.options = cms.untracked.PSet(
                         #SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -124,13 +124,13 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
         ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
-	vertexCollection = cms.InputTag("offlinePrimaryVertices"),
+	      vertexCollection = cms.InputTag("offlinePrimaryVertices"),
         tracker_prop = cms.bool(False),
         CSC_prop = cms.bool(False),
-        Segment_prop = cms.bool(True),
+        Segment_prop = cms.bool(False),
         trackerRefit_prop = cms.bool(False),
-                                  SegmentReco_prop = cms.bool(True),
-                                  debug = cms.bool(True),
+        SegmentReco_prop = cms.bool(True),
+        debug = cms.bool(False),
         isCosmic = cms.bool(False)
 )
 
