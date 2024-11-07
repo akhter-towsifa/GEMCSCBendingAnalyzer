@@ -439,7 +439,7 @@ analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   //if (! iEvent.getByToken(cscSegments_, cscSegments)){std::cout << "Bad segments" << std::endl;}
 
   iEvent.getByToken(cscSegmentsReco_, cscSegmentsReco);
-  if (debug) std::cout << "cscSegmentsReco->size() " << cscSegmentsReco->size() << std::endl;
+  //if (debug) std::cout << "cscSegmentsReco->size() " << cscSegmentsReco->size() << std::endl;
   if (! iEvent.getByToken(cscSegmentsReco_, cscSegmentsReco)){std::cout << "Bad segments" << std::endl;}
   
   if (debug) cout << "New! EventNumber = " << iEvent.eventAuxiliary().event() << " LumiBlock = " << iEvent.eventAuxiliary().luminosityBlock() << " RunNumber = " << iEvent.run() << endl;
@@ -544,8 +544,8 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   //================Propagation Info===================
   if (debug) cout << "starting chamber loop" << endl;
   for (const auto& ch : GEMGeometry_->etaPartitions()) {
-    if (ch->id().station() != 1 or ch->id().station() != 2) continue;
     std::cout << "ch id station: " << ch->id().station() << std::endl;
+    if (ch->id().station() != 1 or ch->id().station() != 2) continue; //fix this to have both stations 1 and 2 later
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
     propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_, traj_of_muon, RecoSegment);
     if (tmp_has_prop){
