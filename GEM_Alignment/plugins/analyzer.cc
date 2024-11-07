@@ -541,8 +541,9 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   std::vector<const CSCSegment*> RecoSegment;
   CSCSegmentCounter(mu, data_, prop_type, RecoSegment);
   if ((prop_type == 3 or prop_type == 5) and data_.hasME11 != 1) {return;}
+  std::cout << "GEMGeometry_->etaPartitions(): " << GEMGeometry_->etaPartitions() << std::endl;
   //================Propagation Info===================
-  if (debug) cout << "starting chamber loop" << endl;
+  if (debug) cout << "starting chamber loop" << " hasGE21 " << GEMGeometry_->hasGE21() << endl;
   for (const auto& ch : GEMGeometry_->etaPartitions()) {
     std::cout << "ch id station: " << ch->id().station() << std::endl;
     if (ch->id().station() != 1 or ch->id().station() != 2) continue; //fix this to have both stations 1 and 2 later
