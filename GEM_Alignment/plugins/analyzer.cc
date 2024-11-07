@@ -540,13 +540,21 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   //CSCSegment* RecoSegment;
   std::vector<const CSCSegment*> RecoSegment;
   CSCSegmentCounter(mu, data_, prop_type, RecoSegment);
+
+  std::cout << "GEM Geometry " << std::endl;
+  std::cout << GEMGeometry_->detTypes().size() << std::endl;
+  std::cout << GEMGeometry_->etaPartitions().size() << std::endl;
+  std::cout << GEMGeometry_->chambers().size() << std::endl;
+  std::cout << GEMGeometry_->stations().size() << std::endl;
+
   if ((prop_type == 3 or prop_type == 5) and data_.hasME11 != 1) {return;}
-  std::cout << "GEMGeometry_->etaPartitions(): " << GEMGeometry_->etaPartitions() << std::endl;
+
   //================Propagation Info===================
-  if (debug) cout << "starting chamber loop" << " hasGE21 " << GEMGeometry_->hasGE21() << endl;
+  if (debug) cout << "starting chamber loop" << endl;
+
   for (const auto& ch : GEMGeometry_->etaPartitions()) {
     std::cout << "ch id station: " << ch->id().station() << std::endl;
-    if (ch->id().station() != 1 or ch->id().station() != 2) continue; //fix this to have both stations 1 and 2 later
+    if (ch->id().station() != 1 or ch->id().station() != 2) continue;
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
     propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_, traj_of_muon, RecoSegment);
     if (tmp_has_prop){
