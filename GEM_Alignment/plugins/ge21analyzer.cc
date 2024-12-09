@@ -828,6 +828,7 @@ void ge21analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition*
     else if (mu->isGlobalMuon()){
       std::cout << "muon is global muon " << std::endl;
       Track = mu->globalTrack().get();
+      std::cout << "Track: " << Track << std::endl;
       if (Track != 0){
         tmp_inner_or_outer_mom = 1;
         momentum_at_surface = momentum_at_surface*(Track->outerP());
@@ -848,6 +849,7 @@ void ge21analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition*
       const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
       const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
       const LocalVector direction_local_ch = ch->toLocal(tsos_ch.globalDirection());
+      std::cout << "bunch of stuff " << pos_local_ch << " " << pos2D_local_ch << " " << direction_local_ch << std::endl;
       if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 2 and ch->id().ring() == 1) {
         tmp_has_prop = true;
         if (debug) cout << "tmp_has_prop " << tmp_has_prop << endl;

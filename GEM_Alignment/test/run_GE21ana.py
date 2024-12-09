@@ -61,8 +61,8 @@ if misalign:
 ################################
 
 
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_Prompt_v4', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '141X_dataRun3_Candidate_2024_10_08_09_43_55', '')
 
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
