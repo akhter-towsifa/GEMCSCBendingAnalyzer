@@ -509,7 +509,7 @@ void ge21analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Eve
     if (tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
       //==============RecHit Info======================
-      if (debug) cout << "before rechit_matcher" << endl;
+      if (debug) cout << "before rechit_matcher tmp_prop_LP" << tmp_prop_LP << endl;
       GEM_rechit_matcher(ch, tmp_prop_LP, data_, prop_type, RecoSegment);
       if (isMC){
         GEM_simhit_matcher(ch, tmp_prop_GP, data_);
@@ -899,6 +899,10 @@ void ge21analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop
   for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++) {
     if ((hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM) {
       GEMDetId gemid((hit)->geographicalId());
+      int tmp_rechit_region = gemid.region(); int tmp_rechit_station = gemid.station(); int tmp_rechit_chamber = gemid.chamber(); int tmp_rechit_layer = gemid.layer(); int tmp_rechit_roll=gemid.roll();
+      data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
+      if (gemid.station()!=2) {return;}
+      std::cout << "gem rechit station " << gemid.station() << std::endl;
       if (gemid.region() == 1) {
         if (gemid.layer() == 1) {tmp_nRecHitsRpos1L1++;}
         if (gemid.layer() == 2) {tmp_nRecHitsRpos1L2++;}
@@ -1002,7 +1006,7 @@ void ge21analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop
     data_.rechit_detId = tmp_rechit_detId;
     data_.bending_angle = tmp_bending_angle;
     data_.nRecHitsTot = tmp_nRecHitsTot; data_.nRecHits5 = tmp_nRecHits5; data_.nRecHits2 = tmp_nRecHits2;
-    data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
+    //data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
     data_.nRecHitsRpos1L1 = tmp_nRecHitsRpos1L1; data_.nRecHitsRpos1L2 = tmp_nRecHitsRpos1L2; data_.nRecHitsRneg1L1 = tmp_nRecHitsRneg1L1; data_.nRecHitsRneg1L2 = tmp_nRecHitsRneg1L2;
   }
 }
