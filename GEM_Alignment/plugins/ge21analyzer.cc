@@ -405,7 +405,7 @@ void ge21analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
     if (!(mu->passed(reco::Muon::PFIsoTight))) continue;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
-      if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
+      //if (debug) std::cout << "\tprop " << *it << "about to start propagate" << std::endl;
       int prop_type = *it;
       for (ConstTrajTrackPairs::const_iterator iter = ref_track_pairs.begin(); iter != ref_track_pairs.end(); ++iter) {
         traj_of_Track = (*iter).first;
@@ -489,11 +489,11 @@ void ge21analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Eve
   std::vector<const CSCSegment*> RecoSegment;
   CSCSegmentCounter(mu, data_, prop_type, RecoSegment);
 
-  std::cout << "GEM Geometry " << std::endl;
-  std::cout << GEMGeometry_->detTypes().size() << std::endl;
-  std::cout << GEMGeometry_->etaPartitions().size() << std::endl;
-  std::cout << GEMGeometry_->chambers().size() << std::endl;
-  std::cout << GEMGeometry_->stations().size() << std::endl;
+  // std::cout << "GEM Geometry " << std::endl;
+  // std::cout << GEMGeometry_->detTypes().size() << std::endl;
+  // std::cout << GEMGeometry_->etaPartitions().size() << std::endl;
+  // std::cout << GEMGeometry_->chambers().size() << std::endl;
+  // std::cout << GEMGeometry_->stations().size() << std::endl;
 
   if ((prop_type == 3 or prop_type == 5) and data_.hasME11 != 1) {return;}
 
@@ -504,7 +504,7 @@ void ge21analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Eve
     if (ch->id().station() != 2) continue;
     std::cout << "ch id region:station:ring:chamber:eta " << ch->id().region()<< ch->id().station() << ch->id().ring() << ch->id().chamber()<< ch->id().roll() << std::endl;
     GlobalPoint tmp_prop_GP;        bool tmp_has_prop = 0;
-    std::cout << "tmp prop gp has prop " << tmp_prop_GP << " " << tmp_has_prop << std::endl;
+    //std::cout << "tmp prop gp has prop " << tmp_prop_GP << " " << tmp_has_prop << std::endl;
     propagate_to_GEM(mu, ch, prop_type, tmp_has_prop, tmp_prop_GP, data_, traj_of_muon, RecoSegment);
     if (tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
@@ -680,12 +680,12 @@ void ge21analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition*
   const BoundPlane& bps(ch->surface());
   auto propagator = theService_->propagator("SteppingHelixPropagatorAny");
   const auto& etaPart_ch = GEMGeometry_->etaPartition(ch->id());
-  std::cout << "etaPart_ch " << etaPart_ch << std::endl;
+  //std::cout << "etaPart_ch " << etaPart_ch << std::endl;
   TrajectoryStateOnSurface tsos;
   TrajectoryStateOnSurface tsos_ch; TrajectoryStateOnSurface tsos_seg;
   GlobalPoint pos_startingPoint_GP;
   float prop_dxdz = 99999;
-  std::cout << "inside propagate_to_GEM etaPart_ch " << etaPart_ch << std::endl;
+  //std::cout << "inside propagate_to_GEM etaPart_ch " << etaPart_ch << std::endl;
   TrajectoryStateOnSurface previous_trackTSOS;
   double previous_trackTSOS_globalPositionR = 0.0; 
   std::vector<TrajectoryMeasurement> traj_measurement = traj_of_muon->measurements();
@@ -813,9 +813,9 @@ void ge21analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition*
   }
   std::cout << "RecoSegment.size()" << RecoSegment.size() << std::endl;
   if (prop_type == 5 and RecoSegment.size()>0){
-    std::cout << "inside prop type 5 loop" << std::endl;
+    //std::cout << "inside prop type 5 loop" << std::endl;
     LocalVector momentum_at_surface = RecoSegment[0]->localDirection();
-    std::cout << "RecoSegment[0]->localDirection() " << momentum_at_surface << std::endl;
+    //std::cout << "RecoSegment[0]->localDirection() " << momentum_at_surface << std::endl;
     DetId segDetId = RecoSegment[0]->geographicalId();
     const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
     if (mu->isTrackerMuon()){
@@ -826,13 +826,13 @@ void ge21analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition*
       }
     }
     else if (mu->isGlobalMuon()){
-      std::cout << "muon is global muon " << std::endl;
+      //std::cout << "muon is global muon " << std::endl;
       Track = mu->globalTrack().get();
-      std::cout << "Track: " << Track << std::endl;
+      //std::cout << "Track: " << Track << std::endl;
       if (Track != 0){
         tmp_inner_or_outer_mom = 1;
         momentum_at_surface = momentum_at_surface*(Track->outerP());
-        std::cout << "momentum_at_surface " << momentum_at_surface << std::endl;
+        //std::cout << "momentum_at_surface " << momentum_at_surface << std::endl;
       }
       else {return;}
     }
@@ -845,11 +845,11 @@ void ge21analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition*
     TrajectoryStateOnSurface tsos_seg(param, error, segDet->surface(), &*theService_->magneticField());
     TrajectoryStateOnSurface tsos_ch = propagator->propagate(tsos_seg, ch->surface());
     if(tsos_ch.isValid()){
-      std::cout << "tsos_ch is valid" << std::endl;
+      //std::cout << "tsos_ch is valid" << std::endl;
       const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
       const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
       const LocalVector direction_local_ch = ch->toLocal(tsos_ch.globalDirection());
-      std::cout << "bunch of stuff " << pos_local_ch << " " << pos2D_local_ch << " " << direction_local_ch << std::endl;
+      //std::cout << "bunch of stuff " << pos_local_ch << " " << pos2D_local_ch << " " << direction_local_ch << std::endl;
       if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 2 and ch->id().ring() == 1) {
         tmp_has_prop = true;
         if (debug) cout << "tmp_has_prop " << tmp_has_prop << endl;
@@ -899,10 +899,12 @@ void ge21analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop
   for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++) {
     if ((hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM) {
       GEMDetId gemid((hit)->geographicalId());
-      int tmp_rechit_region = gemid.region(); int tmp_rechit_station = gemid.station(); int tmp_rechit_chamber = gemid.chamber(); int tmp_rechit_layer = gemid.layer(); int tmp_rechit_roll=gemid.roll();
-      data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
-      if (gemid.station()!=2) {return;}
-      std::cout << "gem rechit station " << gemid.station() << std::endl;
+      //int tmp_rechit_region = gemid.region(); int tmp_rechit_station = gemid.station(); int tmp_rechit_chamber = gemid.chamber(); int tmp_rechit_layer = gemid.layer(); int tmp_rechit_roll=gemid.roll();
+      //data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
+      if (gemid.station()!=2) {
+        cout << "not ge21" << endl;
+        return;
+        }
       if (gemid.region() == 1) {
         if (gemid.layer() == 1) {tmp_nRecHitsRpos1L1++;}
         if (gemid.layer() == 2) {tmp_nRecHitsRpos1L2++;}
@@ -912,7 +914,8 @@ void ge21analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop
         if (gemid.layer() == 2) {tmp_nRecHitsRneg1L2++;}
       }
       int test_st = ch->id().station(); int test_ch = ch->id().chamber(); int test_lay = ch->id().layer(); int test_rol = ch->id().roll(); int test_reg = ch->id().region();
-      if (debug) cout << "gemid: station,chamber,layer,roll,region " << gemid.station() << gemid.chamber() << gemid.layer() << gemid.roll() << gemid.region() << " ch " << test_st << test_ch << test_lay << test_rol << test_reg << endl;
+      if (debug) cout << "/t/t/tgemid: station,chamber,layer,roll,region " << gemid.station() << gemid.chamber() << gemid.layer() << gemid.roll() << gemid.region() << " ch " << test_st << test_ch << test_lay << test_rol << test_reg << endl;
+      //if (debug && (hit)->isValid()) cout << "hit global position " << (hit)->globalPosition() << std::endl;
 
       if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()) {
         if (debug) cout << "matching gemid chamber with ch" << endl;
@@ -991,7 +994,6 @@ void ge21analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop
     }
   }
   if (tmp_has_rechit){
-    //below is for GE11
     data_.rechit_GP[0] = tmp_rechit_GP_x; data_.rechit_GP[1] = tmp_rechit_GP_y; data_.rechit_GP[2] = tmp_rechit_GP_z;
     data_.rechit_LP[0] = tmp_rechit_LP_x; data_.rechit_LP[1] = tmp_rechit_LP_y; data_.rechit_LP[2] = tmp_rechit_LP_z;
     data_.rechit_yroll = tmp_rechit_yroll;
@@ -1006,7 +1008,7 @@ void ge21analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop
     data_.rechit_detId = tmp_rechit_detId;
     data_.bending_angle = tmp_bending_angle;
     data_.nRecHitsTot = tmp_nRecHitsTot; data_.nRecHits5 = tmp_nRecHits5; data_.nRecHits2 = tmp_nRecHits2;
-    //data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
+    data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
     data_.nRecHitsRpos1L1 = tmp_nRecHitsRpos1L1; data_.nRecHitsRpos1L2 = tmp_nRecHitsRpos1L2; data_.nRecHitsRneg1L1 = tmp_nRecHitsRneg1L1; data_.nRecHitsRneg1L2 = tmp_nRecHitsRneg1L2;
   }
 }

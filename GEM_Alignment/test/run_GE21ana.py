@@ -14,30 +14,31 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('TrackingTools.TrackRefitter.globalMuonTrajectories_cff')
 process.load('TrackingTools.TrackFitters.TrackFitters_cff')
 process.load('RecoLocalMuon.CSCSegment.cscSegments_cfi')
+process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 ### This is the misalignment part
 misalign = True
-do_GEM = True
+do_GEM = False
 do_CSC = False
 if misalign:
   #db_file = 'sqlite_file:dummy_dx1.db'
-  gem_db_file = 'sqlite_file:/afs/cern.ch/work/t/toakhter/public/GEM_Alignment/2024H_prompt_reco_v0.db' #for GEM
+  # gem_db_file = 'sqlite_file:/afs/cern.ch/work/t/toakhter/public/GEM_Alignment/2024H_prompt_reco_v0.db' #for GEM
   # csc_db_file = 'sqlite_file:csc.db' #for csc alignment only in this case
   # gpr_db_file = 'sqlite_file:gpr.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
-    cms.PSet(
-        connect = cms.string(gem_db_file),
-        record = cms.string('GEMAlignmentRcd'),
-        tag = cms.string('GEMAlignmentRcd')
-    ),
-    cms.PSet(
-        connect = cms.string(gem_db_file),
-        record = cms.string('GEMAlignmentErrorExtendedRcd'),
-        tag = cms.string('GEMAlignmentErrorExtendedRcd')
-    )
+    # cms.PSet(
+    #     connect = cms.string(gem_db_file),
+    #     record = cms.string('GEMAlignmentRcd'),
+    #     tag = cms.string('GEMAlignmentRcd')
+    # ),
+    # cms.PSet(
+    #     connect = cms.string(gem_db_file),
+    #     record = cms.string('GEMAlignmentErrorExtendedRcd'),
+    #     tag = cms.string('GEMAlignmentErrorExtendedRcd')
+    # )
     #ME11 rec/tag
     # cms.PSet(
     #     connect = cms.string(csc_db_file),
@@ -97,7 +98,6 @@ outfile = "out_ge21.root"
 
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
 process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024H/Muon0/ALCARECO/MuAlCalIsolatedMu-PromptReco-v1/000/385/889/00000/01a64336-09ac-4eb9-b8ae-b0d3bae8d3ba.root')
-#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024I/Muon0/ALCARECO/MuAlCalIsolatedMu-PromptReco-v2/000/386/694/00000/079c04cd-25e3-439c-bf87-bcc86fc0ee6e.root')
 
 process.options = cms.untracked.PSet(
                         #SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -113,6 +113,11 @@ process.MuonAlignmentFromReferenceGlobalMuonRefit.TrackTransformer.RefitRPCHits 
 
 from RecoLocalMuon.CSCSegment.cscSegments_cfi import *
 process.cscSegments = cscSegments.clone()
+
+#GE21 recHit is turned off by default in CMSSW. thus turning it on below:
+process.gemRecHits.ge21Off = cms.bool(False)
+from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
+run3_GEM.toModify(process.gemRecHits, ge21Off=False)
 
 process.analyzer = cms.EDAnalyzer('ge21analyzer', 
 	process.MuonServiceProxy,
