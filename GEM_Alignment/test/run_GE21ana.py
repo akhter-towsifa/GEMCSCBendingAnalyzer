@@ -98,7 +98,8 @@ outfile = "out_ge21.root"
 
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024H/Muon0/ALCARECO/MuAlCalIsolatedMu-PromptReco-v1/000/385/889/00000/01a64336-09ac-4eb9-b8ae-b0d3bae8d3ba.root')
-process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024H/Muon0/RAW-RECO/ZMu-PromptReco-v1/000/385/836/00000/1501c861-c37a-42e5-a1a0-48ee5dc1be01.root')
+#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024H/Muon0/RAW-RECO/ZMu-PromptReco-v1/000/385/836/00000/1501c861-c37a-42e5-a1a0-48ee5dc1be01.root')
+process.source.fileNames.append('file:../../../RecoLocalMuon/GEMRecHit/test/out_local_reco_test.root')
 
 process.options = cms.untracked.PSet(
                         #SkipEvent = cms.untracked.vstring('ProductNotFound')
