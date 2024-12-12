@@ -97,7 +97,8 @@ process.source = cms.Source("PoolSource",
 outfile = "out_ge21.root"
 
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
-process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024H/Muon0/ALCARECO/MuAlCalIsolatedMu-PromptReco-v1/000/385/889/00000/01a64336-09ac-4eb9-b8ae-b0d3bae8d3ba.root')
+#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024H/Muon0/ALCARECO/MuAlCalIsolatedMu-PromptReco-v1/000/385/889/00000/01a64336-09ac-4eb9-b8ae-b0d3bae8d3ba.root')
+process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024H/Muon0/RAW-RECO/ZMu-PromptReco-v1/000/385/836/00000/1501c861-c37a-42e5-a1a0-48ee5dc1be01.root')
 
 process.options = cms.untracked.PSet(
                         #SkipEvent = cms.untracked.vstring('ProductNotFound')
@@ -106,26 +107,29 @@ process.options = cms.untracked.PSet(
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(outfile)) 
 
-from TrackingTools.TrackRefitter.globalMuonTrajectories_cff import *
-process.MuonAlignmentFromReferenceGlobalMuonRefit = globalMuons.clone()
-process.MuonAlignmentFromReferenceGlobalMuonRefit.Tracks = cms.InputTag("ALCARECOMuAlCalIsolatedMu:TrackerOnly")
-process.MuonAlignmentFromReferenceGlobalMuonRefit.TrackTransformer.RefitRPCHits = cms.bool(False)
+# from TrackingTools.TrackRefitter.globalMuonTrajectories_cff import *
+# process.MuonAlignmentFromReferenceGlobalMuonRefit = globalMuons.clone()
+# process.MuonAlignmentFromReferenceGlobalMuonRefit.Tracks = cms.InputTag("ALCARECOMuAlCalIsolatedMu:TrackerOnly")
+# process.MuonAlignmentFromReferenceGlobalMuonRefit.TrackTransformer.RefitRPCHits = cms.bool(False)
 
 from RecoLocalMuon.CSCSegment.cscSegments_cfi import *
 process.cscSegments = cscSegments.clone()
 
 #GE21 recHit is turned off by default in CMSSW. thus turning it on below:
+from RecoLocalMuon.GEMRecHit.gemRecHits_cfi import *
+process.gemRecHits = gemRecHits.clone()
 process.gemRecHits.ge21Off = cms.bool(False)
-from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
-run3_GEM.toModify(process.gemRecHits, ge21Off=False)
+#process.gemRecHits.gemDigiLabel = cms.InputTag("simMuonGEMDigis","","GEMDIGI")
+#from Configuration.Eras.Modifier_run3_GEM_cff import run3_GEM
+#run3_GEM.toModify(process.gemRecHits, ge21Off=False)
 
 process.analyzer = cms.EDAnalyzer('ge21analyzer', 
 	process.MuonServiceProxy,
         cscSegmentsReco = cms.InputTag("cscSegments"),
 	      gemRecHits = cms.InputTag("gemRecHits"), 
 	      gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
-        muons = cms.InputTag("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
-        ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
+        muons = cms.InputTag("muons"),#("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
+        # ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
 	      vertexCollection = cms.InputTag("offlinePrimaryVertices"),
         tracker_prop = cms.bool(False),
         CSC_prop = cms.bool(False),
@@ -136,4 +140,5 @@ process.analyzer = cms.EDAnalyzer('ge21analyzer',
         isCosmic = cms.bool(False)
 )
 
-process.p = cms.Path(process.MuonAlignmentFromReferenceGlobalMuonRefit + process.cscSegments + process.analyzer)
+#process.p = cms.Path(process.MuonAlignmentFromReferenceGlobalMuonRefit + process.cscSegments + process.gemRecHits + process.analyzer)
+process.p = cms.Path(process.cscSegments + process.analyzer)
