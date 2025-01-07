@@ -2,17 +2,17 @@
 
 ## how to check out cmssw and this package
 
-```cmsrel CMSSW_14_0_4```
+```cmsrel CMSSW_14_0_9```
 
 or if you want to name your work environment differently:
 
-```scram p -n Your_Choice_of_Name CMSSW CMSSW_14_0_4```
+```scram p -n Your_Choice_of_Name CMSSW CMSSW_14_0_9```
 
 ```
-cd CMSSW_14_0_4/src/
+cd CMSSW_14_0_9/src/
 cmsenv
 git cms-init
-git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 14_X_alcaReco
+git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b branch_name_if_not_default
 
 scram b -j 8
 ```
