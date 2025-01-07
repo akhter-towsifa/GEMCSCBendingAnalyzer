@@ -61,6 +61,7 @@ if misalign:
 ################################
 
 
+
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_Prompt_v4', '')
 
@@ -96,6 +97,7 @@ process.source = cms.Source("PoolSource",
 outfile = "out_ge21.root"
 
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
+
 process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024H/Muon0/ALCARECO/MuAlCalIsolatedMu-PromptReco-v1/000/385/836/00000/26c36d10-e695-4cec-a930-67303655004d.root')
 
 process.options = cms.untracked.PSet(
@@ -131,3 +133,4 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 )
 
 process.p = cms.Path(process.MuonAlignmentFromReferenceGlobalMuonRefit + process.cscSegments + process.analyzer)
+#process.p = cms.Path(process.cscSegments + process.analyzer)
