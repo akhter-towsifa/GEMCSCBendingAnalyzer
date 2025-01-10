@@ -10,7 +10,7 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 
 
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '142X_mcRun3_2025_realistic_Candidate_2024_11_20_07_41_36', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '142X_mcRun3_2025_realistic_Candidate_2025_01_08_09_08_01', '')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)
@@ -76,12 +76,16 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
             tag = cms.string('GeometryFileExtended2024')
         ),
         cms.PSet(
+            record = cms.string('GEMRecoGeometryRcd'),
+            tag = cms.string('GEMRecoGeometryRcd')
+	),
+        cms.PSet(
             record = cms.string('GlobalPositionRcd'),
             tag = cms.string('GlobalPositionRcd')
         )
     ),
 
-    connect = cms.string('sqlite_file:2025_GEM_data.db')
+    connect = cms.string('sqlite_file:2025_GEM_data_v1.db')
 )
 process.p1 = cms.Path(process.GEMAlDBWriter)
 process.MessageLogger.cout = cms.untracked.PSet(
