@@ -378,9 +378,9 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
   }
   if (prop_type == 1){
     tree = CSC_tree;
-    if (!(mu->isGlobalMuon())) {return;} //if(!(mu->isStandAloneMuon())){return;}
-    if (!(mu->globalTrack().isNonnull())) {return;}  //if(!(mu->outerTrack().isNonnull())){return;}
-    Track = mu->globalTrack().get(); //Track = mu->outerTrack().get();
+    if (!(mu->isGlobalMuon())) {return;}
+    if (!(mu->globalTrack().isNonnull())) {return;}
+    Track = mu->globalTrack().get();
     ttTrack = ttrackBuilder_->build(Track);
   }
   else if (prop_type == 2){
@@ -400,9 +400,9 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
       ttTrack = ttrackBuilder_->build(Track);
     }
     else{ 
-      if (!(mu->isTrackerMuon())) {return;}
-      if (!(mu->track().isNonnull())) {return;}
-      Track = mu->track().get();
+      if (!(mu->isGlobalMuon())) {return;}
+      if (!(mu->globalTrack().isNonnull())) {return;}
+      Track = mu->globalTrack().get();
       ttTrack = ttrackBuilder_->build(Track);
     }
   }
@@ -445,8 +445,8 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
 }
 
 void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_){
-  if (!(mu->isGlobalMuon())) {return;} //!(mu->isStandAloneMuon())
-  if (!(mu->globalTrack().isNonnull())) {return;} //!(mu->outerTrack().isNonnull())
+  if (!(mu->isGlobalMuon())) {return;}
+  if (!(mu->globalTrack().isNonnull())) {return;}
   const reco::Track* Track = mu->globalTrack().get();
   int tmp_CSC_counter = 0;   int tmp_DT_counter = 0;   int tmp_ME11_counter = 0;
   int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999;
