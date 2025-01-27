@@ -285,8 +285,8 @@ private:
   //edm::EDGetTokenT<CSCSegmentCollection> cscSegments_;
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentsReco_;
   edm::Handle<CSCSegmentCollection> cscSegmentsReco;
-  edm::Handle<TrajTrackAssociationCollection> ref_track;
-  edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_;
+  // edm::Handle<TrajTrackAssociationCollection> ref_track;
+  // edm::EDGetTokenT<TrajTrackAssociationCollection> ref_track_;
 
   edm::Service<TFileService> fs;
   MuonServiceProxy* theService_;
@@ -401,8 +401,8 @@ void ge21analyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     
     //trajectory muon matching--we want to match muons with the tracks
     const Trajectory* traj_of_muon;
-    const Trajectory* traj_of_Track;
-    const reco::Track* track_of_Track;
+    // const Trajectory* traj_of_Track;
+    // const reco::Track* track_of_Track;
 
     if (!(mu->passed(reco::Muon::PFIsoTight))) continue;
     for (auto it = std::begin(prop_list); it != std::end(prop_list); ++it){
@@ -904,10 +904,10 @@ void ge21analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop
       GEMDetId gemid((hit)->geographicalId());
       //int tmp_rechit_region = gemid.region(); int tmp_rechit_station = gemid.station(); int tmp_rechit_chamber = gemid.chamber(); int tmp_rechit_layer = gemid.layer(); int tmp_rechit_roll=gemid.roll();
       //data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
-      if (gemid.station()!=2) {
-        cout << "not ge21" << endl;
-        return;
-        }
+      // if (gemid.station()!=2) {
+      //   cout << "not ge21" << endl;
+      //   return;
+      //   }
       if (gemid.region() == 1) {
         if (gemid.layer() == 1) {tmp_nRecHitsRpos1L1++;}
         if (gemid.layer() == 2) {tmp_nRecHitsRpos1L2++;}
@@ -919,6 +919,10 @@ void ge21analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop
       int test_st = ch->id().station(); int test_ch = ch->id().chamber(); int test_lay = ch->id().layer(); int test_rol = ch->id().roll(); int test_reg = ch->id().region();
       if (debug) cout << "/t/t/tgemid: station,chamber,layer,roll,region " << gemid.station() << gemid.chamber() << gemid.layer() << gemid.roll() << gemid.region() << " ch " << test_st << test_ch << test_lay << test_rol << test_reg << endl;
       //if (debug && (hit)->isValid()) cout << "hit global position " << (hit)->globalPosition() << std::endl;
+      // if (gemid.station()!=2) {
+      //   cout << "not ge21" << endl;
+      //   return;
+      // }
 
       if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()) {
         if (debug) cout << "matching gemid chamber with ch" << endl;
