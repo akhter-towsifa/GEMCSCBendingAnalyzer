@@ -550,7 +550,6 @@ void analyzer::propagate(const reco::Muon* mu, int prop_type, const edm::Event& 
     if (tmp_has_prop){
       LocalPoint tmp_prop_LP = ch->toLocal(tmp_prop_GP);
       //==============RecHit Info======================
-      if (debug) cout << "before rechit_matcher" << endl;
       GEM_rechit_matcher(ch, tmp_prop_LP, data_, prop_type, RecoSegment);
       if (isMC){
         GEM_simhit_matcher(ch, tmp_prop_GP, data_);
@@ -568,8 +567,8 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
   int tmp_CSC_counter = 0;   int tmp_DT_counter = 0;   int tmp_ME11_counter = 0;
   int tmp_ME11RecHit_counter = 0; float tmp_ME11_BunchX = 99999;
   int tmp_ME11_strip = 99999; bool tmp_hasME11A = 0;
-  float tmp_me11_segment_x; float tmp_me11_segment_y; float tmp_me11_segment_z;
-  float tmp_me11_segment_slope_dxdz; float tmp_me11_segment_slope_dydz;
+  float tmp_me11_segment_x = 99999.0; float tmp_me11_segment_y = 99999.0; float tmp_me11_segment_z = 99999.0;
+  float tmp_me11_segment_slope_dxdz = 99999.0; float tmp_me11_segment_slope_dydz = 99999.0;
 
   //Below part is for Cosmic Muon Study
   if(isCosmic){
@@ -612,66 +611,60 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
           if (CSCDetId(RecHitId).station() == 1 and (CSCDetId(RecHitId).ring() == 1 or CSCDetId(RecHitId).ring() == 4) and RecHit->dimension() == 4){
             tmp_ME11_counter++;
             if (CSCDetId(RecHitId).ring() == 4) {tmp_hasME11A = 1;}
-            if (debug) cout << "tmp_hasME11A: " << tmp_hasME11A << endl;
 
             RecSegment* Rec_segment = (RecSegment*)RecHit;
 
             if (prop_type==5){
               float tmp_mutrack_x = RecHit->localPosition().x(); float tmp_mutrack_y = RecHit->localPosition().y(); float tmp_mutrack_z = RecHit->localPosition().z();
        	      CSCSegmentCollection::const_iterator RecoSeg;
+              float tmp_min_distance_seg = 99999;
               for (RecoSeg = cscSegmentsReco->begin(); RecoSeg !=cscSegmentsReco->end(); RecoSeg++){
                 LocalVector ME11_RecoSeg = RecoSeg->localDirection();
                 DetId RecoSegId = RecoSeg->geographicalId(); uint16_t RecoSegDetId = RecoSegId.det();
-                float tmp_min_distance_seg = 99999;
-		if (RecoSegDetId==(uint16_t)MuonSubdetId::CSC){
+                //float tmp_min_distance_seg = 99999;
+		            if (RecoSegDetId==(uint16_t)MuonSubdetId::CSC){
                   if (CSCDetId(RecHitId).endcap()==CSCDetId(RecoSegId).endcap() and
                       CSCDetId(RecHitId).station()==CSCDetId(RecoSegId).station() and
                       CSCDetId(RecHitId).ring()==CSCDetId(RecoSegId).ring() and
                       CSCDetId(RecHitId).chamber()==CSCDetId(RecoSegId).chamber() and
-		      CSCDetId(RecHitId).layer()==CSCDetId(RecoSegId).layer() ){
+		                  CSCDetId(RecHitId).layer()==CSCDetId(RecoSegId).layer() ){
                       
-		    float reco_segment_x = ME11_RecoSeg.x(); float reco_segment_y = ME11_RecoSeg.y(); float reco_segment_z = ME11_RecoSeg.z();
-		    float tmp_distance = sqrt((tmp_mutrack_x-reco_segment_x)*(tmp_mutrack_x-reco_segment_x)
+		                  float reco_segment_x = ME11_RecoSeg.x(); float reco_segment_y = ME11_RecoSeg.y(); float reco_segment_z = ME11_RecoSeg.z();
+                      float tmp_distance = sqrt((tmp_mutrack_x-reco_segment_x)*(tmp_mutrack_x-reco_segment_x)
                                               +(tmp_mutrack_y-reco_segment_y)*(tmp_mutrack_y-reco_segment_y)
                                               +(tmp_mutrack_z-reco_segment_z)*(tmp_mutrack_z-reco_segment_z));
-                    if (tmp_distance < tmp_min_distance_seg){
-		      //const CSCSegmentCollection::const_iterator* RecoSegment = RecoSeg->clone();
-                      if (debug) cout << "RecoSeg: " << *RecoSeg << endl;
-                      //const CSCSegment* RecoSegment = (CSCSegment*)RecoSeg;
-                      //CSCSegment* tmp_segment = *RecoSeg;
-                      //RecoSegment = (CSCSegment*)tmp_segment;
-                      //const CSCSegment* RecoSegment = ((CSCSegment*)RecoSeg)->clone();
-                      //CSCSegment* RecoSegment = *RecoSeg;
-                      //const CSCSegment* RecoSegment = ((CSCSegment*)RecoSeg).get();
-                      RecoSegment.push_back(&(*RecoSeg));
-                      if (debug) cout << "RecoSegment: " <<RecoSegment[0]<< endl;
+                      if (tmp_distance < tmp_min_distance_seg){
+                        if (debug) cout << "RecoSeg: " << *RecoSeg << endl;
+                        RecoSegment.push_back(&(*RecoSeg));
+                        if (debug) cout << "RecoSegment: " <<RecoSegment[0]<< endl;
 
-                      tmp_me11_segment_x = reco_segment_x;
-		      tmp_me11_segment_y = reco_segment_y;
-		      tmp_me11_segment_z = reco_segment_z;
-                      tmp_me11_segment_slope_dxdz = tmp_me11_segment_x / tmp_me11_segment_z;
-                      tmp_me11_segment_slope_dydz = tmp_me11_segment_y / tmp_me11_segment_z;
+                        tmp_me11_segment_x = reco_segment_x;
+                        tmp_me11_segment_y = reco_segment_y;
+                        tmp_me11_segment_z = reco_segment_z;
+                        tmp_me11_segment_slope_dxdz = tmp_me11_segment_x / tmp_me11_segment_z;
+                        tmp_me11_segment_slope_dydz = tmp_me11_segment_y / tmp_me11_segment_z;
 
-                      tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
-                      auto cscDetID_FAKE = CSCDetId(CSCDetId(RecHitId).endcap(), CSCDetId(RecHitId).station(), CSCDetId(RecHitId).ring(), CSCDetId(RecHitId).chamber(), 3);
-                      const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
-		      const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
-		      tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(RecoSegment[0]->localPosition());
+                        tmp_ME11_BunchX = ((CSCRecHit2D*)RecHit)->wgroupsBX();
+                        auto cscDetID_FAKE = CSCDetId(CSCDetId(RecHitId).endcap(), CSCDetId(RecHitId).station(), CSCDetId(RecHitId).ring(), CSCDetId(RecHitId).chamber(), 3);
+                        const CSCLayer* tmp_ME11_layer = CSCGeometry_->layer(cscDetID_FAKE);
+		                    const CSCLayerGeometry* tmp_ME11_layer_geo = tmp_ME11_layer->geometry();
+		                    tmp_ME11_strip = tmp_ME11_layer_geo->nearestStrip(RecoSegment[0]->localPosition());
+                        tmp_min_distance_seg = tmp_distance;
 
-                      if (debug) cout << "test reco seg x:y:z "<< tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
-                    }
-		  }
-                }
-                if (debug){
-                  cout << "mu endcap:station:ring:chamber:layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
-                  if (RecoSegDetId==(uint16_t)MuonSubdetId::CSC) cout << "RecoSeg endcap:station:ring:chamber:layer" << CSCDetId(RecoSegId).endcap() << ":" << CSCDetId(RecoSegId).station() << ":" << CSCDetId(RecoSegId).ring() << ":" << CSCDetId(RecoSegId).chamber() << ":" << CSCDetId(RecoSegId).layer() << endl;
-                }
+                        if (debug) cout << "test reco seg x:y:z "<< tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
+                      }
+		                }
+                  }
+                  if (debug){
+                    //cout << "mu endcap:station:ring:chamber:layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
+                    if (RecoSegDetId==(uint16_t)MuonSubdetId::CSC) cout << "RecoSeg endcap:station:ring:chamber:layer" << CSCDetId(RecoSegId).endcap() << ":" << CSCDetId(RecoSegId).station() << ":" << CSCDetId(RecoSegId).ring() << ":" << CSCDetId(RecoSegId).chamber() << ":" << CSCDetId(RecoSegId).layer() << endl;
+                  }
        	      } //end of the csc segment collection loop
-	      if (debug) cout << "new reco seg x:y:z "<< tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
+	            if (debug) cout << "new reco seg x:y:z "<< tmp_me11_segment_x << ":" << tmp_me11_segment_y << ":" << tmp_me11_segment_z << endl;
 
             }
 
-	    if (prop_type!=5){
+	          if (prop_type!=5){
               ME11_segment = (CSCSegment*)Rec_segment;
               //if (debug) cout<< "ME11_segment type after type casting: "<< typeid(ME11_segment).name() << endl;
               tmp_me11_segment_x = ME11_segment->localDirection().x();
@@ -689,9 +682,9 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
 
             }
 	    
-	    data_.ME11_Segment_Direction[0] = tmp_me11_segment_x;   data_.ME11_Segment_Direction[1] = tmp_me11_segment_y; data_.ME11_Segment_Direction[2] = tmp_me11_segment_z;
+	          data_.ME11_Segment_Direction[0] = tmp_me11_segment_x;   data_.ME11_Segment_Direction[1] = tmp_me11_segment_y; data_.ME11_Segment_Direction[2] = tmp_me11_segment_z;
             //if (debug) cout << "CSC Endcap:Station:Ring:SC:Layer " << CSCDetId(RecHitId).endcap() << ":" << CSCDetId(RecHitId).station() << ":" << CSCDetId(RecHitId).ring() << ":" << CSCDetId(RecHitId).chamber() << ":" << CSCDetId(RecHitId).layer() << endl;
-            if (debug) cout << "ME11 segment direction x:y:z " << data_.ME11_Segment_Direction[0] << ":" << data_.ME11_Segment_Direction[1] << ":" << data_.ME11_Segment_Direction[2] << endl;
+            //if (debug) cout << "ME11 segment direction x:y:z " << data_.ME11_Segment_Direction[0] << ":" << data_.ME11_Segment_Direction[1] << ":" << data_.ME11_Segment_Direction[2] << endl;
             data_.ME11_Segment_slope_dxdz = tmp_me11_segment_slope_dxdz;  data_.ME11_Segment_slope_dydz= tmp_me11_segment_slope_dydz;
             //if (debug) cout << "segment slope dx/dz:dy/dz " << data_.ME11_Segment_slope_dxdz << ":" << data_.ME11_Segment_slope_dydz << endl;
             data_.ME11_location[0] = CSCDetId(RecHitId).endcap();
@@ -721,7 +714,7 @@ void analyzer::CSCSegmentCounter(const reco::Muon* mu, MuonData& data_, int prop
 }
 
 void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch, int prop_type, bool &tmp_has_prop, GlobalPoint &pos_GP, MuonData& data_, const Trajectory* traj_of_muon, std::vector<const CSCSegment*> RecoSegment){//const CSCSegment* RecoSegment){
-  if (debug) cout << "propagate_to_gem ch: station,chamber, layer,roll,region" << ch->id().station() << ch->id().chamber() << ch->id().layer() << ch->id().roll() << ch->id().region() << endl;
+  //if (debug) cout << "propagate_to_gem ch: station,chamber, layer,roll,region" << ch->id().station() << ch->id().chamber() << ch->id().layer() << ch->id().roll() << ch->id().region() << endl;
   const reco::Track* Track;
   reco::TransientTrack ttrack;
   tmp_has_prop = false;
@@ -783,29 +776,29 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       float used_delta = 0;
 
       if (inner_delta < outer_delta){
-	tsos_seg = ttrack.innermostMeasurementState();
-	tsos_ch = propagator->propagate(tsos_seg, ch->surface());
-	used_delta = inner_delta;
-	if (prop_type==1){data_.which_track = 1;}
-	else{data_.which_track = 0;}
+	      tsos_seg = ttrack.innermostMeasurementState();
+	      tsos_ch = propagator->propagate(tsos_seg, ch->surface());
+        used_delta = inner_delta;
+        if (prop_type==1){data_.which_track = 1;}
+        else{data_.which_track = 0;}
       }
       else{
-	tsos_seg = ttrack.outermostMeasurementState();
-	tsos_ch = propagator->propagate(tsos_seg, ch->surface());
-	used_delta = outer_delta;
-	if (prop_type==1){data_.which_track = 0;}
-	else{data_.which_track = 1;}
+        tsos_seg = ttrack.outermostMeasurementState();
+        tsos_ch = propagator->propagate(tsos_seg, ch->surface());
+        used_delta = outer_delta;
+        if (prop_type==1){data_.which_track = 0;}
+        else{data_.which_track = 1;}
       }
       
       if (tsos_ch.isValid()){
-	const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
-	const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
-	if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1) {
-	  tmp_has_prop = true;
-	  if (debug) {cout << "Delta to GEM = " << used_delta << "\tprop " << prop_type << std::endl;}
-	  pos_GP = tsos_ch.globalPosition();
-	  pos_startingPoint_GP = tsos_seg.globalPosition();
-	}
+        const LocalPoint pos_local_ch = ch->toLocal(tsos_ch.globalPosition());
+        const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
+        if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1) {
+          tmp_has_prop = true;
+          if (debug) {cout << "Delta to GEM = " << used_delta << "\tprop " << prop_type << std::endl;}
+          pos_GP = tsos_ch.globalPosition();
+          pos_startingPoint_GP = tsos_seg.globalPosition();
+	      }
       }
     }
   }
@@ -860,13 +853,8 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     }
   }
 
-  //testing region:
   if (prop_type == 5 and RecoSegment.size()>0){
     if (debug) cout << "prop 5 loop in propagate_to_gem, RecoSegment size:" << RecoSegment.size() << endl;
-    //CSCSegmentCollection::const_iterator RecoSeg;
-    //for (RecoSeg = cscSegmentsReco->begin(); RecoSeg !=cscSegmentsReco->end(); RecoSeg++){
-    //LocalVector momentum_at_surface = RecoSegment->localDirection();
-    //DetId segDetId = RecoSegment->geographicalId();
     LocalVector momentum_at_surface = RecoSegment[0]->localDirection();
     DetId segDetId = RecoSegment[0]->geographicalId();
     const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
@@ -888,10 +876,8 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     }
     else {return;}
 
-    //LocalTrajectoryParameters param(RecoSegment->localPosition(), momentum_at_surface, mu->charge());
     LocalTrajectoryParameters param(RecoSegment[0]->localPosition(), momentum_at_surface, mu->charge());
     AlgebraicSymMatrix mat(5,0);
-    //mat = RecoSegment->parametersError().similarityT(RecoSegment->projectionMatrix());
     mat = RecoSegment[0]->parametersError().similarityT(RecoSegment[0]->projectionMatrix());
     LocalTrajectoryError error(asSMatrix<5>(mat));
     TrajectoryStateOnSurface tsos_seg(param, error, segDet->surface(), &*theService_->magneticField());
@@ -901,15 +887,14 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
       const LocalPoint pos2D_local_ch(pos_local_ch.x(), pos_local_ch.y(), 0);
       const LocalVector direction_local_ch = ch->toLocal(tsos_ch.globalDirection());
       if (!(tsos_ch.globalPosition().z() * tsos_seg.globalPosition().z() < 0) and bps.bounds().inside(pos2D_local_ch) and ch->id().station() == 1 and ch->id().ring() == 1) {
-	tmp_has_prop = true;
-	if (debug) cout << "tmp_has_prop " << tmp_has_prop << endl;
-	pos_GP = tsos_ch.globalPosition();
-	pos_startingPoint_GP = tsos_seg.globalPosition();
-	prop_dxdz = direction_local_ch.x()/direction_local_ch.z();
+        tmp_has_prop = true;
+        //if (debug) cout << "tmp_has_prop " << tmp_has_prop << endl;
+        pos_GP = tsos_ch.globalPosition();
+        pos_startingPoint_GP = tsos_seg.globalPosition();
+        prop_dxdz = direction_local_ch.x()/direction_local_ch.z();
       }
     }
   }
-  //end of testing region
 
   if (tmp_has_prop){
     //if (debug) cout << "Valid GEM prop" << endl;
@@ -932,7 +917,6 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
     data_.prop_location[0] = ch->id().region(); data_.prop_location[1] = ch->id().station(); data_.prop_location[2] = ch->id().chamber(); data_.prop_location[3] = ch->id().layer(); data_.prop_location[4] = ch->id().roll();
     //if (debug) cout << "prop region:station:chamber:layer:roll " << data_.prop_location[0] << ":" << data_.prop_location[1] << ":"<< data_.prop_location[2] << ":" << data_.prop_location[3] << ":" << data_.prop_location[4] << endl; 
     data_.inner_or_outer_mom = tmp_inner_or_outer_mom;
-    //if (debug) cout << "bunch of data.branches filled" << endl;
   }
 }
 
@@ -949,12 +933,9 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
   int tmp_rechit_region; int tmp_rechit_station; int tmp_rechit_chamber; int tmp_rechit_layer; int tmp_rechit_roll; int tmp_rechit_region_GE21; int tmp_rechit_station_GE21; int tmp_rechit_chamber_GE21; int tmp_rechit_layer_GE21; int tmp_rechit_roll_GE21;
   int tmp_nRecHitsRpos1L1 = 0; int tmp_nRecHitsRpos1L2 = 0; int tmp_nRecHitsRneg1L1 = 0; int tmp_nRecHitsRneg1L2 = 0; int tmp_nRecHitsRpos1L1_GE21 = 0; int tmp_nRecHitsRpos1L2_GE21 = 0; int tmp_nRecHitsRneg1L1_GE21 = 0; int tmp_nRecHitsRneg1L2_GE21 = 0;
 
-  //if (debug) cout << "gem_rechit_matcher ch: station,chamber, layer,roll,region" << ch->id().station() << ch->id().chamber() << ch->id().layer() << ch->id().roll() << ch->id().region() << endl;
   if (debug) cout << "gemRecHits->size(): " << gemRecHits->size() << endl;
   for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++) {
-    //if (debug) cout << "gemRecHits loop within the rechit matcher function" << endl;
     if ((hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM) {
-      //if (debug) cout << "getting detector info" << endl;
       GEMDetId gemid((hit)->geographicalId());
       if (gemid.region() == 1) {
         if (gemid.layer() == 1) {tmp_nRecHitsRpos1L1++;}
@@ -965,12 +946,10 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
         if (gemid.layer() == 2) {tmp_nRecHitsRneg1L2++;}
       }
       int test_st = ch->id().station(); int test_ch = ch->id().chamber(); int test_lay = ch->id().layer(); int test_rol = ch->id().roll(); int test_reg = ch->id().region();
-      if (debug) cout << "gemid: station,chamber,layer,roll,region " << gemid.station() << gemid.chamber() << gemid.layer() << gemid.roll() << gemid.region() << " ch " << test_st << test_ch << test_lay << test_rol << test_reg << endl;
+      //if (debug) cout << "gemid: station,chamber,layer,roll,region " << gemid.station() << gemid.chamber() << gemid.layer() << gemid.roll() << gemid.region() << " ch " << test_st << test_ch << test_lay << test_rol << test_reg << endl;
 
       if (gemid.station() == ch->id().station() and gemid.chamber() == ch->id().chamber() and gemid.layer() == ch->id().layer() and abs(gemid.roll() - ch->id().roll()) <= 1 and gemid.region() == ch->id().region()) {
-        if (debug) cout << "matching gemid chamber with ch" << endl;
         const auto& etaPart = GEMGeometry_->etaPartition(gemid);
-        if (debug) cout << "etaPart" << endl;
         float strip = etaPart->strip(hit->localPosition());
         float stripAngle = etaPart->specificTopology().stripAngle(strip);
         if (debug) cout << "stripAngle: " << stripAngle << endl;
@@ -987,14 +966,14 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             tmp_rechit_GP_y = etaPart->toGlobal((hit)->localPosition()).y();
             tmp_rechit_GP_z = etaPart->toGlobal((hit)->localPosition()).z();
             tmp_rechit_LP_x = (hit)->localPosition().x();   tmp_rechit_LP_y = rechit_y_to_chamber + (hit)->localPosition().y();    tmp_rechit_LP_z = (hit)->localPosition().z();
-	    tmp_rechit_yroll = (hit)->localPosition().y();
-	    float local_phi = local_to_center.phi(); 
-	    tmp_rechit_localphi_rad = (3.14159265/2.) - local_phi;
-	    tmp_rechit_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
-	    tmp_has_rechit = true;
+            tmp_rechit_yroll = (hit)->localPosition().y();
+            float local_phi = local_to_center.phi(); 
+            tmp_rechit_localphi_rad = (3.14159265/2.) - local_phi;
+            tmp_rechit_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
+            tmp_has_rechit = true;
             tmp_rechit_first_strip = (hit)->firstClusterStrip();
-	    tmp_rechit_CLS = (hit)->clusterSize();
-	    tmp_rechit_BunchX = (hit)->BunchX();
+            tmp_rechit_CLS = (hit)->clusterSize();
+            tmp_rechit_BunchX = (hit)->BunchX();
 
             //Calculating the bending angle = CSC segment phi - GEM rechit phi
             if (data_.hasME11) {
@@ -1007,12 +986,8 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
               }
 
               if (prop_type==5){
-		//CSCSegmentCollection::const_iterator RecoSeg;
-                //for (RecoSeg = cscSegmentsReco->begin(); RecoSeg !=cscSegmentsReco->end(); RecoSeg++){
-                //DetId segDetId = RecoSegment->geographicalId();
                 DetId segDetId = RecoSegment[0]->geographicalId();
                 const GeomDet* segDet = theTrackingGeometry->idToDet(segDetId);
-                //CSC_segment_phi = (segDet->toGlobal(RecoSegment->localPosition())).phi();
                 CSC_segment_phi = (segDet->toGlobal(RecoSegment[0]->localPosition())).phi();
                 if (debug) cout<< "CSC_segment_phi: " << CSC_segment_phi << endl;
               }
@@ -1029,18 +1004,18 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             if ((gemid.region() == 1 and gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)) {
               tmp_RdPhi_Corrected = -1.0*tmp_RdPhi_Corrected;
             }
-            if ((gemid.region() == -1 and gemid.chamber()%2 == 1) || (gemid.region() == 1 && gemid.chamber()%2 == 0)) {
-              tmp_dPhi_Corrected = -1.0*tmp_dPhi_Corrected;
-            }
+            if ((gemid.chamber()%2 == 0)) {tmp_dPhi_Corrected = -1.0*tmp_dPhi_Corrected;}
             /*
-            Comment on SIgn Convention: notice that for the residual calculation in phi we have dphi = rechit_phi - prop_phi.
+            Comment on Sign Convention: notice that for the residual calculation in phi we have dphi = rechit_phi - prop_phi.
             Also dphi_corrected is flipped from what rdphi_corrected was. these are because in firmware, the -endcap's phi matches the global phi.
-	     */
+            edit (Feb 5, 2025): firmware apparently takes the switch into account. so -Endcap sign needs to be flipped from what we had previously. slide 6: https://indico.cern.ch/event/1447286/contributions/6096480/attachments/2914050/5113471/GM@CSC_GEMalignmentOTMB%20-%2021Aug2024.pdf 
+            so according to firmware, the fix should not specify the endcap. it should be even chambers: dPhi_Corrected: -1*tmp_dPhi_Corrected 
+	          */
             tmp_rechit_detId = gemid.region()*(gemid.station()*100 + gemid.chamber());
             tmp_rechit_region = gemid.region();  tmp_rechit_station = gemid.station();
             tmp_rechit_chamber = gemid.chamber();  tmp_rechit_layer = gemid.layer();
             tmp_rechit_roll = gemid.roll();
-            if (debug) cout << "rechit_detId:RdPhi:RdPhi_Corrected:dPhi:dPhi_Corrected\t" << tmp_rechit_detId << ":" << tmp_RdPhi << ":" << tmp_RdPhi_Corrected << ":" << tmp_dPhi << ":" << tmp_dPhi_Corrected << endl;
+            //if (debug) cout << "rechit_detId:RdPhi:RdPhi_Corrected:dPhi:dPhi_Corrected\t" << tmp_rechit_detId << ":" << tmp_RdPhi << ":" << tmp_RdPhi_Corrected << ":" << tmp_dPhi << ":" << tmp_dPhi_Corrected << endl;
           }
         }
         //below is for GE2/1:(incomplete)
@@ -1077,7 +1052,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             tmp_rechit_region_GE21 = gemid.region();  tmp_rechit_station_GE21 = gemid.station();
             tmp_rechit_chamber_GE21 = gemid.chamber();  tmp_rechit_layer_GE21 = gemid.layer();
             tmp_rechit_roll_GE21 = gemid.roll();
-            if (debug) cout << "GE21 rechit_detId:RdPhi:RdPhi_Corrected:dPhi:dPhi_Corrected\t" << tmp_rechit_detId_GE21 << ":" << tmp_RdPhi_GE21 << ":" << tmp_RdPhi_Corrected_GE21 << ":" << tmp_dPhi_GE21 << ":" << tmp_dPhi_Corrected_GE21 << endl;
+            //if (debug) cout << "GE21 rechit_detId:RdPhi:RdPhi_Corrected:dPhi:dPhi_Corrected\t" << tmp_rechit_detId_GE21 << ":" << tmp_RdPhi_GE21 << ":" << tmp_RdPhi_Corrected_GE21 << ":" << tmp_dPhi_GE21 << ":" << tmp_dPhi_Corrected_GE21 << endl;
           }
         }
       }
@@ -1135,13 +1110,13 @@ void analyzer::GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP
       float dx = prop_GP.x() - etaPart->toGlobal(simHit.localPosition()).x();
       if (dy < tmpDy) tmpDy = dy;
       if (pow(pow(dy, 2) + pow(dx, 2), 0.5) < tmpDr){
-	tmp_sim_GP_x = etaPart->toGlobal(simHit.localPosition()).x();
-	tmp_sim_GP_y = etaPart->toGlobal(simHit.localPosition()).y();
-	tmp_sim_GP_z = etaPart->toGlobal(simHit.localPosition()).z();
-	tmp_sim_LP_x = simHit.localPosition().x();
-	tmp_sim_LP_y = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2))).y() + simHit.localPosition().y();
+        tmp_sim_GP_x = etaPart->toGlobal(simHit.localPosition()).x();
+        tmp_sim_GP_y = etaPart->toGlobal(simHit.localPosition()).y();
+        tmp_sim_GP_z = etaPart->toGlobal(simHit.localPosition()).z();
+        tmp_sim_LP_x = simHit.localPosition().x();
+        tmp_sim_LP_y = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2))).y() + simHit.localPosition().y();
         tmp_sim_LP_z = simHit.localPosition().z();
-	tmpDr = pow(pow(dy, 2) + pow(dx, 2), 0.5);
+	      tmpDr = pow(pow(dy, 2) + pow(dx, 2), 0.5);
         has_tmp = true;
       }
     }
