@@ -2,7 +2,7 @@ from CRABClient.UserUtilities import config
 config = config()
 
 #section General
-config.General.requestName = 'Spring2025_MC_ideal' 
+config.General.requestName = 'Spring2025_MC_applyAlign' 
 config.General.workArea = 'crabLogs'#working directory
 config.General.transferOutputs = True
 config.General.transferLogs = True

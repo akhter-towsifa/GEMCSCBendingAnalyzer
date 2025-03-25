@@ -60,8 +60,8 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 ################################
 
-process.GEMGeometryESModule.applyAlignment = cms.bool(False)
-process.CSCGeometryESModule.applyAlignment = cms.bool(False)
+process.GEMGeometryESModule.applyAlignment = cms.bool(True)
+process.CSCGeometryESModule.applyAlignment = cms.bool(True)
 
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
