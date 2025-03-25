@@ -679,16 +679,16 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
 }
 
 void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP, MuonData& data_){
-  float tmp_rechit_GP_x; float tmp_rechit_GP_y; float tmp_rechit_GP_z;
-  float tmp_rechit_LP_x; float tmp_rechit_LP_y; float tmp_rechit_LP_z;
-  float tmp_rechit_yroll; float tmp_rechit_localphi_rad; float tmp_rechit_localphi_deg;
+  float tmp_rechit_GP_x=999999; float tmp_rechit_GP_y=999999; float tmp_rechit_GP_z=999999;
+  float tmp_rechit_LP_x=999999; float tmp_rechit_LP_y=999999; float tmp_rechit_LP_z=999999;
+  float tmp_rechit_yroll=999999; float tmp_rechit_localphi_rad=999999; float tmp_rechit_localphi_deg=999999;
   bool tmp_has_rechit = false;
-  int tmp_rechit_first_strip; int tmp_rechit_CLS; int tmp_rechit_BunchX;
-  float tmp_RdPhi = 9999.; float tmp_RdPhi_Corrected; int tmp_rechit_detId;
-  float tmp_dPhi = 9999.; float tmp_dPhi_Corrected;
+  int tmp_rechit_first_strip=999999; int tmp_rechit_CLS=999999; int tmp_rechit_BunchX=999999;
+  float tmp_RdPhi = 9999.; float tmp_RdPhi_Corrected=9999; int tmp_rechit_detId=999999;
+  float tmp_dPhi = 9999.; float tmp_dPhi_Corrected=9999;
   float tmp_bending_angle = 9999.;
   int tmp_nRecHitsTot = 0; int tmp_nRecHits5 = 0; int tmp_nRecHits2 = 0;
-  int tmp_rechit_region; int tmp_rechit_station; int tmp_rechit_chamber; int tmp_rechit_layer; int tmp_rechit_roll;
+  int tmp_rechit_region = 0; int tmp_rechit_station = 0; int tmp_rechit_chamber = 0; int tmp_rechit_layer = 0; int tmp_rechit_roll = 0;
   int tmp_nRecHitsRpos1L1 = 0; int tmp_nRecHitsRpos1L2 = 0; int tmp_nRecHitsRneg1L1 = 0; int tmp_nRecHitsRneg1L2 = 0;
   for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++) {
     if ((hit)->geographicalId().det() == DetId::Detector::Muon && (hit)->geographicalId().subdetId() == MuonSubdetId::GEM) {
