@@ -1,17 +1,13 @@
 import FWCore.ParameterSet.Config as cms
-#from Configuration.Eras.Era_Phase2C9_cff import Phase2C9
 from Configuration.Eras.Era_Run3_cff import Run3
 
-#process = cms.Process('analyzer',Phase2C9)
 process = cms.Process('analyzer',Run3)
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 #process.load('Configuration.StandardSequences.MagneticField_0T_cff') #0T for cruzet runs
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-#process.load('Configuration.Geometry.GeometryExtended2026D49Reco_cff')
 process.load('RecoMuon.TrackingTools.MuonServiceProxy_cff')
-#process.load('Configuration.StandardSequences.SimIdeal_cff')
 process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 
@@ -20,55 +16,56 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 ### This is the misalignment part
 
-misalign = True
-do_GEM = True
-do_CSC = True
-if misalign:
-  #db_file = 'sqlite_file:dummy_dx1.db'
-  #gem_db_file = 'sqlite_file:GEMAllZeros.db' #for GEM
-  #csc_db_file = 'sqlite_file:Run3v1.db' #for csc alignment only in this case
-  #gpr_db_file = 'sqlite_file:Run3v1.db' #for gpr only in this case
-  #process.GlobalTag.toGet = cms.VPSet(
-  #  #GE11 rec/tag
-  #  cms.PSet(
-  #      connect = cms.string(gem_db_file),
-  #      record = cms.string('GEMAlignmentRcd'),
-  #      tag = cms.string('GEMAlignmentRcd')
-  #  ),
-  #  cms.PSet(
-  #      connect = cms.string(gem_db_file),
-  #      record = cms.string('GEMAlignmentErrorExtendedRcd'),
-  #      tag = cms.string('GEMAlignmentErrorExtendedRcd')
-  #  ),
-  #  #ME11 rec/tag
-  #  cms.PSet(
-  #      connect = cms.string(csc_db_file),
-  #      record = cms.string('CSCAlignmentRcd'),
-  #      tag = cms.string('CSCAlignmentRcd')
-  #  ),
-  #  cms.PSet(
-  #      connect = cms.string(csc_db_file),
-  #      record = cms.string('CSCAlignmentErrorExtendedRcd'),
-  #      tag = cms.string('CSCAlignmentErrorExtendedRcd')
-  #  ),
-  #  cms.PSet(
-  #      connect = cms.string(gpr_db_file), 
-  #      record = cms.string('GlobalPositionRcd'), 
-  #      tag = cms.string('GlobalPositionRcd') #cms.string('IdealGeometry')
-  #  )
-  #)
+# misalign = True
+# do_GEM = True
+# do_CSC = True
+# if misalign:
+#   #db_file = 'sqlite_file:dummy_dx1.db'
+#   #gem_db_file = 'sqlite_file:GEMAllZeros.db' #for GEM
+#   #csc_db_file = 'sqlite_file:Run3v1.db' #for csc alignment only in this case
+#   #gpr_db_file = 'sqlite_file:Run3v1.db' #for gpr only in this case
+#   #process.GlobalTag.toGet = cms.VPSet(
+#   #  #GE11 rec/tag
+#   #  cms.PSet(
+#   #      connect = cms.string(gem_db_file),
+#   #      record = cms.string('GEMAlignmentRcd'),
+#   #      tag = cms.string('GEMAlignmentRcd')
+#   #  ),
+#   #  cms.PSet(
+#   #      connect = cms.string(gem_db_file),
+#   #      record = cms.string('GEMAlignmentErrorExtendedRcd'),
+#   #      tag = cms.string('GEMAlignmentErrorExtendedRcd')
+#   #  ),
+#   #  #ME11 rec/tag
+#   #  cms.PSet(
+#   #      connect = cms.string(csc_db_file),
+#   #      record = cms.string('CSCAlignmentRcd'),
+#   #      tag = cms.string('CSCAlignmentRcd')
+#   #  ),
+#   #  cms.PSet(
+#   #      connect = cms.string(csc_db_file),
+#   #      record = cms.string('CSCAlignmentErrorExtendedRcd'),
+#   #      tag = cms.string('CSCAlignmentErrorExtendedRcd')
+#   #  ),
+#   #  cms.PSet(
+#   #      connect = cms.string(gpr_db_file), 
+#   #      record = cms.string('GlobalPositionRcd'), 
+#   #      tag = cms.string('GlobalPositionRcd') #cms.string('IdealGeometry')
+#   #  )
+#   #)
 
 
-  process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
-  process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
+#   process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
+#   process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
 
 ################################
 
-
+process.GEMGeometryESModule.applyAlignment = cms.bool(False)
+process.CSCGeometryESModule.applyAlignment = cms.bool(False)
 
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, '130X_dataRun3_Prompt_v4', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '142X_mcRun3_2025_realistic_v7', '')
 
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 5000
@@ -98,9 +95,9 @@ process.source = cms.Source("PoolSource",
 				)
 
 
-outfile = "out_GE11ana_test.root"
-process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2023C/Muon0/RAW-RECO/ZMu-PromptReco-v4/000/367/770/00000/2447cf21-13e3-4bdf-9b8a-b868f498d522.root')
-#process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_109.root')
+outfile = "out_GE11ana_MC.root"
+# process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2023C/Muon0/RAW-RECO/ZMu-PromptReco-v4/000/367/770/00000/2447cf21-13e3-4bdf-9b8a-b868f498d522.root')
+process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_109.root')
 
 
 process.options = cms.untracked.PSet(
@@ -114,11 +111,11 @@ process.analyzer = cms.EDAnalyzer('analyzer',
 	gemRecHits = cms.InputTag("gemRecHits"), 
 	gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("muons"),
-	vertexCollection = cms.InputTag("offlinePrimaryVertices"),
-        tracker_prop = cms.bool(False),
+	      vertexCollection = cms.InputTag("offlinePrimaryVertices"),
+        tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(False),
         Segment_prop = cms.bool(True),
-        debug = cms.bool(True), #set to False before submitting a crab job
+        debug = cms.bool(False), #set to False before submitting a crab job
         isCosmic = cms.bool(False)
 )
 
