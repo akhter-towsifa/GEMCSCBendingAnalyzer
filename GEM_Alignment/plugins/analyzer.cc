@@ -717,14 +717,14 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             tmp_rechit_GP_y = etaPart->toGlobal((hit)->localPosition()).y();
             tmp_rechit_GP_z = etaPart->toGlobal((hit)->localPosition()).z();
             tmp_rechit_LP_x = (hit)->localPosition().x();   tmp_rechit_LP_y = rechit_y_to_chamber + (hit)->localPosition().y();    tmp_rechit_LP_z = (hit)->localPosition().z();
-	    tmp_rechit_yroll = (hit)->localPosition().y();
-	    float local_phi = local_to_center.phi(); 
-	    tmp_rechit_localphi_rad = (3.14159265/2.) - local_phi;
-	    tmp_rechit_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
-	    tmp_has_rechit = true;
+            tmp_rechit_yroll = (hit)->localPosition().y();
+            float local_phi = local_to_center.phi(); 
+            tmp_rechit_localphi_rad = (3.14159265/2.) - local_phi;
+            tmp_rechit_localphi_deg = ((3.14159265/2.) - local_phi)*(180./3.14159265);
+            tmp_has_rechit = true;
             tmp_rechit_first_strip = (hit)->firstClusterStrip();
-	    tmp_rechit_CLS = (hit)->clusterSize();
-	    tmp_rechit_BunchX = (hit)->BunchX();
+            tmp_rechit_CLS = (hit)->clusterSize();
+            tmp_rechit_BunchX = (hit)->BunchX();
 
             if (debug) cout << "cluster size of recHit: " << tmp_rechit_CLS << endl;
 
@@ -752,7 +752,7 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             /*
             comment on sign convention: notice that for the residual calculation in phi we have dphi = rechit_phi - prop_phi.
             Also dphi_corrected is flipped from what rdphi_corrected was. these are because in firmware, the -endcap's phi matches the global phi.
-	     */
+	          */
             tmp_rechit_detId = gemid.region()*(gemid.station()*100 + gemid.chamber());
             tmp_rechit_region = gemid.region();  tmp_rechit_station = gemid.station();
             tmp_rechit_chamber = gemid.chamber();  tmp_rechit_layer = gemid.layer();
@@ -797,13 +797,13 @@ void analyzer::GEM_simhit_matcher(const GEMEtaPartition* ch, GlobalPoint prop_GP
       float dx = prop_GP.x() - etaPart->toGlobal(simHit.localPosition()).x();
       if (dy < tmpDy) tmpDy = dy;
       if (pow(pow(dy, 2) + pow(dx, 2), 0.5) < tmpDr){
-	tmp_sim_GP_x = etaPart->toGlobal(simHit.localPosition()).x();
-	tmp_sim_GP_y = etaPart->toGlobal(simHit.localPosition()).y();
-	tmp_sim_GP_z = etaPart->toGlobal(simHit.localPosition()).z();
-	tmp_sim_LP_x = simHit.localPosition().x();
-	tmp_sim_LP_y = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2))).y() + simHit.localPosition().y();
+        tmp_sim_GP_x = etaPart->toGlobal(simHit.localPosition()).x();
+        tmp_sim_GP_y = etaPart->toGlobal(simHit.localPosition()).y();
+        tmp_sim_GP_z = etaPart->toGlobal(simHit.localPosition()).z();
+        tmp_sim_LP_x = simHit.localPosition().x();
+        tmp_sim_LP_y = (GEMGeometry_->chamber(ch->id()))->toLocal(etaPart->toGlobal(etaPart->centreOfStrip(etaPart->nstrips()/2))).y() + simHit.localPosition().y();
         tmp_sim_LP_z = simHit.localPosition().z();
-	tmpDr = pow(pow(dy, 2) + pow(dx, 2), 0.5);
+	      tmpDr = pow(pow(dy, 2) + pow(dx, 2), 0.5);
         has_tmp = true;
       }
     }
