@@ -95,9 +95,9 @@ process.source = cms.Source("PoolSource",
 				)
 
 
-outfile = "out_GE11ana_MC.root"
-# process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2023C/Muon0/RAW-RECO/ZMu-PromptReco-v4/000/367/770/00000/2447cf21-13e3-4bdf-9b8a-b868f498d522.root')
-process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_109.root')
+outfile = "/eos/user/t/toakhter/tamu_mual/MC/Run3Winter25Reco_142X_mcRun3_2025_realistic_v7-v2_out_GE11ana_MC.root"
+process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/mc/Run3Winter25Reco/DYto2L-4Jets_Bin-MLL-50_TuneCP5_13p6TeV_madgraphMLM-pythia8/GEN-SIM-RECO/142X_mcRun3_2025_realistic_v7-v2/110000/00cb6732-d430-4bd1-a1ce-761e24de5702.root')
+# process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_109.root')
 
 
 process.options = cms.untracked.PSet(
@@ -115,7 +115,7 @@ process.analyzer = cms.EDAnalyzer('analyzer',
         tracker_prop = cms.bool(True),
         CSC_prop = cms.bool(False),
         Segment_prop = cms.bool(True),
-        debug = cms.bool(False), #set to False before submitting a crab job
+        debug = cms.bool(True), #set to False before submitting a crab job
         isCosmic = cms.bool(False)
 )
 
