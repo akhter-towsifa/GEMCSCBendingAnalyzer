@@ -113,17 +113,6 @@ struct MuonData
   int rechit_location[5];
   int nRecHitsRpos1L1; int nRecHitsRpos1L2;
   int nRecHitsRneg1L1; int nRecHitsRneg1L2;
-  //============ Rechit Info GE21 =============//
-  float rechit_GP_GE21[3]; float rechit_LP_GE21[3];        bool has_rechit_GE21;
-  float rechit_yroll_GE21; float rechit_localphi_rad_GE21; float rechit_localphi_deg_GE21;
-  int rechit_first_strip_GE21;     int rechit_CLS_GE21;    int rechit_BunchX_GE21;
-  float RdPhi_GE21;        float RdPhi_Corrected_GE21;     int rechit_detId_GE21;
-  float dPhi_GE21;   float dPhi_Corrected_GE21;
-  float bending_angle_GE21;
-  int nRecHitsTot_GE21;    int nRecHits5_GE21;             int nRecHits2_GE21;
-  int rechit_location_GE21[5];
-  int nRecHitsRpos1L1_GE21; int nRecHitsRpos1L2_GE21;
-  int nRecHitsRneg1L1_GE21; int nRecHitsRneg1L2_GE21;
   //=========== Sim info for MC ==========//
   float sim_GP[3];   float sim_LP[3];
   float simDy;       float sim_yroll;            int nSim;
@@ -175,22 +164,6 @@ void MuonData::init()
   }
   nRecHitsRpos1L1 = 999999; nRecHitsRpos1L2 = 999999;
   nRecHitsRneg1L1 = 999999; nRecHitsRneg1L2 = 999999;
-  //=========== Rechit Info GE21 ===========//
-  for (int i=0; i<3; ++i){
-    rechit_GP_GE21[i] = 999999; rechit_LP_GE21[i] = 999999;
-  }
-  rechit_yroll_GE21 = 999999; rechit_localphi_rad_GE21 = 999999; rechit_localphi_deg_GE21 = 999999;
-  has_rechit_GE21 = false;
-  rechit_first_strip_GE21 = 999999; rechit_CLS_GE21 = 999999; rechit_BunchX_GE21 = 999999;
-  RdPhi_GE21 = 999999; RdPhi_Corrected_GE21 = 999999; rechit_detId_GE21 = 999999;
-  dPhi_GE21 = 999999; dPhi_Corrected_GE21 = 999999;
-  bending_angle_GE21 = 999999;
-  nRecHitsTot_GE21 = 999999; nRecHits5_GE21 = 999999; nRecHits2_GE21 = 999999;
-  for (int i=0; i<5; ++i){
-    rechit_location_GE21[i] = 999999;
-  }
-  nRecHitsRpos1L1_GE21 = 999999; nRecHitsRpos1L2_GE21 = 999999;
-  nRecHitsRneg1L1_GE21 = 999999; nRecHitsRneg1L2_GE21 = 999999;
 
   //Sim info for MC
   for (int i=0; i<3; ++i){
@@ -275,30 +248,6 @@ TTree* MuonData::book(TTree *t, int prop_type){
   t->Branch("nRecHitsRpos1L2", &nRecHitsRpos1L2);
   t->Branch("nRecHitsRneg1L1", &nRecHitsRneg1L1);
   t->Branch("nRecHitsRneg1L2", &nRecHitsRneg1L2);
-  //========== Rechit Info GE21 ============//
-  t->Branch("rechit_GP_GE21", &rechit_GP_GE21, "rechit_GP_GE21[3] (x,y,z)/F");
-  t->Branch("rechit_LP_GE21", &rechit_LP_GE21, "rechit_LP_GE21[3] (x,y,z)/F");
-  t->Branch("rechit_yroll_GE21", &rechit_yroll_GE21);
-  t->Branch("rechit_localphi_rad_GE21", &rechit_localphi_rad_GE21);
-  t->Branch("rechit_localphi_deg_GE21", &rechit_localphi_deg_GE21);
-  t->Branch("has_rechit_GE21", &has_rechit_GE21);
-  t->Branch("rechit_first_strip_GE21", &rechit_first_strip_GE21);
-  t->Branch("rechit_CLS_GE21", &rechit_CLS_GE21);
-  t->Branch("rechit_BunchX_GE21", &rechit_BunchX_GE21);
-  t->Branch("RdPhi_GE21", &RdPhi_GE21);
-  t->Branch("RdPhi_Corrected_GE21", &RdPhi_Corrected_GE21);
-  t->Branch("dPhi_GE21", &dPhi_GE21);
-  t->Branch("dPhi_Corrected_GE21", &dPhi_Corrected_GE21);
-  t->Branch("rechit_detId_GE21", &rechit_detId_GE21);
-  t->Branch("bending_angle_GE21", &bending_angle_GE21);
-  t->Branch("nRecHitsTot_GE21", &nRecHitsTot_GE21);
-  t->Branch("nRecHits2_GE21", &nRecHits2_GE21);
-  t->Branch("nRecHits5_GE21", &nRecHits5_GE21);
-  t->Branch("rechit_location_GE21", &rechit_location_GE21, "rechit_location_GE21[5] (reg, sta, cha, lay, rol)/I");
-  t->Branch("nRecHitsRpos1L1_GE21", &nRecHitsRpos1L1_GE21);
-  t->Branch("nRecHitsRpos1L2_GE21", &nRecHitsRpos1L2_GE21);
-  t->Branch("nRecHitsRneg1L1_GE21", &nRecHitsRneg1L1_GE21);
-  t->Branch("nRecHitsRneg1L2_GE21", &nRecHitsRneg1L2_GE21);
   //========== Sim Info ==============//
   t->Branch("sim_GP", &sim_GP, "sim_GP[3] (x,y,z)/F");
   t->Branch("sim_LP", &sim_LP, "sim_LP[3] (x,y,z)/F");
@@ -921,17 +870,17 @@ void analyzer::propagate_to_GEM(const reco::Muon* mu, const GEMEtaPartition* ch,
 }
 
 void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP, MuonData& data_, int prop_type, std::vector<const CSCSegment*> RecoSegment){//const CSCSegment* RecoSegment){//const CSCSegmentCollection::const_iterator* RecoSegment){
-  float tmp_rechit_GP_x=999999; float tmp_rechit_GP_y=999999; float tmp_rechit_GP_z=999999; float tmp_rechit_GP_x_GE21; float tmp_rechit_GP_y_GE21; float tmp_rechit_GP_z_GE21;
-  float tmp_rechit_LP_x=999999; float tmp_rechit_LP_y=999999; float tmp_rechit_LP_z=999999; float tmp_rechit_LP_x_GE21; float tmp_rechit_LP_y_GE21; float tmp_rechit_LP_z_GE21;
-  float tmp_rechit_yroll=999999; float tmp_rechit_localphi_rad=999999; float tmp_rechit_localphi_deg=999999; float tmp_rechit_yroll_GE21; float tmp_rechit_localphi_rad_GE21; float tmp_rechit_localphi_deg_GE21;
-  bool tmp_has_rechit = false; bool tmp_has_rechit_GE21 = false;
-  int tmp_rechit_first_strip=999999; int tmp_rechit_CLS=999999; int tmp_rechit_BunchX=999999; int tmp_rechit_first_strip_GE21; int tmp_rechit_CLS_GE21; int tmp_rechit_BunchX_GE21;
-  float tmp_RdPhi = 9999.; float tmp_RdPhi_Corrected = 9999; int tmp_rechit_detId=999999; float tmp_RdPhi_GE21 = 9999.; float tmp_RdPhi_Corrected_GE21; int tmp_rechit_detId_GE21;
-  float tmp_dPhi = 9999.; float tmp_dPhi_Corrected = 9999; float tmp_dPhi_GE21 = 9999.; float tmp_dPhi_Corrected_GE21;
-  float tmp_bending_angle = 9999.; float tmp_bending_angle_GE21 = 9999.;
-  int tmp_nRecHitsTot = 0; int tmp_nRecHits5 = 0; int tmp_nRecHits2 = 0; int tmp_nRecHitsTot_GE21 = 0; int tmp_nRecHits5_GE21 = 0; int tmp_nRecHits2_GE21 = 0;
-  int tmp_rechit_region = 0; int tmp_rechit_station= 0; int tmp_rechit_chamber = 0; int tmp_rechit_layer = 0; int tmp_rechit_roll = 0; int tmp_rechit_region_GE21; int tmp_rechit_station_GE21; int tmp_rechit_chamber_GE21; int tmp_rechit_layer_GE21; int tmp_rechit_roll_GE21;
-  int tmp_nRecHitsRpos1L1 = 0; int tmp_nRecHitsRpos1L2 = 0; int tmp_nRecHitsRneg1L1 = 0; int tmp_nRecHitsRneg1L2 = 0; int tmp_nRecHitsRpos1L1_GE21 = 0; int tmp_nRecHitsRpos1L2_GE21 = 0; int tmp_nRecHitsRneg1L1_GE21 = 0; int tmp_nRecHitsRneg1L2_GE21 = 0;
+  float tmp_rechit_GP_x=999999; float tmp_rechit_GP_y=999999; float tmp_rechit_GP_z=999999;
+  float tmp_rechit_LP_x=999999; float tmp_rechit_LP_y=999999; float tmp_rechit_LP_z=999999;
+  float tmp_rechit_yroll=999999; float tmp_rechit_localphi_rad=999999; float tmp_rechit_localphi_deg=999999;
+  bool tmp_has_rechit = false;
+  int tmp_rechit_first_strip=999999; int tmp_rechit_CLS=999999; int tmp_rechit_BunchX=999999;
+  float tmp_RdPhi = 9999.; float tmp_RdPhi_Corrected = 9999; int tmp_rechit_detId=999999;
+  float tmp_dPhi = 9999.; float tmp_dPhi_Corrected = 9999; 
+  float tmp_bending_angle = 9999.;
+  int tmp_nRecHitsTot = 0; int tmp_nRecHits5 = 0; int tmp_nRecHits2 = 0;
+  int tmp_rechit_region = 0; int tmp_rechit_station= 0; int tmp_rechit_chamber = 0; int tmp_rechit_layer = 0; int tmp_rechit_roll = 0;
+  int tmp_nRecHitsRpos1L1 = 0; int tmp_nRecHitsRpos1L2 = 0; int tmp_nRecHitsRneg1L1 = 0; int tmp_nRecHitsRneg1L2 = 0; 
 
   if (debug) cout << "gemRecHits->size(): " << gemRecHits->size() << endl;
   for (auto hit = gemRecHits->begin(); hit != gemRecHits->end(); hit++) {
@@ -1018,43 +967,6 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             //if (debug) cout << "rechit_detId:RdPhi:RdPhi_Corrected:dPhi:dPhi_Corrected\t" << tmp_rechit_detId << ":" << tmp_RdPhi << ":" << tmp_RdPhi_Corrected << ":" << tmp_dPhi << ":" << tmp_dPhi_Corrected << endl;
           }
         }
-        //below is for GE2/1:(incomplete)
-        if (ch->id().station()==2 and ch->id().ring()==1 and fabs((hit)->localPosition().x() - prop_LP.x())<999.0) {
-          tmp_nRecHitsTot_GE21++;
-          if (abs(RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch)) < 5) {tmp_nRecHits5_GE21++;}
-          if (abs(RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch)) < 2) {tmp_nRecHits2_GE21++;}
-          if (abs(tmp_RdPhi) > abs(RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch))) {
-            tmp_rechit_GP_x_GE21 = etaPart->toGlobal((hit)->localPosition()).x();
-            tmp_rechit_GP_y_GE21 = etaPart->toGlobal((hit)->localPosition()).y();
-            tmp_rechit_GP_z_GE21 = etaPart->toGlobal((hit)->localPosition()).z();
-            tmp_rechit_LP_x_GE21 = (hit)->localPosition().x();   tmp_rechit_LP_y_GE21 = rechit_y_to_chamber + (hit)->localPosition().y();    tmp_rechit_LP_z_GE21 = (hit)->localPosition().z();
-            tmp_rechit_yroll_GE21 = (hit)->localPosition().y();
-            float local_phi_GE21 = local_to_center.phi();
-            tmp_rechit_localphi_rad_GE21 = (3.14159265/2.) - local_phi_GE21;
-            tmp_rechit_localphi_deg_GE21 = ((3.14159265/2.) - local_phi_GE21)*(180./3.14159265);
-            tmp_has_rechit_GE21 = true;
-            tmp_rechit_first_strip_GE21 = (hit)->firstClusterStrip();
-            tmp_rechit_CLS_GE21 = (hit)->clusterSize();
-            tmp_rechit_BunchX_GE21 = (hit)->BunchX();
-
-            tmp_RdPhi_GE21 = RdPhi_func(stripAngle, hit, prop_LP.x(), prop_LP.y(), ch);
-            tmp_RdPhi_Corrected_GE21 = tmp_RdPhi_GE21;
-            tmp_dPhi_GE21 = tmp_rechit_localphi_rad_GE21 - data_.prop_localphi_rad; //units of radian
-            tmp_dPhi_Corrected_GE21 = tmp_dPhi_GE21;
-            //check the sign convention below with GE2/1 Firmware
-            if ((gemid.region() == 1 and gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)) {
-              tmp_RdPhi_Corrected_GE21 = -1.0*tmp_RdPhi_Corrected_GE21;
-            }
-            if ((gemid.region() == -1 and gemid.chamber()%2 == 1) || (gemid.region() == 1 && gemid.chamber()%2 == 0)) {
-              tmp_dPhi_Corrected_GE21 = -1.0*tmp_dPhi_Corrected_GE21;
-            }
-            tmp_rechit_detId_GE21 = gemid.region()*(gemid.station()*100 + gemid.chamber());
-            tmp_rechit_region_GE21 = gemid.region();  tmp_rechit_station_GE21 = gemid.station();
-            tmp_rechit_chamber_GE21 = gemid.chamber();  tmp_rechit_layer_GE21 = gemid.layer();
-            tmp_rechit_roll_GE21 = gemid.roll();
-            //if (debug) cout << "GE21 rechit_detId:RdPhi:RdPhi_Corrected:dPhi:dPhi_Corrected\t" << tmp_rechit_detId_GE21 << ":" << tmp_RdPhi_GE21 << ":" << tmp_RdPhi_Corrected_GE21 << ":" << tmp_dPhi_GE21 << ":" << tmp_dPhi_Corrected_GE21 << endl;
-          }
-        }
       }
     }
   }
@@ -1076,23 +988,6 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
     data_.nRecHitsTot = tmp_nRecHitsTot; data_.nRecHits5 = tmp_nRecHits5; data_.nRecHits2 = tmp_nRecHits2;
     data_.rechit_location[0] = tmp_rechit_region; data_.rechit_location[1] = tmp_rechit_station; data_.rechit_location[2] = tmp_rechit_chamber; data_.rechit_location[3] = tmp_rechit_layer; data_.rechit_location[4] = tmp_rechit_roll;
     data_.nRecHitsRpos1L1 = tmp_nRecHitsRpos1L1; data_.nRecHitsRpos1L2 = tmp_nRecHitsRpos1L2; data_.nRecHitsRneg1L1 = tmp_nRecHitsRneg1L1; data_.nRecHitsRneg1L2 = tmp_nRecHitsRneg1L2;
-    //below is for GE21
-    data_.rechit_GP_GE21[0] = tmp_rechit_GP_x_GE21; data_.rechit_GP_GE21[1] = tmp_rechit_GP_y_GE21; data_.rechit_GP_GE21[2] = tmp_rechit_GP_z_GE21;
-    data_.rechit_LP_GE21[0] = tmp_rechit_LP_x_GE21; data_.rechit_LP_GE21[1] = tmp_rechit_LP_y_GE21; data_.rechit_LP_GE21[2] = tmp_rechit_LP_z_GE21;
-    data_.rechit_yroll_GE21 = tmp_rechit_yroll_GE21;
-    data_.rechit_localphi_rad_GE21 = tmp_rechit_localphi_rad_GE21;
-    data_.rechit_localphi_deg_GE21 = tmp_rechit_localphi_deg_GE21;
-    data_.has_rechit_GE21 = tmp_has_rechit_GE21;
-    data_.rechit_first_strip_GE21 = tmp_rechit_first_strip_GE21;
-    data_.rechit_CLS_GE21 = tmp_rechit_CLS_GE21;
-    data_.rechit_BunchX_GE21 = tmp_rechit_BunchX_GE21;
-    data_.RdPhi_GE21 = tmp_RdPhi_GE21;                      data_.dPhi_GE21 = tmp_dPhi_GE21;
-    data_.RdPhi_Corrected_GE21 = tmp_RdPhi_Corrected_GE21;  data_.dPhi_Corrected_GE21 = tmp_dPhi_Corrected_GE21;
-    data_.rechit_detId_GE21 = tmp_rechit_detId_GE21;
-    data_.bending_angle_GE21 = tmp_bending_angle_GE21;
-    data_.nRecHitsTot_GE21 = tmp_nRecHitsTot_GE21; data_.nRecHits5_GE21 = tmp_nRecHits5_GE21; data_.nRecHits2_GE21 = tmp_nRecHits2_GE21;
-    data_.rechit_location_GE21[0] = tmp_rechit_region_GE21; data_.rechit_location_GE21[1] = tmp_rechit_station_GE21; data_.rechit_location_GE21[2] = tmp_rechit_chamber_GE21; data_.rechit_location_GE21[3] = tmp_rechit_layer_GE21; data_.rechit_location_GE21[4] = tmp_rechit_roll_GE21;
-    data_.nRecHitsRpos1L1_GE21 = tmp_nRecHitsRpos1L1_GE21; data_.nRecHitsRpos1L2_GE21 = tmp_nRecHitsRpos1L2_GE21; data_.nRecHitsRneg1L1_GE21 = tmp_nRecHitsRneg1L1_GE21; data_.nRecHitsRneg1L2_GE21 = tmp_nRecHitsRneg1L2_GE21;
   }
 }
 
