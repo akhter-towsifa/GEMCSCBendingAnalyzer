@@ -3,12 +3,12 @@ import ROOT, tdrstyle, sys, os, array
 # ARGUMENTS ************ file, shift (-.1cm), direction (X), Zlow, Zhigh
 low_pt = 5
 high_pt = 200
-endcap = -1
+endcap = 1
 layer = 1
 
 f = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2024/2024H/Run2024H_muon0_150X_dataRun3_Prompt_v1.root")
-event = f.Get("analyzer/ME11SegReco_Prop")
-#event = f.Get("analyzer/Inner_Prop")
+# event = f.Get("analyzer/ME11SegReco_Prop")
+event = f.Get("analyzer/InnerRefit_Prop")
 #event = f.Get("analyzer/CSC_Prop")
 ROOT.gROOT.SetBatch(1)
 tdrstyle.setTDRStyle()
@@ -125,4 +125,4 @@ frame.Draw()
 #if os.path.exists("Run{run}/{version}/".format(run=year, version=version)) == False:
 #  os.mkdir("Run{run}/{version}/".format(run=year, version=version))
 #canvas.SaveAs("Run{run}/{version}/2Drdphi_pt{low}to{high}_R{reg}.png".format(run=year, version=version, low=low_pt, high=high_pt, reg=endcap, lay=layer))
-canvas.SaveAs("residual_2D_R{reg}L{lay}.png".format(reg=endcap, lay=layer))
+canvas.SaveAs("residual_2D_R{reg}L{lay}_trackProp.png".format(reg=endcap, lay=layer))

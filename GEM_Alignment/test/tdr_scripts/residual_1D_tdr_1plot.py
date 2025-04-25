@@ -8,10 +8,10 @@ supch_cut = "both" #0 even, 1 odd, for both "both"
 par_folder = "Residuals"
 x_var = "rdphi" #"BA" or "rdphi" 
 
-f = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2023/2023BC/Run2023BC_MuAlCalIsolatedMu_ALCARECO_v2.root")
+f = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2024/2024H/Run2024H_muon0_150X_dataRun3_Prompt_v1.root")
 #f = ROOT.TFile("../../../../../../BeamCommissioning_12_4_6/src/GEMCSCBendingAnalyzer/GEM_Alignment/test/singleMuonGun_11_3_4_2021_design_v0.root")
 
-event = f.Get("analyzer/ME11Seg_Prop")
+event = f.Get("analyzer/ME11SegReco_Prop")
 #event = f.Get("analyzer/Inner_Prop")
 #event = f.Get("analyzer/CSC_Prop")
 
