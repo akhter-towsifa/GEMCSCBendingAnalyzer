@@ -14,7 +14,7 @@ config.JobType.numCores = 1
 
 misalign = True  #Make sure to change the run_GE11ana.py too!!!
 if misalign:
-  config.JobType.inputFiles =  ['/eos/user/t/toakhter/tamu_mual/2025/myDB.db']
+  config.JobType.inputFiles =  ['./myDB.db']
 
 #section Data
 #config.Data.runRange = '348776,348773,349073'

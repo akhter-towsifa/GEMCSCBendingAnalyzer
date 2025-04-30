@@ -23,8 +23,8 @@ do_GEM = True
 do_CSC = True
 if misalign:
 #   #db_file = 'sqlite_file:dummy_dx1.db'
-  gem_db_file = 'sqlite_file:/eos/user/t/toakhter/tamu_mual/2025/myDB.db' #for GEM
-  csc_db_file = 'sqlite_file:/eos/user/t/toakhter/tamu_mual/2025/myDB.db' #for csc alignment only in this case
+  gem_db_file = 'sqlite_file:myDB.db' #for GEM
+  csc_db_file = 'sqlite_file:myDB.db' #for csc alignment only in this case
 #   gpr_db_file = 'sqlite_file:GlobalAlignment_Run2_Run3_v1_ZeroMuonGPR.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
