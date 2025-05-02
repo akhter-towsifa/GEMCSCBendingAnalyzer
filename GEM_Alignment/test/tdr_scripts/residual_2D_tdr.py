@@ -1,10 +1,10 @@
 import ROOT, tdrstyle, sys, os, array
 
 # ARGUMENTS ************ file, shift (-.1cm), direction (X), Zlow, Zhigh
-low_pt = 5
+low_pt = 30
 high_pt = 200
 endcap = 1
-layer = 1
+layer = 2
 
 f = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2024/2024H/Run2024H_muon0_150X_dataRun3_Prompt_v1.root")
 # event = f.Get("analyzer/ME11SegReco_Prop")
