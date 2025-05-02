@@ -11,7 +11,7 @@ x_var = "rdphi" #"BA" or "rdphi"
 year = "2024H" #change between 2022B and 2022C for example
 
 f0 = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2024/2024H/Run2024H_muon0_150X_dataRun3_Prompt_v1.root")
-fMC = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2022/singleMuonGun_11_3_4_2021_design_v0.root")
+#fMC = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2022/singleMuonGun_11_3_4_2021_design_v0.root")
 
 event0 = f0.Get("analyzer/ME11SegReco_Prop")
 event1 = f0.Get("analyzer/InnerRefit_Prop")
@@ -155,7 +155,6 @@ h1.SetLineColor(ROOT.kGreen+2)
 #h1.SetFillColorAlpha(ROOT.kGreen+2, 0.3)
 #h2.SetFillColorAlpha(ROOT.kRed, 0.3)
 
-#yAxis.SetRangeUser(0, 1.1*h.GetMaximum())
 yAxis.SetRangeUser(0, 1.6*max(h.GetMaximum(), h1.GetMaximum() ))
 yAxis.SetMaxDigits(3)
 
@@ -163,25 +162,9 @@ h.Draw("HIST")
 h1.Draw("HIST SAME")
 # h2.Draw("HIST SAME")
 
-#f1 = ROOT.TF1("f1", "[0]* exp([1]*x**2 + [2]) + [3]* exp([4]*x**2 + [5])", -1.5, 1.5)
-#f1 = ROOT.TF1("f1", "[0]* exp(-0.5*((x-[1])/[2])**2) + [3]* exp(-0.5*((x-[4])/[5])**2)", gaus_low, gaus_high)
-#f1 = ROOT.TF1("f1", "gaus(0)+gaus(3)", gaus_low, gaus_high)
-#f1.SetParameters(h.GetMaximum(), h.GetMean(), h.GetStdDev(), h.GetMaximum(), h.GetMean(), h.GetStdDev())
-#f1.SetParameters(.1,.1,.1,.1,.1,.1)
-#f1.SetLineColor(ROOT.kRed)
-#f1.SetMarkerSize(0)
-#h.Fit("f1")
-#f1.Draw("same")
-
-#legend.AddEntry(h, "mean: {m}".format(m=round(h.GetMean(), 3)))
-#legend.AddEntry(h, "std dev: {s}".format(s=round(h.GetStdDev(), 3)))
-#legend.AddEntry(f1, "mean: {m}".format(m=round(f1.GetParameter(1), 3)))
-#legend.AddEntry(f1, "std dev: {s}".format(s=round(f1.GetParameter(2), 3)))
-
-legend = ROOT.TLegend(0.5, 0.7, 0.9, 0.85)
-legend.AddEntry(h, f"CSC back prop: {h.GetMean():.3f} #pm {h.GetStdDev():.3f}")
-legend.AddEntry(h1, f"track prop: {h1.GetMean():.3f} #pm {h1.GetStdDev():.3f}")
-# legend.AddEntry(h2, "75 GeV < p_{T} < 200 GeV")
+legend = ROOT.TLegend(0.55, 0.75, 0.9, 0.85)
+legend.AddEntry(h, f"CSC back prop")
+legend.AddEntry(h1, f"track prop")
 legend.SetTextSize(0.)
 legend.SetBorderSize(0)
 legend.Draw()
@@ -196,18 +179,15 @@ latex.SetTextSize(0.3*canvas.GetTopMargin())
 
 latex.SetTextAlign(32)
 #latex.DrawLatex(1-1.1*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-0.3*canvas.GetTopMargin(), "Entries: {entries}".format(entries = int(h.GetEntries())))
-#latex.DrawLatex(1-1.1*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-0.7*canvas.GetTopMargin(), "Mean: {mean}".format(mean = round(h.GetMean(),3)))
-#latex.DrawLatex(1-1.1*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-1.1*canvas.GetTopMargin(), "Std Dev: {stddev}".format(stddev = round(h.GetStdDev(),3)))
 latex.DrawLatex(1-1.1*canvas.GetRightMargin(), 1-canvas.GetTopMargin()+0.2*canvas.GetTopMargin(), "(13.6 TeV)")
 latex.SetTextAlign(12)
 
-latex.DrawLatex(0+1.1*canvas.GetLeftMargin(), 1-canvas.GetTopMargin()-0.9*canvas.GetTopMargin(), "Run {run}".format(run=year))
+latex.DrawLatex(0+1.1*canvas.GetLeftMargin(), 1-canvas.GetTopMargin()-1.0*canvas.GetTopMargin(), "Run {run}".format(run=year))
 
 latex.SetTextSize(0.25*canvas.GetTopMargin())
 #latex.DrawLatex(0+1.1*canvas.GetLeftMargin(), 1-canvas.GetTopMargin()-1.2*canvas.GetTopMargin(), "{low} GeV".format(low=low_pt)+" < p_{T}^{GLB} < "+"{high} GeV".format(high=high_pt)) 
-latex.DrawLatex(0.65-0.3*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-1.6*canvas.GetTopMargin(), "{reg}Endcap Layer {lay}".format(reg=reg_string, lay=layer))
-latex.DrawLatex(0.65-0.3*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-1.9*canvas.GetTopMargin(), "{ch_string} chambers".format(ch_string=ch_string))
-#latex.DrawLatex(0.55-0.3*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-2.1*canvas.GetTopMargin(), "Layer 1")
+latex.DrawLatex(0.65-0.3*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-1.8*canvas.GetTopMargin(), "{reg}Endcap Layer {lay}".format(reg=reg_string, lay=layer))
+latex.DrawLatex(0.65-0.3*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-2.1*canvas.GetTopMargin(), "{ch_string} chambers".format(ch_string=ch_string))
 
 latex.SetTextSize(0.5*canvas.GetTopMargin())
 latex.SetTextFont(61)
@@ -239,3 +219,42 @@ frame.Draw()
 #  os.mkdir("Run{run}/{version}".format(run=year, version=version))
 #canvas.SaveAs("Run{run}/{version}/1D_RdPhi_pt{low}to{high}_{ch_string}chambers_R{reg}_L{lay}.png".format(run=year, version=version, low=low_pt, high=high_pt, reg=endcap, lay=layer, ch_string=ch_string))
 canvas.SaveAs("{x_var}_1D_R{reg}L{lay}_{ch_string}chambers.png".format(reg=endcap, ch_string=ch_string, lay=layer, x_var=x_var))
+
+
+
+##########fit
+
+# h.SetFillColorAlpha(ROOT.kBlue, 0.3)
+# h1.SetFillColorAlpha(ROOT.kGreen+2, 0.2)
+
+#f = ROOT.TF1("f", "[0]* exp([1]*x**2 + [2]) + [3]* exp([4]*x**2 + [5])", -1.5, 1.5)
+f = ROOT.TF1("f", "[0]* exp(-0.5*((x-[1])/[2])**2) + [3]* exp(-0.5*((x-[4])/[5])**2)", -0.5, 0.5)
+# f = ROOT.TF1("f", "gaus(0)+gaus(3)", -0.5, 0.5)
+f.SetParameters(h.GetMaximum(), h.GetMean(), h.GetStdDev(), 0.2*h.GetMaximum(), h.GetMean(), h.GetStdDev())
+f.SetLineColor(ROOT.kRed)
+f.SetLineStyle(7)
+f.SetMarkerSize(0)
+h.Fit("f")
+f.Draw("same")
+
+f1 = ROOT.TF1("f1", "[0]* exp(-0.5*((x-[1])/[2])**2) + [3]* exp(-0.5*((x-[4])/[5])**2)", -0.5, 0.5)
+f1.SetParameters(h1.GetMaximum(), h1.GetMean(), h1.GetStdDev(), 0.2*h1.GetMaximum(), h1.GetMean(), h1.GetStdDev())
+f1.SetLineColor(ROOT.kOrange)
+f1.SetLineStyle(7)
+f1.SetMarkerSize(0)
+h1.Fit("f1")
+f1.Draw("same")
+
+legend_fit = ROOT.TLegend(0.4, 0.7, 0.95, 0.87)
+legend_fit.AddEntry(h, f"CSC back prop")
+legend_fit.AddEntry(f, f"  gaus 1  mean: {f.GetParameter(1):.3f} #pm {f.GetParError(1):.3f} , std dev: {f.GetParameter(2):.3f} #pm {f.GetParError(2):.3f}")
+legend_fit.AddEntry(f, f"  gaus 2  mean: {f.GetParameter(4):.3f} #pm {f.GetParError(4):.3f} , std dev: {f.GetParameter(5):.3f} #pm {f.GetParError(5):.3f}")
+legend_fit.AddEntry(h1, f"track prop")
+legend_fit.AddEntry(f1, f"  gaus 1  mean: {f1.GetParameter(1):.3f} #pm {f1.GetParError(1):.3f} , std dev: {f1.GetParameter(2):.3f} #pm {f1.GetParError(2):.3f}")
+legend_fit.AddEntry(f1, f"  gaus 2  mean: {f1.GetParameter(4):.3f} #pm {f1.GetParError(4):.3f} , std dev: {f1.GetParameter(5):.3f} #pm {f1.GetParError(5):.3f}")
+
+legend_fit.SetTextSize(0.)
+legend_fit.SetBorderSize(0)
+legend_fit.Draw()
+
+canvas.SaveAs("{x_var}_1D_R{reg}L{lay}_{ch_string}chambers_fit.png".format(reg=endcap, ch_string=ch_string, lay=layer, x_var=x_var))
