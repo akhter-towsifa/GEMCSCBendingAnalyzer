@@ -14,7 +14,7 @@ config.JobType.numCores = 1
 
 misalign = False  #Make sure to change the run_GE11ana.py too!!!
 if misalign:
-  config.JobType.inputFiles =  ['../../../../../CMSSW_15_0_4/src/GEMCSCBendingAnalyzer/GEM_Alignment/test/myDB.db']
+  config.JobType.inputFiles =  ['./myDB.db']
 
 #section Data
 #config.Data.runRange = '362695'

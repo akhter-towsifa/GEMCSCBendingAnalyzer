@@ -21,8 +21,8 @@ do_GEM = True
 do_CSC = True
 if misalign:
 #   #db_file = 'sqlite_file:dummy_dx1.db'
-  gem_db_file = 'sqlite_file:../../../../../CMSSW_15_0_4/src/GEMCSCBendingAnalyzer/GEM_Alignment/test/myDB.db' #for GEM
-  csc_db_file = 'sqlite_file:../../../../../CMSSW_15_0_4/src/GEMCSCBendingAnalyzer/GEM_Alignment/test/myDB.db' #for csc alignment only in this case
+  gem_db_file = 'sqlite_file:myDB.db' #for GEM
+  csc_db_file = 'sqlite_file:myDB.db' #for csc alignment only in this case
 #   #gpr_db_file = 'sqlite_file:Run3v1.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
     #GE11 rec/tag
