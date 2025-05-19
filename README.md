@@ -11,7 +11,7 @@ or if you want to name your work environment differently:
 
 
 ```
-cd CMSSW_12_4_6/src/
+cd CMSSW_15_0_1/src/
 cmsenv
 git cms-init
 
