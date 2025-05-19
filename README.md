@@ -2,17 +2,17 @@
 
 ## how to check out cmssw and this package
 
-```cmsrel CMSSW_13_0_9```
+```cmsrel CMSSW_15_0_4```
 
 or if you want to name your work environment differently:
 
-```scram p -n Your_Choice_of_Name CMSSW CMSSW_13_0_9```
+```scram p -n Your_Choice_of_Name CMSSW CMSSW_15_0_4```
 
 ```
-cd CMSSW_13_0_9/src/
+cd CMSSW_15_0_4/src/
 cmsenv
 git cms-init
-git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 13_X_alcaReco
+git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 15_X_alcaReco
 
 scram b -j 8
 ```
@@ -53,3 +53,5 @@ The package is inherited from Jason Lee's MuonPerformance and it is used for GEM
 
 
 The previous working version (extensively tested with cosmic data) can be found at https://github.com/aebid/GEMCSCBendingAnalyzer
+
+GEM alignment draft TDR for reference: https://gitlab.cern.ch/tdr/notes/DN-24-012
