@@ -2,7 +2,7 @@ from CRABClient.UserUtilities import config
 config = config()
 
 #section General
-config.General.requestName = 'Run2025B_muon0_ZMu_150X_dataRun3_Prompt_v1' 
+config.General.requestName = 'Run2025B_muon0_ZMu_150X_dataRun3_Prompt_v1_aligned' 
 config.General.workArea = 'crabLogs'#working directory
 config.General.transferOutputs = True
 config.General.transferLogs = True
@@ -12,9 +12,9 @@ config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'run_GE11ana.py'
 config.JobType.numCores = 1
 
-misalign = False  #Make sure to change the run_GE11ana.py too!!!
+misalign = True  #Make sure to change the run_GE11ana.py too!!!
 if misalign:
-  config.JobType.inputFiles =  ['']
+  config.JobType.inputFiles =  ['./Run2025B_muon0_ZMu_150X_dataRun3_Prompt_v1.db']
 
 #section Data
 #config.Data.runRange = '362695'

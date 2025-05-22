@@ -16,29 +16,29 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 ### This is the misalignment part
 
-misalign = False
-# do_GEM = True
-# do_CSC = True
-# if misalign:
-#   # db_file = 'sqlite_file:dummy_dx1.db'
-#   # gem_db_file = 'sqlite_file:myDB.db' #for GEM
-#   # csc_db_file = 'sqlite_file:myDB.db' #for csc alignment only in this case
-#   # gpr_db_file = 'sqlite_file:Run3v1.db' #for gpr only in this case
-#   process.GlobalTag.toGet = cms.VPSet(
-#     #GE11 rec/tag
-#     cms.PSet(
-#         connect = cms.string(gem_db_file),
-#         record = cms.string('GEMAlignmentRcd'),
-#         tag = cms.string('GEMAlignment_prompt_v2')
-#     ),
-#     cms.PSet(
-#         connect = cms.string(gem_db_file),
-#         record = cms.string('GEMAlignmentErrorExtendedRcd'),
-#         tag = cms.string('GEMAlignmentErrorExtended_6x6_prompt_v2')
-#     ),
-#     #ME11 rec/tag
-#     cms.PSet(
-#         connect = cms.string(csc_db_file),
+misalign = True
+do_GEM = True
+do_CSC = True
+if misalign:
+  # db_file = 'sqlite_file:dummy_dx1.db'
+  gem_db_file = 'sqlite_file:Run2025B_muon0_ZMu_150X_dataRun3_Prompt_v1.db' #for GEM
+  # csc_db_file = 'sqlite_file:myDB.db' #for csc alignment only in this case
+  # gpr_db_file = 'sqlite_file:Run3v1.db' #for gpr only in this case
+  process.GlobalTag.toGet = cms.VPSet(
+    #GE11 rec/tag
+    cms.PSet(
+        connect = cms.string(gem_db_file),
+        record = cms.string('GEMAlignmentRcd'),
+        tag = cms.string('GEMAlignmentRcd')
+    ),
+    cms.PSet(
+        connect = cms.string(gem_db_file),
+        record = cms.string('GEMAlignmentErrorExtendedRcd'),
+        tag = cms.string('GEMAlignmentErrorExtendedRcd')
+    )
+    #ME11 rec/tag
+#      cms.PSet(
+#          connect = cms.string(csc_db_file),
 #         record = cms.string('CSCAlignmentRcd'),
 #         tag = cms.string('CSCAlignment_2009_v2_express')
 #     ),
@@ -47,21 +47,21 @@ misalign = False
 #         record = cms.string('CSCAlignmentErrorExtendedRcd'),
 #         tag = cms.string('CSCAlignmentErrorExtended_6x6_express')
 #     ),
-#     cms.PSet(
+#      cms.PSet(
 #         connect = cms.string(gpr_db_file), 
 #         record = cms.string('GlobalPositionRcd'), 
 #         tag = cms.string('GlobalPositionRcd') #cms.string('IdealGeometry')
 #     )
-#   )
+  )
 
 
-#   process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
-#   process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
+  process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
+  process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
 
 ################################
 
-process.GEMGeometryESModule.applyAlignment = cms.bool(False)
-process.CSCGeometryESModule.applyAlignment = cms.bool(True)
+#process.GEMGeometryESModule.applyAlignment = cms.bool(False)
+#process.CSCGeometryESModule.applyAlignment = cms.bool(True)
 
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
@@ -115,7 +115,7 @@ process.analyzer = cms.EDAnalyzer('analyzer',
   tracker_prop = cms.bool(True),
   CSC_prop = cms.bool(False),
   Segment_prop = cms.bool(True),
-  debug = cms.bool(False), #set to False before submitting a crab job
+  debug = cms.bool(True), #set to False before submitting a crab job
   isCosmic = cms.bool(False)
 )
 
