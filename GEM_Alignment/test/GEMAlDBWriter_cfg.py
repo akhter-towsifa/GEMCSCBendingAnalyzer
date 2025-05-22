@@ -11,8 +11,8 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 #process.GlobalTag = GlobalTag(process.GlobalTag, "auto:run3_data_prompt", '')
-process.GlobalTag = GlobalTag(process.GlobalTag, "auto:phase1_2025_design")
-#process.GlobalTag = GlobalTag(process.GlobalTag, '126X_dataRun3_v2', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, "auto:phase1_2025_design")
+process.GlobalTag = GlobalTag(process.GlobalTag, '150X_mcRun3_2025_realistic_Candidate_2025_05_21_14_21_17', '')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(1)

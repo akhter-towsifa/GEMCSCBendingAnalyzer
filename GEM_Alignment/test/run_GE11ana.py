@@ -96,7 +96,7 @@ process.source = cms.Source("PoolSource",
 
 
 outfile = "out_GE11ana.root"
-process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2025B/Muon0/RAW-RECO/ZMu-PromptReco-v1/000/391/700/00000/cd46b8b7-6a9e-466a-bba0-49bc19a18c94.root')
+process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2025B/Muon0/RAW-RECO/ZMu-PromptReco-v1/000/391/870/00000/061474c8-298c-47e8-800c-9edbfdd2d266.root')
 # process.source.fileNames.append('file:/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_109.root')
 
 
@@ -115,7 +115,7 @@ process.analyzer = cms.EDAnalyzer('analyzer',
   tracker_prop = cms.bool(True),
   CSC_prop = cms.bool(False),
   Segment_prop = cms.bool(True),
-  debug = cms.bool(True), #set to False before submitting a crab job
+  debug = cms.bool(False), #set to False before submitting a crab job
   isCosmic = cms.bool(False)
 )
 

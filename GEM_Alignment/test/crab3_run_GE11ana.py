@@ -17,7 +17,7 @@ if misalign:
   config.JobType.inputFiles =  ['./Run2025B_muon0_ZMu_150X_dataRun3_Prompt_v1.db']
 
 #section Data
-#config.Data.runRange = '362695'
+config.Data.runRange = '391848-392112'
 config.Data.inputDataset = '/Muon0/Run2025B-ZMu-PromptReco-v1/RAW-RECO'
 # config.Data.userInputFiles = open('singleMuonGun_11_3_4_2021_design.list').readlines()
 # config.Data.lumiMask = '/eos/user/c/cmsdqm/www/CAF/certification/Collisions23/Cert_Collisions2023_366442_370790_Muon.json'
