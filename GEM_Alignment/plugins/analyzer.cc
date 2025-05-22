@@ -746,12 +746,20 @@ void analyzer::GEM_rechit_matcher(const GEMEtaPartition* ch, LocalPoint prop_LP,
             if ((gemid.region() == 1 and gemid.chamber()%2 == 1) || (gemid.region() == -1 && gemid.chamber()%2 == 0)) {
               tmp_RdPhi_Corrected = -1.0*tmp_RdPhi_Corrected;
             }
+            /*
             if ((gemid.region() == -1 and gemid.chamber()%2 == 1) || (gemid.region() == 1 && gemid.chamber()%2 == 0)) {
               tmp_dPhi_Corrected = -1.0*tmp_dPhi_Corrected;
             }
-            /*
             comment on sign convention: notice that for the residual calculation in phi we have dphi = rechit_phi - prop_phi.
             Also dphi_corrected is flipped from what rdphi_corrected was. these are because in firmware, the -endcap's phi matches the global phi.
+	          */
+            if ((gemid.region() == -1 and gemid.chamber()%2 == 0) || (gemid.region() == 1 && gemid.chamber()%2 == 0)) {
+              tmp_dPhi_Corrected = -1.0*tmp_dPhi_Corrected;
+            }
+            /*
+            comment on sign convention: according to the Muon Trigger Office (MTO), the -Endcap sign needs to be switched from what was previously done above^.
+            slide 6 on this slide points out that the firmware already takes care of some sign convention: https://indico.cern.ch/event/1447286/contributions/6096480/attachments/2914050/5113471/GM@CSC_GEMalignmentOTMB%20-%2021Aug2024.pdf
+            so with this new comment the condition above does not need to specify endcap, but keeping it there anyway.
 	          */
             tmp_rechit_detId = gemid.region()*(gemid.station()*100 + gemid.chamber());
             tmp_rechit_region = gemid.region();  tmp_rechit_station = gemid.station();
