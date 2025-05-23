@@ -20,6 +20,7 @@
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
 #include "Alignment/MuonAlignment/interface/AlignableMuon.h"
 #include "Alignment/CommonAlignment/interface/AlignableModifier.h"
+#include "CondFormats/Alignment/interface/AlignTransform.h"
 
 #include <memory>
 #include <vector>
@@ -42,6 +43,9 @@ private:
   edm::ESGetToken<DTGeometry, MuonGeometryRecord> esTokenDT_;
   edm::ESGetToken<CSCGeometry, MuonGeometryRecord> esTokenCSC_;
   edm::ESGetToken<GEMGeometry, MuonGeometryRecord> esTokenGEM_;
+
+  const edm::ESGetToken<Alignments, GEMAlignmentRcd> esTokenGEMAl_;
+
   AlignableMuon* theAlignableMuon;
   AlignableModifier theMuonModifier;
   Alignments* dt_Alignments;
@@ -50,6 +54,7 @@ private:
   AlignmentErrorsExtended* csc_AlignmentErrorsExtended;
   Alignments* gem_Alignments;
   AlignmentErrorsExtended* gem_AlignmentErrorsExtended;
+  Alignments* final_gem_Alignments;
 };
 
 GEMAlDBWriter::GEMAlDBWriter(const edm::ParameterSet& p)
@@ -69,7 +74,8 @@ GEMAlDBWriter::GEMAlDBWriter(const edm::ParameterSet& p)
     doCSCEndcap(p.getUntrackedParameter<bool>("doCSCEndcap")),
     esTokenDT_(esConsumes(edm::ESInputTag("", "idealForMuonMisalignedProducer"))),
     esTokenCSC_(esConsumes(edm::ESInputTag("", "idealForMuonMisalignedProducer"))),
-    esTokenGEM_(esConsumes(edm::ESInputTag("", "idealForMuonMisalignedProducer"))) {}
+    esTokenGEM_(esConsumes(edm::ESInputTag("", "idealForMuonMisalignedProducer"))),
+    esTokenGEMAl_(esConsumes()) {}
 
 GEMAlDBWriter::~GEMAlDBWriter() {}
 
@@ -217,6 +223,30 @@ void GEMAlDBWriter::analyze(const edm::Event& event, const edm::EventSetup& even
   csc_AlignmentErrorsExtended = theAlignableMuon->cscAlignmentErrorsExtended();
   gem_Alignments = theAlignableMuon->gemAlignments();
   gem_AlignmentErrorsExtended = theAlignableMuon->gemAlignmentErrorsExtended();
+
+  //if custom chambers are needed
+  /*
+  edm::ESHandle<Alignments> gemAlignments = eventSetup.getHandle(esTokenGEMAl_); //not-writable, read-only
+  final_gem_Alignments = theAlignableMuon->gemAlignments();
+  std::set<unsigned int> existing_rawIds;
+  //custom adding GE21 rawIds
+  std::vector<unsigned int> ge21_rawIds = {
+    687902530, 687882560, 687882816, 687883072, 687886144, 687886656
+  };
+
+  for (const auto& align : gemAlignments->m_align){
+    std::cout << "GEM detector raw ID: " << align.rawId() << std::endl;
+    existing_rawIds.insert(align.rawId());
+  }
+
+  for (auto rawId : ge21_rawIds){
+    if (existing_rawIds.find(rawId) == existing_rawIds.end()){
+      final_gem_Alignments->m_align.push_back(AlignTransform(CLHEP::Hep3Vector(0,0,0), CLHEP::HepRotation(), rawId));
+    }
+  }
+  */
+  //end of custom chambers
+  
   edm::Service<cond::service::PoolDBOutputService> poolDbService;
   if (!poolDbService.isAvailable())  // Die if not available
     throw cms::Exception("NotAvailable") << "PoolDBOutputService not available";
@@ -227,6 +257,7 @@ void GEMAlDBWriter::analyze(const edm::Event& event, const edm::EventSetup& even
   poolDbService->writeOneIOV<AlignmentErrorsExtended>(
       (*csc_AlignmentErrorsExtended), poolDbService->beginOfTime(), theCSCErrorRecordName);
   poolDbService->writeOneIOV<Alignments>((*gem_Alignments), poolDbService->beginOfTime(), theGEMAlignRecordName);
+  // poolDbService->writeOneIOV<Alignments>((*final_gem_Alignments), poolDbService->beginOfTime(), theGEMAlignRecordName); //if custom chambers are needed to be added, uncomment out this line, and comment out the line above.
   poolDbService->writeOneIOV<AlignmentErrorsExtended>(
       (*gem_AlignmentErrorsExtended), poolDbService->beginOfTime(), theGEMErrorRecordName);
 }
