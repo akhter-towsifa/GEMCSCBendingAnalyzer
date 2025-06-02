@@ -16,7 +16,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 ### This is the misalignment part
 
-misalign = True
+misalign = False
 do_GEM = True
 do_CSC = True
 if misalign:
@@ -60,8 +60,8 @@ if misalign:
 
 ################################
 
-#process.GEMGeometryESModule.applyAlignment = cms.bool(False)
-#process.CSCGeometryESModule.applyAlignment = cms.bool(True)
+process.GEMGeometryESModule.applyAlignment = cms.bool(False)
+process.CSCGeometryESModule.applyAlignment = cms.bool(True)
 
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
