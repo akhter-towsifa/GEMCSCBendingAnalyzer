@@ -1,6 +1,6 @@
 # GEMCSCBendingAnalyzer
 
-## how to check out cmssw and this package
+## how to set up CMS Software environment and check out this alignment analyzer package
 
 ```
 cmsrel CMSSW_15_0_1 
