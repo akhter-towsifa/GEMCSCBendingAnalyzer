@@ -7,7 +7,7 @@ cmsrel CMSSW_15_0_1
 ```
 or if you want to name your work environment differently: 
 
-```scram p -n Your_Choice_of_Name CMSSW CMSSW_15_0_1```
+```scram p -n Your_Choice_of_Name CMSSW_15_0_1```
 
 
 ```
@@ -21,22 +21,26 @@ scram b -j 8
 ```
 
 ## Residual Packages
+Located under `GEM_Alignment`. To run the relevant alignment configuration files, access the `test` folder and set up proxy for the server if necessary: 
 ```
 cd GEMCSCBendingAnalyzer/GEM_Alignment/test/
+voms-proxy-init --valid 192:00 --voms cms #setting up the proxy
 ```
-### GE1/1 Analyzer
+### GE1/1 Analyzer configuration
+The associated code `analyzer.cc` is located in the `plugins` folder.
 ```
 cmsRun run_GE11ana.py
 ```
-### ME1/1 Analyzer
+### ME1/1 Analyzer (Legacy)
 ```
 cmsRun run_ME11ana.py
 ```
-### GE1/1 and ME1/1 Analyzer
+### GE1/1 and ME1/1 Analyzer (Legacy)
 ```
 cmsRun run_both_analyzers.py
 ```
 ## GEM DB Maker
+The associated code `GEMAlDBWriter.cc` is located in the `plugins` folder
 ```
 cd GEMCSCBendingAnalyzer/GEM_Alignment/test/
 cmsRun GEMAlDBWriter_cfg.py
