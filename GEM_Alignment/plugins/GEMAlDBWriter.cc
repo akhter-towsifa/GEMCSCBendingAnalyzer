@@ -31,11 +31,11 @@ public:
   void analyze(const edm::Event&, const edm::EventSetup&) override;
 
 private:
-  const std::string chamberFile, endcapFile, ME11ChamberFile, CSCEndcapFile;
+  const std::string chamberFile, chamberErrorFile, endcapFile, ME11ChamberFile, CSCEndcapFile;
   std::string theDTAlignRecordName, theDTErrorRecordName;
   std::string theCSCAlignRecordName, theCSCErrorRecordName;
   std::string theGEMAlignRecordName, theGEMErrorRecordName;
-  const bool doChamber, doEndcap, doME11Chamber, doCSCEndcap;
+  const bool doChamber, doChamberError, doEndcap, doME11Chamber, doCSCEndcap;
   edm::ESGetToken<DTGeometry, MuonGeometryRecord> esTokenDT_;
   edm::ESGetToken<CSCGeometry, MuonGeometryRecord> esTokenCSC_;
   edm::ESGetToken<GEMGeometry, MuonGeometryRecord> esTokenGEM_;
@@ -51,6 +51,7 @@ private:
 
 GEMAlDBWriter::GEMAlDBWriter(const edm::ParameterSet& p)
   : chamberFile(p.getUntrackedParameter<std::string>("chamberFile")),
+    chamberErrorFile(p.getUntrackedParameter<std::string>("chamberErrorFile")),
     endcapFile(p.getUntrackedParameter<std::string>("endcapFile")),
     ME11ChamberFile(p.getUntrackedParameter<std::string>("ME11ChamberFile")),
     CSCEndcapFile(p.getUntrackedParameter<std::string>("CSCEndcapFile")),
@@ -61,6 +62,7 @@ GEMAlDBWriter::GEMAlDBWriter(const edm::ParameterSet& p)
     theGEMAlignRecordName("GEMAlignmentRcd"),
     theGEMErrorRecordName("GEMAlignmentErrorExtendedRcd"),
     doChamber(p.getUntrackedParameter<bool>("doChamber")),
+    doChamberError(p.getUntrackedParameter<bool>("doChamberError")),
     doEndcap(p.getUntrackedParameter<bool>("doEndcap")),
     doME11Chamber(p.getUntrackedParameter<bool>("doME11Chamber")),
     doCSCEndcap(p.getUntrackedParameter<bool>("doCSCEndcap")),
@@ -128,6 +130,58 @@ void GEMAlDBWriter::analyze(const edm::Event& event, const edm::EventSetup& even
       std::cout << gemId << ": "<< par.at(0) << ", " << par.at(1) << ", " << par.at(2) << ", " << par.at(3) << ", " << par.at(4) << ", " << par.at(5) << std::endl;
       theMuonModifier.moveAlignableLocal(chamber, false, false, par.at(0), par.at(1), par.at(2));
       theMuonModifier.rotateAlignableLocal(chamber, false, false, par.at(3), par.at(4), par.at(5));
+    }
+  }
+  if (doChamberError) {
+    const auto& GEMChambers = theAlignableMuon->GEMChambers();
+    int detNum, endcap, station;
+    std::string line, DetNum, dx_error, dy_error, dz_error, dphix_error, dphiy_error, dphiz_error;
+    std::ifstream maptype(chamberErrorFile);
+    std::map<GEMDetId, std::vector<float>> alPar;
+    while(std::getline(maptype, line)){
+      std::cout << line << std::endl;
+      std::stringstream ssline(line);
+      getline(ssline, DetNum, ',');
+      getline(ssline, dx_error, ',');
+      getline(ssline, dy_error, ',');
+      getline(ssline, dz_error, ',');
+      getline(ssline, dphix_error, ',');
+      getline(ssline, dphiy_error, ',');
+      getline(ssline, dphiz_error, ',');
+      detNum = (float)atof(DetNum.c_str());
+      float xShift = (float)atof(dx_error.c_str());
+      float yShift = (float)atof(dy_error.c_str());
+      float zShift = (float)atof(dz_error.c_str());
+      float rotX = (float)atof(dphix_error.c_str());
+      float rotY = (float)atof(dphiy_error.c_str());
+      float rotZ = (float)atof(dphiz_error.c_str());
+      endcap = (detNum > 0) ? 1 : -1;
+      station = (abs(detNum)/1000)%10;
+      std::cout << "endcap is " << endcap << ", station is " << station << std::endl;
+      //GEMDetId(int region, int ring, int station, int layer, int chamber, int ieta)
+      GEMDetId id = GEMDetId(endcap, 1, station, abs(detNum%10), abs((detNum/10)%100), 0);
+      std::vector<float> tmp = {xShift, yShift, zShift, rotX, rotY, rotZ};
+      alPar[id.rawId()] = tmp;
+      std::cout << "detNum:" << detNum << " rawId: " << id.rawId()<<  " xShift error:" << xShift << " yShift error:" << yShift << " zShift error:" << zShift << " rotX error:" << rotX << " rotY error:" << rotY << " rotZ error:" << rotZ << std::endl;
+    }
+    for (const auto& chamber : GEMChambers) {
+      auto gemId = chamber->id();
+      const GEMChamber* gemChamber = theGEMGeometry->chamber(chamber->geomDetId());
+      std::cout << "Doing chamber " << gemChamber->id().region() << gemChamber->id().ring() << gemChamber->id().station() << gemChamber->id().chamber() << gemChamber->id().layer() << std::endl;
+      //if ((gemChamber->id()).station() == 2){
+      //  std::cout << "Station 2 GEM, skip for now, FIX THIS LATER IF YOU USE DATA" << std::endl;
+      //  continue;
+      //}
+      //std::cout << "Testing! new gemId = " << gemId << std::endl;
+      if (alPar.count(gemId) < 1){
+        std::cout << "Skipping detId " << GEMDetId(gemId) << std::endl;
+        continue;
+        //throw cms::Exception("NotAvailable") << "can't find detId " << GEMDetId(gemId) ;
+      }
+      auto par = alPar[gemId];
+      std::cout << gemId << ": "<< par.at(0) << ", " << par.at(1) << ", " << par.at(2) << ", " << par.at(3) << ", " << par.at(4) << ", " << par.at(5) << std::endl;
+      theMuonModifier.addAlignmentPositionErrorLocal(chamber, par.at(0), par.at(1), par.at(2));
+      theMuonModifier.addAlignmentPositionErrorFromLocalRotation(chamber, par.at(3), par.at(4), par.at(5));
     }
   }
   if (doEndcap){

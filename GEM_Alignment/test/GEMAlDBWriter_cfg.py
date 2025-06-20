@@ -36,10 +36,12 @@ process.GEMGeometryMuonMisalignedProducer.applyAlignment = cms.bool(False) #set 
 
 process.GEMAlDBWriter = cms.EDAnalyzer("GEMAlDBWriter",
                                        doChamber = cms.untracked.bool(True),
+                                       doChamberError = cms.untracked.bool(True),
                                        doEndcap = cms.untracked.bool(False),
                                        doME11Chamber = cms.untracked.bool(False),
                                        doCSCEndcap = cms.untracked.bool(False),
-                                       chamberFile = cms.untracked.string('../script/standAloneGemAlignment/Run2025C_muon0_ZMu_150X_dataRun3_Prompt_v1_trackerprop.csv'),          # GEM Chamber Alignment csv
+                                       chamberFile = cms.untracked.string('../script/standAloneGemAlignment/Run2025C_muon0_ZMu_150X_dataRun3_Prompt_v1_backprop.csv'),          # GEM Chamber Alignment csv
+                                       chamberErrorFile = cms.untracked.string('../script/standAloneGemAlignment/Run2025C_muon0_ZMu_150X_dataRun3_Prompt_v1_backprop_error.csv'), # GEM Chamber Error Alignment csv
                                        endcapFile = cms.untracked.string('gemEndcap.csv'),       # GEM Endcap Alignment csv
                                        ME11ChamberFile = cms.untracked.string('../script/standAloneGemAlignment/ME11_misalignment_dphiz.csv'),      # ME1/1 Chamber Alignment csv
                                        CSCEndcapFile = cms.untracked.string('cscEndcap.csv')     # ME1/1 Endcap Alignment csv
@@ -109,7 +111,7 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
         )
     ),
 
-    connect = cms.string('sqlite_file:Run2025C_muon0_ZMu_150X_dataRun3_Prompt_v1_trackerprop.db')
+    connect = cms.string('sqlite_file:Run2025C_muon0_ZMu_150X_dataRun3_Prompt_v1_backprop_v2.db')
 )
 process.p1 = cms.Path(process.GEMAlDBWriter)
 process.MessageLogger.cout = cms.untracked.PSet(
