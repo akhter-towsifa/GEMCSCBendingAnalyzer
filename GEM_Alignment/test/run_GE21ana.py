@@ -105,11 +105,10 @@ process.source = cms.Source("PoolSource",
 
 #testfile = "/eos/cms/store/group/alca_muonalign/singleMuonGun_11_3_4_2021_design/singleMuonGun_pT_20_200_CMSSW_11_3_4_GT_2021_design/crab_singleMuonGun_11_3_4_2021_design_RAW2DIGI_RECO_v3/210816_170519/0000/step2_83.root"
 #process.source.fileNames.append('file:'+testfile)
-outfile = "/eos/user/t/toakhter/tamu_mual/2025/2025C/out_ge21.root"
+outfile = "output_test.root"
 
 #process.source.fileNames.append('root://cms-xrd-global.cern.ch/')
-#process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2024H/Muon0/RAW-RECO/ZMu-PromptReco-v1/000/385/836/00000/1501c861-c37a-42e5-a1a0-48ee5dc1be01.root')
-process.source.fileNames.append('file:/eos/user/t/toakhter/tamu_mual/2025/2025C/out_local_reco_test.root')
+process.source.fileNames.append('root://cms-xrd-global.cern.ch//store/data/Run2025C/Muon0/RAW-RECO/ZMu-PromptReco-v1/000/392/301/00000/04bb4908-87cd-4f6c-ae36-d7c2830bdd3f.root')
 
 process.options = cms.untracked.PSet(
                         TryToContinue = cms.untracked.vstring('ProductNotFound') #SkipEvent parameter does not work for CMSSW_13_3_X and above
@@ -123,7 +122,8 @@ process.cscSegments = cscSegments.clone()
 process.analyzer = cms.EDAnalyzer('ge21analyzer', 
 	      process.MuonServiceProxy,
         cscSegmentsReco = cms.InputTag("cscSegments"),
-	      gemRecHits = cms.InputTag("gemRecHits", "", "GEMLocalRECO"), 
+	      gemRecHits = cms.InputTag("gemRecHits"),
+        # gemRecHits = cms.InputTag("gemRecHits", "", "GEMLocalRECO"), #uncomment this if reconstructing GE21 hits
 	      gemSimHits = cms.InputTag("g4SimHits", "MuonGEMHits"), 
         muons = cms.InputTag("muons"),#("ALCARECOMuAlCalIsolatedMu:SelectedMuons"),
         # ref_track = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted"),
