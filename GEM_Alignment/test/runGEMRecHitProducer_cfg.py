@@ -31,16 +31,16 @@ from RecoLocalMuon.Configuration.RecoLocalMuon_cff import *
 process.localreco = cms.Sequence(muonlocalreco)
 
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '141X_dataRun3_v5', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '150X_dataRun3_Prompt_v1', '')
 
 # Skip Digi2Raw and Raw2Digi steps for Al Muon detectors #
 ##########################################################
 process.gemRecHits.gemDigiLabel = cms.InputTag('muonGEMDigis', 'GEMDigi')
-process.rpcRecHits.rpcDigiLabel = cms.InputTag('muonRPCDigis')
+#process.rpcRecHits.rpcDigiLabel = cms.InputTag('muonRPCDigis')
 process.csc2DRecHits.wireDigiTag = cms.InputTag("muonCSCDigis","MuonCSCWireDigi")
 process.csc2DRecHits.stripDigiTag = cms.InputTag("muonCSCDigis","MuonCSCStripDigi")
-process.dt1DRecHits.dtDigiLabel = cms.InputTag('muonDTDigis')
-process.dt1DCosmicRecHits.dtDigiLabel = cms.InputTag('muonDTDigis')
+#process.dt1DRecHits.dtDigiLabel = cms.InputTag('muonDTDigis')
+#process.dt1DCosmicRecHits.dtDigiLabel = cms.InputTag('muonDTDigis')
 
 # Explicit configuration of CSC for postls1 = run2 #
 ####################################################
@@ -60,21 +60,33 @@ process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
 ##########################
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'root://cms-xrd-global.cern.ch//store/data/Run2024H/Muon0/RAW-RECO/ZMu-PromptReco-v1/000/385/836/00000/1501c861-c37a-42e5-a1a0-48ee5dc1be01.root'
+        'root://cms-xrd-global.cern.ch//store/data/Run2025C/Muon0/RAW-RECO/ZMu-PromptReco-v1/000/392/301/00000/04bb4908-87cd-4f6c-ae36-d7c2830bdd3f.root'
     )
 )
 
 process.output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string( 
-        'file:out_local_reco_test.root'
+        'file:/eos/user/t/toakhter/tamu_mual/2025/2025C/out_local_reco_test.root'
     ),
-    outputCommands = cms.untracked.vstring(
-        'keep  *_*RecHits*_*_*',
+    outputCommands = cms.untracked.vstring( #'type_module_label_process'
+        'drop *',
+        'keep *Track*_*_*_RECO',
+        'keep *TrackExtra*_globalMuons_*_RECO',
+        'keep *TrackingRecHit*_*_*_*',
+        'keep  *_*gemRecHits*_*_*',
         'keep *_*cscSegment*_*_*',
-        'keep *_*muonGEMDigis*_*_*',
-        'keep *_*muonCSCDigis*_*_*',
+        'keep *_*csc2DRecHits*_*_*',
+        # 'keep *_*muonGEMDigis*_*_*',
+        # 'keep *_*muonCSCDigis*_*_*',
         'keep *_*muons*_*_*',
-        'keep *_*offlinePrimaryVertices*_*_*'
+        'keep *_*offlinePrimaryVertices*_*_*',
+        'drop *GsfTrack*_*_*_*',
+        'drop *_*_*muPF*_*',
+        'drop *_*_*muid*_*',
+        'drop *_*tevMuons*_*_*',
+        'drop *_*uncleanedOnlyCkfInOutTracksFromConversions*_*_*',
+        'drop *_*pfImpactParameterTagInfos*_*_*',
+        'drop *_*ckfInOutTracksFromConversions*_*_*'
     ),
     SelectEvents = cms.untracked.PSet(
         SelectEvents = cms.vstring('rechit_step')
