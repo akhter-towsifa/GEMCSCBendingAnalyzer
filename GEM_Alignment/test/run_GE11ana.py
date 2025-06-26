@@ -13,12 +13,12 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 
-
-### This is the misalignment part
-
 misalign = True
 do_GEM = True
 do_CSC = True
+
+### This is the misalignment part
+
 if misalign:
   # db_file = 'sqlite_file:dummy_dx1.db'
   gem_db_file = 'sqlite_file:Run2025C_muon0_ZMu_150X_dataRun3_Prompt_v1_trackerprop.db' #for GEM
@@ -54,14 +54,10 @@ if misalign:
 #     )
   )
 
-
-  process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
-  process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
-
 ################################
 
-# process.GEMGeometryESModule.applyAlignment = cms.bool(False)
-# process.CSCGeometryESModule.applyAlignment = cms.bool(True)
+process.GEMGeometryESModule.applyAlignment = cms.bool(do_GEM)
+process.CSCGeometryESModule.applyAlignment = cms.bool(do_CSC)
 
 
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_design', '')
