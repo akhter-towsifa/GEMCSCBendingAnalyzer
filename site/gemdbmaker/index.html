@@ -9,23 +9,25 @@
       
       
       
+        <link rel="prev" href="../running/">
       
-        <link rel="next" href="configuration/">
+      
+        <link rel="next" href="../GEMAl/">
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
     
     
       
-        <title>GEM CSC Bending Analyzer</title>
+        <title>Running the GEM DB maker - GEM CSC Bending Analyzer</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.4af4bdda.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -38,7 +40,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -63,11 +65,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#welcome-to-gem-csc-bending-analyzer" class="md-skip">
-          Skip to content
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -80,7 +77,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="GEM CSC Bending Analyzer" class="md-header__button md-logo" aria-label="GEM CSC Bending Analyzer" data-md-component="logo">
+    <a href=".." title="GEM CSC Bending Analyzer" class="md-header__button md-logo" aria-label="GEM CSC Bending Analyzer" data-md-component="logo">
       
   <img src="https://cms.cern/sites/default/files/logo/cms_logo_neg03_2.png" alt="logo">
 
@@ -99,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Running the GEM DB maker
             
           </span>
         </div>
@@ -225,7 +222,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="GEM CSC Bending Analyzer" class="md-nav__button md-logo" aria-label="GEM CSC Bending Analyzer" data-md-component="logo">
+    <a href=".." title="GEM CSC Bending Analyzer" class="md-nav__button md-logo" aria-label="GEM CSC Bending Analyzer" data-md-component="logo">
       
   <img src="https://cms.cern/sites/default/files/logo/cms_logo_neg03_2.png" alt="logo">
 
@@ -251,32 +248,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Home
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -287,128 +262,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#set-up-cms-software-environment-and-check-out-this-alignment-analyzer-package" class="md-nav__link">
-    <span class="md-ellipsis">
-      Set up CMS Software environment and check out this alignment analyzer package
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#residual-packages" class="md-nav__link">
-    <span class="md-ellipsis">
-      Residual Packages
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Residual Packages">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ge11-analyzer-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      GE1/1 Analyzer configuration
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#me11-analyzer-legacy" class="md-nav__link">
-    <span class="md-ellipsis">
-      ME1/1 Analyzer (Legacy)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ge11-and-me11-analyzer-legacy" class="md-nav__link">
-    <span class="md-ellipsis">
-      GE1/1 and ME1/1 Analyzer (Legacy)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#gem-db-maker" class="md-nav__link">
-    <span class="md-ellipsis">
-      GEM DB Maker
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#gem_fittercpp-package-for-creating-alignment-estimates" class="md-nav__link">
-    <span class="md-ellipsis">
-      GEM_fitter.cpp: package for creating alignment estimates
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#resources" class="md-nav__link">
-    <span class="md-ellipsis">
-      Resources
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Resources">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#devins-masters-defense-alignment-of-the-compact-muon-solenoids-new-gas-electron-multiplier-detector" class="md-nav__link">
-    <span class="md-ellipsis">
-      Devin's masters defense: Alignment of the Compact Muon Solenoid’s new Gas Electron Multiplier detector
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#towsifa-masters-defense-first-measurement-of-the-muon-pt-dependent-bending-angle-between-the-gem-and-csc-subdetectors-using-run-3-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      Towsifa' masters defense: First Measurement of the Muon pT Dependent Bending Angle between the GEM and CSC Subdetectors using Run 3 Data
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -417,18 +270,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -444,7 +299,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Detailed Instructions
@@ -458,7 +313,7 @@
   
   
     <li class="md-nav__item">
-      <a href="configuration/" class="md-nav__link">
+      <a href="../configuration/" class="md-nav__link">
         
   
   
@@ -481,7 +336,7 @@
   
   
     <li class="md-nav__item">
-      <a href="running/" class="md-nav__link">
+      <a href="../running/" class="md-nav__link">
         
   
   
@@ -501,10 +356,17 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="gemdbmaker/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -515,6 +377,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -572,7 +435,7 @@
   
   
     <li class="md-nav__item">
-      <a href="GEMAl/" class="md-nav__link">
+      <a href="../GEMAl/" class="md-nav__link">
         
   
   
@@ -595,7 +458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="GEMDB/" class="md-nav__link">
+      <a href="../GEMDB/" class="md-nav__link">
         
   
   
@@ -625,7 +488,7 @@
   
   
     <li class="md-nav__item">
-      <a href="bending/" class="md-nav__link">
+      <a href="../bending/" class="md-nav__link">
         
   
   
@@ -657,118 +520,6 @@
   
   
   
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#set-up-cms-software-environment-and-check-out-this-alignment-analyzer-package" class="md-nav__link">
-    <span class="md-ellipsis">
-      Set up CMS Software environment and check out this alignment analyzer package
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#residual-packages" class="md-nav__link">
-    <span class="md-ellipsis">
-      Residual Packages
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Residual Packages">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ge11-analyzer-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      GE1/1 Analyzer configuration
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#me11-analyzer-legacy" class="md-nav__link">
-    <span class="md-ellipsis">
-      ME1/1 Analyzer (Legacy)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ge11-and-me11-analyzer-legacy" class="md-nav__link">
-    <span class="md-ellipsis">
-      GE1/1 and ME1/1 Analyzer (Legacy)
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#gem-db-maker" class="md-nav__link">
-    <span class="md-ellipsis">
-      GEM DB Maker
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#gem_fittercpp-package-for-creating-alignment-estimates" class="md-nav__link">
-    <span class="md-ellipsis">
-      GEM_fitter.cpp: package for creating alignment estimates
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#resources" class="md-nav__link">
-    <span class="md-ellipsis">
-      Resources
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Resources">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#devins-masters-defense-alignment-of-the-compact-muon-solenoids-new-gas-electron-multiplier-detector" class="md-nav__link">
-    <span class="md-ellipsis">
-      Devin's masters defense: Alignment of the Compact Muon Solenoid’s new Gas Electron Multiplier detector
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#towsifa-masters-defense-first-measurement-of-the-muon-pt-dependent-bending-angle-between-the-gem-and-csc-subdetectors-using-run-3-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      Towsifa' masters defense: First Measurement of the Muon pT Dependent Bending Angle between the GEM and CSC Subdetectors using Run 3 Data
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -787,70 +538,9 @@
   
 
 
-<h1 id="welcome-to-gem-csc-bending-analyzer">Welcome to GEM CSC Bending Analyzer</h1>
-<p>The code under this repository is used for offline GEM alignment in CMS experiment at CERN</p>
-<ul>
-<li>Devin's masters defense: <a href="https://indico.cern.ch/event/1179363/">Alignment of the Compact Muon Solenoid’s new Gas Electron Multiplier detector</a></li>
-<li>Towsifa' masters defense: <a href="https://indico.cern.ch/event/1266980/">First Measurement of the Muon pT Dependent Bending Angle between the GEM and CSC Subdetectors using Run 3 Data</a></li>
-</ul>
-<p>For a quick start, follow the instructions below. But for a better understanding, explore the other pages on this website.</p>
-<h2 id="set-up-cms-software-environment-and-check-out-this-alignment-analyzer-package">Set up CMS Software environment and check out this alignment analyzer package</h2>
-<pre><code>cmsrel CMSSW_15_0_1
-</code></pre>
-<p>or if you want to name your work environment differently: </p>
-<pre><code>scram p -n Your_Choice_of_Name CMSSW_15_0_1
-</code></pre>
-<p>Then</p>
-<pre><code>cd CMSSW_15_0_1/src/
-cmsenv
-git cms-init
+  <h1>Running the GEM DB maker</h1>
 
-git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 15_X_RawReco
 
-scram b -j 8
-</code></pre>
-<ul>
-<li>Note: there may be some compilation warnings related to <code>ME11ana.cc</code> file. This file is a legacy one (some details below).</li>
-</ul>
-<h2 id="residual-packages">Residual Packages</h2>
-<p>Located under <code>GEM_Alignment</code>. To run the relevant alignment configuration files, access the <code>test</code> folder and set up proxy for the server if necessary: </p>
-<pre><code>cd GEMCSCBendingAnalyzer/GEM_Alignment/test/
-voms-proxy-init --valid 192:00 --voms cms #setting up the proxy
-</code></pre>
-<h3 id="ge11-analyzer-configuration">GE1/1 Analyzer configuration</h3>
-<p>The associated code <code>analyzer.cc</code> is located in the <code>plugins</code> folder. To run the GEM alignment code locally,</p>
-<pre><code>cmsRun run_GE11ana.py
-</code></pre>
-<h3 id="me11-analyzer-legacy">ME1/1 Analyzer (Legacy)</h3>
-<p>This is a legacy code that was initially developed for standalone tracker-based CSC alignment for station 1 ring 1 chambers, but not updated or used any longer.</p>
-<pre><code>cmsRun run_ME11ana.py
-</code></pre>
-<h3 id="ge11-and-me11-analyzer-legacy">GE1/1 and ME1/1 Analyzer (Legacy)</h3>
-<pre><code>cmsRun run_both_analyzers.py
-</code></pre>
-<h2 id="gem-db-maker">GEM DB Maker</h2>
-<p>The associated code <code>GEMAlDBWriter.cc</code> is located in the <code>plugins</code> folder.
-This code and associated configuration file creates the necessary geometry file in .db format. The input file is in csv format which found by running the alignment estimator (Minuit package)</p>
-<pre><code>cd GEMCSCBendingAnalyzer/GEM_Alignment/test/
-cmsRun GEMAlDBWriter_cfg.py
-</code></pre>
-<h2 id="gem_fittercpp-package-for-creating-alignment-estimates">GEM_fitter.cpp: package for creating alignment estimates</h2>
-<pre><code>cd GEMCSCBendingAnalyzer/GEM_Alignment/script/standAloneGemAlignment
-./run_3DOF_Fitter.sh
-</code></pre>
-<p><img alt="alignment_cfg_flowchart" src="https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer/assets/51368122/e4141fa9-64f3-4be7-b0d0-6a545466a1dd" /></p>
-<h2 id="resources">Resources</h2>
-<p>The package is inherited from Jason Lee's MuonPerformance and it is used for GEM related analysis at TAMU group. The major target is to analyze GEM-CSC bending angle in real data from CMS.</p>
-<p>The previous working version (extensively tested with cosmic data) can be found at <a href="https://github.com/aebid/GEMCSCBendingAnalyzer">https://github.com/aebid/GEMCSCBendingAnalyzer</a></p>
-<p>GEM alignment draft TDR for reference: <a href="https://gitlab.cern.ch/tdr/notes/DN-24-012">DN-24-012</a></p>
-<ul>
-<li>
-<h4 id="devins-masters-defense-alignment-of-the-compact-muon-solenoids-new-gas-electron-multiplier-detector">Devin's masters defense: <a href="https://indico.cern.ch/event/1179363/">Alignment of the Compact Muon Solenoid’s new Gas Electron Multiplier detector</a></h4>
-</li>
-<li>
-<h4 id="towsifa-masters-defense-first-measurement-of-the-muon-pt-dependent-bending-angle-between-the-gem-and-csc-subdetectors-using-run-3-data">Towsifa' masters defense: <a href="https://indico.cern.ch/event/1266980/">First Measurement of the Muon pT Dependent Bending Angle between the GEM and CSC Subdetectors using Run 3 Data</a></h4>
-</li>
-</ul>
 
 
 
@@ -899,10 +589,10 @@ cmsRun GEMAlDBWriter_cfg.py
     
     
       
-      <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.c8b220af.min.js"></script>
+      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
       
     
   </body>
