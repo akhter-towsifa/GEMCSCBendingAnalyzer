@@ -27,10 +27,8 @@ theme:
 
 nav:
   - Home: index.md
-  - Quick Start: README.md
   - Detailed Instructions:
       - Configuration: configuration.md
       - Running the Analyzer: running.md
   - Understanding the GEM Alignment code: GEMAl.md
   - Understanding GEM CSC Bending Angle: bending.md
-  
