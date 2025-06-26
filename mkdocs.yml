@@ -30,5 +30,8 @@ nav:
   - Detailed Instructions:
       - Configuration: configuration.md
       - Running the Analyzer: running.md
-  - Understanding the GEM Alignment code: GEMAl.md
+      - Running the GEM DB maker: gemdbmaker.md
+  - Understanding the code: 
+      - GEM Alignment code: GEMAl.md
+      - GEM DB maker code: GEMDB.md
   - Understanding GEM CSC Bending Angle: bending.md
