@@ -10,7 +10,6 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.Services_cff')
 #process.load('Configuration.StandardSequences.MagneticField_0T_cff') #0T for cruzet runs
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.load('Configuration.StandardSequences.Digi_cff')
 process.load('Configuration.StandardSequences.Reconstruction_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 #process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -20,9 +19,9 @@ process.load('TrackingTools.TransientTrack.TransientTrackBuilder_cfi')
 # process.load('TrackingTools.TrackRefitter.globalMuonTrajectories_cff')
 process.load('RecoMuon.GlobalMuonProducer.globalMuons_cfi')
 process.load('TrackingTools.TrackFitters.TrackFitters_cff')
-process.load('RecoLocalMuon.CSCSegment.cscSegments_cfi')
-process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')
 process.load('Geometry.GEMGeometryBuilder.gemGeometryDB_cfi')
+process.load('Configuration.StandardSequences.Digi_cff')
+
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 
@@ -94,7 +93,8 @@ process.maxEvents.input = cms.untracked.int32(-1)
 process.source = cms.Source("PoolSource", 
 			fileNames = cms.untracked.vstring(options.inputFiles), 
 			inputCommands = cms.untracked.vstring(
-			  "keep *", 
+			  "keep *",
+        'keep *_*muonGEMDigis*_*_*',
 			  "drop TotemTimingDigiedmDetSetVector_totemTimingRawToDigi_TotemTiming_reRECO", 
 			  "drop TotemTimingRecHitedmDetSetVector_totemTimingRecHits__reRECO"
 			)
@@ -119,6 +119,14 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(outfile
 from RecoLocalMuon.CSCSegment.cscSegments_cfi import *
 process.cscSegments = cscSegments.clone()
 
+process.load('RecoLocalMuon.GEMRecHit.gemRecHits_cfi')
+process.gemRecHits = cms.EDProducer("GEMRecHitProducer",
+    recAlgoConfig = cms.PSet(),
+    recAlgo = cms.string('GEMRecHitStandardAlgo'),
+    gemDigiLabel = cms.InputTag("muonGEMDigis"),
+    ge21Off = cms.bool(False),
+)
+
 process.analyzer = cms.EDAnalyzer('ge21analyzer', 
 	      process.MuonServiceProxy,
         cscSegmentsReco = cms.InputTag("cscSegments"),
@@ -137,4 +145,4 @@ process.analyzer = cms.EDAnalyzer('ge21analyzer',
         isCosmic = cms.bool(False)
 )
 
-process.p = cms.Path(process.analyzer)
+process.p = cms.Path(process.gemRecHits * process.analyzer)
