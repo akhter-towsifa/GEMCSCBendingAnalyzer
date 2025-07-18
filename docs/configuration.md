@@ -7,7 +7,7 @@ or if you want to name your work environment differently:
 
     scram p -n Your_Choice_of_Name CMSSW_15_0_1
 
-##  Check out this alignment analyzer package
+##  Check out GEM alignment analyzer package
 Once the CMSSW version has been selected, set up the environment in the `src` folder and clone the github repository:
 
     cd CMSSW_15_0_1/src/

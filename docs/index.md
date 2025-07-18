@@ -3,7 +3,7 @@
 The code under this repository is used for offline GEM alignment in CMS experiment at CERN
 
 *  Devin's masters defense: [Alignment of the Compact Muon Solenoid’s new Gas Electron Multiplier detector](https://indico.cern.ch/event/1179363/)
-*  Towsifa' masters defense: [First Measurement of the Muon pT Dependent Bending Angle between the GEM and CSC Subdetectors using Run 3 Data](https://indico.cern.ch/event/1266980/)
+*  Towsifa's masters defense: [First Measurement of the Muon pT Dependent Bending Angle between the GEM and CSC Subdetectors using Run 3 Data](https://indico.cern.ch/event/1266980/)
 
 For a quick start, follow the instructions below. But for a better understanding, explore the other pages on this website.
 

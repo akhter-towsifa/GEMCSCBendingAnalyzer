@@ -27,7 +27,7 @@ theme:
 
 nav:
   - Home: index.md
-  - Detailed Instructions:
+  - Setup Instructions:
       - Configuration: configuration.md
       - Running the Analyzer: running.md
       - Running the GEM DB maker: gemdbmaker.md
@@ -35,3 +35,4 @@ nav:
       - GEM Alignment code: GEMAl.md
       - GEM DB maker code: GEMDB.md
   - Understanding GEM CSC Bending Angle: bending.md
+  - Talks and references: talks.md
