@@ -1,28 +1,21 @@
 import ROOT, tdrstyle, sys, os, array
 
-low_pt=30
-high_pt=35
-supch_cut = 1 #0 even, 1 odd, for both "both"
+supch_cut = 0 #0 even, 1 odd, for both "both"
 endcap = 1
 layer = 1
-charge = -1
+charge = 1
 x_var = "BA" #"BA" or "rdphi" 
 
 year = "2025C" #change between 2022B and 2022C for example
-
-fdata_pre = ROOT.TFile(f"/eos/user/t/toakhter/tamu_mual/2025/{year}/Run{year}_muon0_ZMu_150X_dataRun3_Prompt_v1.root")
 fdata_post = ROOT.TFile(f"/eos/user/t/toakhter/tamu_mual/2025/{year}/Run{year}_muon0_ZMu_150X_dataRun3_Prompt_v1_aligned_backprop.root")
-fMC = ROOT.TFile("/eos/user/t/toakhter/tamu_mual/2022/singleMuonGun_11_3_4_2021_design_v0.root")
-
-eventme11_pre = fdata_pre.Get("analyzer/ME11Seg_Prop")
 eventme11_post = fdata_post.Get("analyzer/ME11Seg_Prop")
-eventMCme11 = fMC.Get("analyzer/ME11Seg_Prop")
+
 ROOT.gROOT.SetBatch(1)
 tdrstyle.setTDRStyle()
 
 if x_var == "BA":
-  xlow = -5
-  xhigh = 5
+  xlow = -6 #-10
+  xhigh = 6 #10
   x_plot = "1000*bending_angle"
   x_axis = "#Phi_{bending} [mRad]" #"Bending Angle [mrad]"
 elif x_var == "rdphi":
@@ -74,10 +67,11 @@ canvas.SetTicky(0)
 canvas.SetGrid()
 
 #h0 = ROOT.TH1D("h0", "h0", xbins, xlow, xhigh)
-hMCme11 = ROOT.TH1D("hMCme11", "hMCme11", xbins, xlow, xhigh)
-hme11_pre = ROOT.TH1D("hme11_pre", "hme11_pre", xbins, xlow, xhigh)
-hme11_post = ROOT.TH1D("hme11_post", "hme11_post", xbins, xlow, xhigh)
-xAxis = hMCme11.GetXaxis()
+pt10 = ROOT.TH1D("pt10", "pt10", xbins, xlow, xhigh)
+pt20 = ROOT.TH1D("pt20", "pt20", xbins, xlow, xhigh)
+pt30 = ROOT.TH1D("pt30", "pt30", xbins, xlow, xhigh)
+pt60 = ROOT.TH1D("pt60", "pt60", xbins, xlow, xhigh)
+xAxis = pt10.GetXaxis()
 xAxis.SetTitleOffset(0)
 xAxis.SetTitleSize(0.05)
 #xAxis.SetNdivisions(-505)
@@ -86,7 +80,7 @@ xAxis.SetTitle(f"{x_axis}")
 #xAxis.SetTitle("p_{T} [GeV]")
 #xAxis.CenterTitle()
 
-yAxis = hMCme11.GetYaxis()
+yAxis = pt10.GetYaxis()
 yAxis.SetTitleOffset(0)
 yAxis.SetTitleSize(0.05)
 yAxis.SetTitle("A.U.")
@@ -134,46 +128,55 @@ elif supch_cut=="both":
 # eventMCtrack.Project("hMCtrak", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && {cut}".format(low=low_pt, high=high_pt, reg=endcap, lay=layer, cut=cut))
 # eventme11.Project("hme11", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && {cut}".format(low=low_pt, high=high_pt, reg=endcap, lay=layer, cut=cut))
 # eventtrack.Project("htrack", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && {cut}".format(low=low_pt, high=high_pt, reg=endcap, lay=layer, cut=cut))
-eventMCme11.Project("hMCme11", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && muon_charge=={charge} && {cut}".format(low=low_pt, high=high_pt, reg=endcap, lay=layer, charge=charge, cut=cut))
-eventme11_pre.Project("hme11_pre", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && muon_charge=={charge} && {cut}".format(low=low_pt, high=high_pt, reg=endcap, lay=layer, charge=charge, cut=cut))
-eventme11_post.Project("hme11_post", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && muon_charge=={charge} && {cut}".format(low=low_pt, high=high_pt, reg=endcap, lay=layer, charge=charge, cut=cut))
+eventme11_post.Project("pt10", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && muon_charge=={charge} && {cut}".format(low=10, high=10.5, reg=endcap, lay=layer, charge=charge, cut=cut))
+eventme11_post.Project("pt20", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && muon_charge=={charge} && {cut}".format(low=20, high=21, reg=endcap, lay=layer, charge=charge, cut=cut))
+eventme11_post.Project("pt30", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && muon_charge=={charge} && {cut}".format(low=30, high=31.5, reg=endcap, lay=layer, charge=charge, cut=cut))
+eventme11_post.Project("pt60", "{x}".format(x=x_plot), "muon_pt>{low} && muon_pt<{high} && n_ME11_segment==1 && has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[0]=={reg} && prop_location[3]=={lay} && muon_charge=={charge} && {cut}".format(low=60, high=63, reg=endcap, lay=layer, charge=charge, cut=cut))
+
 
 #h.ResetStats()
 #h.GetSumOfWeights()
-hMCme11.Scale(1/hMCme11.Integral())
-hme11_pre.Scale(1/hme11_pre.Integral())
-hme11_post.Scale(1/hme11_post.Integral())
+pt10.Scale(1/pt10.Integral())
+pt20.Scale(1/pt20.Integral())
+pt30.Scale(1/pt30.Integral())
+pt60.Scale(1/pt60.Integral())
 
-hMCme11.SetLineWidth(3) #3
-hme11_pre.SetLineWidth(3)
-hme11_post.SetLineWidth(3)
+pt10.SetLineWidth(3)
+pt20.SetLineWidth(3)
+pt30.SetLineWidth(3)
+pt60.SetLineWidth(3)
+
 
 #hMCme11.SetLineStyle(1) 
 #hme11.SetLineStyle(1) #2
 
-hMCme11.SetMarkerSize(0)
-hme11_pre.SetMarkerSize(0)
-hme11_post.SetMarkerSize(0)
+pt10.SetMarkerSize(0)
+pt20.SetMarkerSize(0)
+pt30.SetMarkerSize(0)
+pt60.SetMarkerSize(0)
 
-hMCme11.SetLineColor(ROOT.kRed)
-hme11_pre.SetLineColor(ROOT.kBlue)
-hme11_post.SetLineColor(ROOT.kGreen+2)
+pt10.SetLineColor(ROOT.kViolet-2)
+pt20.SetLineColor(ROOT.kBlue)
+pt30.SetLineColor(ROOT.kGreen+2)
+pt60.SetLineColor(ROOT.kRed)
 #h.SetFillColorAlpha(ROOT.kBlue, 0.3)
 #h1.SetFillColorAlpha(ROOT.kGreen+2, 0.3)
 #h2.SetFillColorAlpha(ROOT.kRed, 0.3)
 
 #yAxis.SetRangeUser(0, 1.1*h.GetMaximum())
-yAxis.SetRangeUser(0, 1.6*max(hMCme11.GetMaximum(), hme11_pre.GetMaximum(), hme11_post.GetMaximum() ))
+yAxis.SetRangeUser(0, 1.6*max(pt10.GetMaximum(), pt20.GetMaximum(), pt30.GetMaximum(), pt60.GetMaximum() ))
 yAxis.SetMaxDigits(3)
 
-hMCme11.Draw("HIST")
-hme11_pre.Draw("HIST SAME")
-hme11_post.Draw("HIST SAME")
+pt10.Draw("HIST")
+pt20.Draw("HIST SAME")
+pt30.Draw("HIST SAME")
+pt60.Draw("HIST SAME")
 
-legend = ROOT.TLegend(0.6, 0.75, 0.9, 0.85)
-legend.AddEntry(hme11_pre, f"Before alignment")
-legend.AddEntry(hme11_post, f"After alignment")
-legend.AddEntry(hMCme11, f"Ideal Geometry")
+legend = ROOT.TLegend(0.6, 0.7, 0.9, 0.85)
+legend.AddEntry(pt10, "10<p_{T}<10.5 GeV")
+legend.AddEntry(pt20, "20<p_{T}<21 GeV")
+legend.AddEntry(pt30, "30<p_{T}<31.5 GeV")
+legend.AddEntry(pt60, "60<p_{T}<63 GeV")
 legend.SetTextSize(0.)
 legend.SetBorderSize(0)
 legend.Draw()
@@ -197,10 +200,9 @@ latex.SetTextAlign(12)
 
 
 latex.SetTextSize(0.25*canvas.GetTopMargin())
-latex.DrawLatex(0+1.1*canvas.GetLeftMargin(), 1-canvas.GetTopMargin()-1.6*canvas.GetTopMargin(), "{low} GeV".format(low=low_pt)+" < p_{T}^{GLB} < "+"{high} GeV".format(high=high_pt)) 
-latex.DrawLatex(0.65-0.5*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-1.6*canvas.GetTopMargin(), "{reg}Endcap Station 1 Layer {lay}".format(reg=reg_string, lay=layer))
-latex.DrawLatex(0.65-0.5*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-1.9*canvas.GetTopMargin(), "{ch_string} chambers".format(ch_string=ch_string))
-latex.DrawLatex(0+1.1*canvas.GetLeftMargin(), 1-canvas.GetTopMargin()-1.9*canvas.GetTopMargin(), f"{mu_notation}")
+latex.DrawLatex(0.65-0.5*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-1.7*canvas.GetTopMargin(), "{reg}Endcap Station 1 Layer {lay}".format(reg=reg_string, lay=layer))
+latex.DrawLatex(0.65-0.5*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-2.0*canvas.GetTopMargin(), "{ch_string} chambers".format(ch_string=ch_string))
+latex.DrawLatex(1-2.0*canvas.GetRightMargin(), 1-canvas.GetTopMargin()-2.0*canvas.GetTopMargin(), f"{mu_notation}")
 
 latex.SetTextSize(0.5*canvas.GetTopMargin())
 latex.SetTextFont(61)
@@ -232,4 +234,4 @@ frame.Draw()
 #  os.mkdir("Run{run}/{version}".format(run=year, version=version))
 #canvas.SaveAs("Run{run}/{version}/1D_RdPhi_pt{low}to{high}_{ch_string}chambers_R{reg}_L{lay}.png".format(run=year, version=version, low=low_pt, high=high_pt, reg=endcap, lay=layer, ch_string=ch_string))
 # canvas.SaveAs("{x_var}_1D_R{reg}L{lay}_{ch_string}chambers.png".format(reg=endcap, ch_string=ch_string, lay=layer, x_var=x_var))
-canvas.SaveAs("{x_var}_1D_R{reg}L{lay}_{ch_string}chambers_{mu_str}.png".format(reg=endcap, ch_string=ch_string, lay=layer, x_var=x_var, mu_str=mu_str))
+canvas.SaveAs("{x_var}_1D_R{reg}L{lay}_{ch_string}chambers_{mu_str}_pt.png".format(reg=endcap, ch_string=ch_string, lay=layer, x_var=x_var, mu_str=mu_str))
