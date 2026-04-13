@@ -226,8 +226,9 @@ void GEMAlDBWriter::analyze(const edm::Event& event, const edm::EventSetup& even
       float rotY = (float)atof(dphiy.c_str());
       float rotZ = (float)atof(dphiz.c_str());
       endcap = (detNum > 0) ? 1 : 2;
-      std::cout << "endcap is " << endcap << std::endl;
-      CSCDetId id = CSCDetId(endcap, 1, 1, abs(detNum%100), 0);
+      station = abs(detNum)/100;
+      std::cout << "endcap is " << endcap << " station is " << station<< std::endl;
+      CSCDetId id = CSCDetId(endcap, station, 1, abs(detNum%100), 0);
       CSCDetId id2 = CSCDetId(endcap, 1, 4, abs(detNum%100), 0);
       std::vector<float> tmp = {xShift, yShift, zShift, rotX, rotY, rotZ};
       alPar[id.rawId()] = tmp;
