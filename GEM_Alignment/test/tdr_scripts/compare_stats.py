@@ -50,7 +50,7 @@ class Variables:
     def plot_legends(self):
         endcap_str = "+Endcap" if self.endcap ==1 else "-Endcap"
         layer_str = f"Layer {self.layer}"
-        pt_str = f"{self.low_pt} < pT < {self.high_pt}"
+        pt_str = f"{self.low_pt} GeV < pT < {self.high_pt} GeV"
         if self.supch_cut == 0:
             supch_str = "Even chambers"
         elif self.supch_cut == 1:
@@ -85,12 +85,22 @@ for i in range(1, 37):
     event.Project(f"h_{i}", "RdPhi_Corrected", plotting_variables.plotting_cut() + f"&& has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[2] == {i}")
     event1.Project(f"h1_{i}", "RdPhi_Corrected", plotting_variables.plotting_cut() + f"&& has_fidcut && abs(RdPhi_Corrected) < 2 && prop_location[2] == {i}")
 
-    mean = h.GetMean()
-    mean1 = h1.GetMean()
-    stdev = h.GetStdDev()
-    stdev1 = h1.GetStdDev()
+    if h.GetEntries() > 0 and h1.GetEntries() > 0:
+        print(f"Fitting chamber {i} with 2025 GEM alignment, entries: {h.GetEntries()}")
+        t = ROOT.TF1(f"t_{i}", "gaus", -2, 2)
+        t1 = ROOT.TF1(f"t1_{i}", "gaus", -2, 2)
+        h.Fit(f"t_{i}")
+        h1.Fit(f"t1_{i}")
 
-    chamber_stats[i] = {"mean_2025Geom": mean, "stdev_2025Geom": stdev, "mean_2026Geom": mean1, "stdev_2026Geom": stdev1}
+        mean = t.GetParameter(1)
+        mean1 = t1.GetParameter(1)
+        stdev = t.GetParameter(2)
+        stdev1 = t1.GetParameter(2)
+
+        chamber_stats[i] = {"mean_2025Geom": mean, "stdev_2025Geom": stdev, "mean_2026Geom": mean1, "stdev_2026Geom": stdev1}
+    else:
+        chamber_stats[i] = {"mean_2025Geom": 0, "stdev_2025Geom": 0, "mean_2026Geom": 0, "stdev_2026Geom": 0}
+
     h.Delete()
     h1.Delete()
 
@@ -125,7 +135,7 @@ plot.SetTitle(f"Comparison of #DeltaR#phi between 2025 and 2026 GEM alignment;Ch
 plot.SetMarkerStyle(20)
 plot.SetMarkerSize(1)
 plot.SetLineColor(ROOT.kBlue)
-plot.SetLineWidth(2)
+plot.SetLineWidth(3)
 plot.SetMarkerColor(ROOT.kBlue)
 for i in range(1, 37):
     plot.SetPoint(i-1, i, chamber_stats[i]["mean_2025Geom"])
