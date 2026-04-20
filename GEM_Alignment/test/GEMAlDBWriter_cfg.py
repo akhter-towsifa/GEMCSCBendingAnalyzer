@@ -38,8 +38,8 @@ process.GEMAlDBWriter = cms.EDAnalyzer("GEMAlDBWriter",
                                        doEndcap = cms.untracked.bool(False),
                                        doME11Chamber = cms.untracked.bool(False),
                                        doCSCEndcap = cms.untracked.bool(False),
-                                       chamberFile = cms.untracked.string('../script/standAloneGemAlignment/Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_2025alignment_trackerprop.csv'),          # GEM Chamber Alignment csv
-                                       chamberErrorFile = cms.untracked.string('../script/standAloneGemAlignment/Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_2025alignment_trackerprop_error.csv'), # GEM Chamber Error Alignment csv
+                                       chamberFile = cms.untracked.string('../script/standAloneGemAlignment/Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_trackerprop.csv'),          # GEM Chamber Alignment csv
+                                       chamberErrorFile = cms.untracked.string('../script/standAloneGemAlignment/Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_trackerprop_error.csv'), # GEM Chamber Error Alignment csv
                                        endcapFile = cms.untracked.string('gemEndcap.csv'),       # GEM Endcap Alignment csv
                                        ME11ChamberFile = cms.untracked.string('../script/standAloneGemAlignment/ME11_misalignment_dphiz.csv'),      # ME1/1 Chamber Alignment csv
                                        CSCEndcapFile = cms.untracked.string('cscEndcap.csv')     # ME1/1 Endcap Alignment csv
@@ -47,7 +47,7 @@ process.GEMAlDBWriter = cms.EDAnalyzer("GEMAlDBWriter",
 
 # Database output service if you want to store soemthing in MisalignedMuon
 from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
-
+'''
 #only use the needed lines below when using an geometry db file. when doing GEM alignment, don't have CSC file. same for when doing ME11 or CSC alignment, don't use GEM, only CSC db file
 #TA commenting out below
 old_db = '/afs/cern.ch/work/t/toakhter/public/GEM_Alignment/Run2025C_muon0_ZMu_150X_dataRun3_Prompt_v1_trackerprop.db' #Starting geometry DB
@@ -73,7 +73,7 @@ process.es_prefer_muonGemAlignment = cms.ESPrefer("PoolDBESSource","muonGemAlign
 #                                     toGet   = cms.VPSet(cms.PSet(record = cms.string("GlobalPositionRcd"), tag = cms.string("GlobalPositionRcd")))
 #                                     )
 #process.es_prefer_globalPosition = cms.ESPrefer("PoolDBESSource","globalPosition")
-
+'''
 
 
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
@@ -104,7 +104,7 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
         )
     ),
 
-    connect = cms.string('sqlite_file:Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_2025alignment_trackerprop.db')
+    connect = cms.string('sqlite_file:Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_trackerprop.db')
 )
 process.p1 = cms.Path(process.GEMAlDBWriter)
 process.MessageLogger.cout = cms.untracked.PSet(

@@ -21,7 +21,7 @@ do_CSC = False
 
 if misalign:
   # db_file = 'sqlite_file:dummy_dx1.db'
-  gem_db_file = 'sqlite_file:Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_2025alignment_trackerprop.db' #for GEM
+  gem_db_file = 'sqlite_file:Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_trackerprop.db' #for GEM
   # csc_db_file = 'sqlite_file:myDB.db' #for csc alignment only in this case
   # gpr_db_file = 'sqlite_file:Run3v1.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
