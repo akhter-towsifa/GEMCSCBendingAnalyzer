@@ -3,11 +3,11 @@
 ## how to set up CMS Software environment and check out this alignment analyzer package
 
 ```
-cmsrel CMSSW_15_0_1 
+cmsrel CMSSW_16_0_4 
 ```
 or if you want to name your work environment differently: 
 
-```scram p -n Your_Choice_of_Name CMSSW_15_0_1```
+```scram p -n Your_Choice_of_Name CMSSW_16_0_4```
 
 
 ```
@@ -15,7 +15,7 @@ cd CMSSW_15_0_1/src/
 cmsenv
 git cms-init
 
-git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 15_X_RawReco
+git clone https://github.com/akhter-towsifa/GEMCSCBendingAnalyzer.git -b 16_X_RawReco
 
 scram b -j 8
 ```

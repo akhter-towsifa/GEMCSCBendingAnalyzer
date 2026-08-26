@@ -12,7 +12,7 @@ config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'run_GE11ana.py'
 config.JobType.numCores = 1
 
-misalign = True  #Make sure to change the run_GE11ana.py too!!!
+misalign = False  #Make sure to change the run_GE11ana.py too!!!
 if misalign:
   config.JobType.inputFiles =  ['./Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_trackerprop.db']
 

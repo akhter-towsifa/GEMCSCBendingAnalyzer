@@ -13,30 +13,30 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 
-misalign = True
-do_GEM = True
+misalign = False
+do_GEM = False
 do_CSC = False
 
 ### This is the misalignment part
 
 if misalign:
   # db_file = 'sqlite_file:dummy_dx1.db'
-  gem_db_file = 'sqlite_file:Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_trackerprop.db' #for GEM
+  # gem_db_file = 'sqlite_file:Run2026B_muon0_ZMu_160X_dataRun3_Prompt_frozen260223_v0_trackerprop.db' #for GEM
   # csc_db_file = 'sqlite_file:myDB.db' #for csc alignment only in this case
   # gpr_db_file = 'sqlite_file:Run3v1.db' #for gpr only in this case
   process.GlobalTag.toGet = cms.VPSet(
-    #GE11 rec/tag
-    cms.PSet(
-        connect = cms.string(gem_db_file),
-        record = cms.string('GEMAlignmentRcd'),
-        tag = cms.string('GEMAlignmentRcd')
-    ),
-    cms.PSet(
-        connect = cms.string(gem_db_file),
-        record = cms.string('GEMAlignmentErrorExtendedRcd'),
-        tag = cms.string('GEMAlignmentErrorExtendedRcd')
-    )
-    #ME11 rec/tag
+#    #GE11 rec/tag
+#    cms.PSet(
+#        connect = cms.string(gem_db_file),
+#        record = cms.string('GEMAlignmentRcd'),
+#        tag = cms.string('GEMAlignmentRcd')
+#    ),
+#    cms.PSet(
+#        connect = cms.string(gem_db_file),
+#        record = cms.string('GEMAlignmentErrorExtendedRcd'),
+#        tag = cms.string('GEMAlignmentErrorExtendedRcd')
+#    )
+#    #ME11 rec/tag
 #      cms.PSet(
 #          connect = cms.string(csc_db_file),
 #         record = cms.string('CSCAlignmentRcd'),
@@ -110,7 +110,7 @@ process.analyzer = cms.EDAnalyzer('analyzer',
   vertexCollection = cms.InputTag("offlinePrimaryVertices"),
   tracker_prop = cms.bool(True),
   CSC_prop = cms.bool(False),
-  Segment_prop = cms.bool(False),
+  Segment_prop = cms.bool(True),
   debug = cms.bool(False), #set to False before submitting a crab job
   isCosmic = cms.bool(False)
 )
